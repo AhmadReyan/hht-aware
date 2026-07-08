@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "499068781512",
+    "project_id": "hhtaware",
+    "storage_bucket": "hhtaware.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:499068781512:android:4176be35f672680e4cf6fd",
+        "android_client_info": {
+          "package_name": "com.hhtaware.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCyHbWVZMWp7Nujh4n5YUKdTmRDiqOIJ_s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

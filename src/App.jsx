@@ -12,17 +12,19 @@ import { Challenges } from './pages/Challenges';
 import { Prevention } from './pages/Prevention';
 import { Research } from './pages/Research';
 import { useResearchNotifications } from './hooks/useResearchNotifications';
+import { useFirebase } from './hooks/useFirebase';
 import { useDeepLinks } from './hooks/useDeepLinks';
 
 function AppContent() {
   const [aboutOpen, setAboutOpen] = useState(false);
 
   // Initialize Native Features.
+  // Firebase Analytics + Crashlytics (guarded — no-ops until google-services.json is added).
+  useFirebase();
   // NOTE: remote push (usePushNotifications) is intentionally NOT initialized —
-  // PushNotifications.register() requires Firebase/FCM (a google-services.json),
-  // which this app does not ship, and calling it crashes the app natively
-  // ("Default FirebaseApp is not initialized"). The app has no push backend;
-  // periodic reminders use local notifications instead (useResearchNotifications).
+  // the old @capacitor/push-notifications register() crashed natively without Firebase.
+  // FCM push will be re-added via @capacitor-firebase/messaging once Firebase is set up.
+  // Periodic reminders currently use local notifications (useResearchNotifications).
   useResearchNotifications();
   useDeepLinks();
 
