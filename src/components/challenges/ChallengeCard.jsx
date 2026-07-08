@@ -33,14 +33,20 @@ export const ChallengeCard = ({
     }
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 6 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <motion.div
+      variants={cardVariants}
       whileTap={{ scale: 0.98 }}
       onClick={handleCardClick}
       className={`
         relative overflow-hidden border rounded-custom p-4 flex gap-3.5 items-start cursor-pointer transition-all select-none
-        ${isDone 
-          ? 'bg-brand-red-light/10 border-brand-red-mid/30 text-white shadow-sm' 
+        ${isDone
+          ? 'bg-brand-red/10 border-brand-red-mid/30 text-white shadow-sm'
           : id === 10 && !isUnlocked
             ? 'bg-app-dark2/40 border-app-border/5 opacity-55 cursor-not-allowed text-app-muted'
             : 'bg-app-dark2 border-app-border/10 text-white hover:border-app-border/20'

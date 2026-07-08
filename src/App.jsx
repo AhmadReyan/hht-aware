@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+import { MotionConfig } from 'framer-motion';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { AboutModal } from './components/layout/AboutModal';
@@ -23,7 +24,7 @@ function AppContent() {
   useDeepLinks();
 
   return (
-    <div className="flex flex-col min-h-screen bg-app-bg text-app-mid select-none pb-16">
+    <div className="flex flex-col min-h-screen bg-app-bg text-app-ink select-none pb-16">
       {/* Top Header Navigation */}
       <Header onOpenAbout={() => setAboutOpen(true)} />
 
@@ -51,9 +52,11 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <MotionConfig reducedMotion="user">
+      <Router>
+        <AppContent />
+      </Router>
+    </MotionConfig>
   );
 }
 

@@ -15,11 +15,11 @@ export const Button = ({
   const baseStyle = 'inline-flex items-center justify-center font-sans font-medium rounded-custom-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-red-mid focus:ring-offset-2 focus:ring-offset-app-dark active:scale-95 disabled:opacity-50 disabled:pointer-events-none select-none';
   
   const variants = {
-    primary: 'bg-brand-red hover:bg-brand-red-mid text-white shadow-sm',
+    primary: 'bg-brand-red hover:brightness-110 active:brightness-95 text-white shadow-sm',
     secondary: 'bg-app-dark2 hover:bg-app-mid text-white border border-app-border/10',
     outline: 'bg-transparent border border-app-muted hover:border-white text-app-muted hover:text-white',
-    danger: 'bg-red-800 hover:bg-red-700 text-white',
-    teal: 'bg-brand-teal hover:bg-teal-600 text-white shadow-sm'
+    danger: 'bg-brand-red-dark hover:brightness-110 text-white',
+    teal: 'bg-brand-teal hover:brightness-95 text-app-bg shadow-sm'
   };
 
   const sizes = {

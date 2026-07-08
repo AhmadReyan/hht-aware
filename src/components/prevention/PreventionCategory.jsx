@@ -56,7 +56,7 @@ export const PreventionCategory = ({ category, defaultOpen = false }) => {
                       <Badge variant="teal" size="sm" className="flex-shrink-0">{tip.tag}</Badge>
                     )}
                   </div>
-                  <p className="text-[11px] text-app-border leading-relaxed">{tip.body}</p>
+                  <p className="text-[11px] text-app-soft leading-relaxed">{tip.body}</p>
                   {tip.src && (
                     <span className="text-[9px] text-app-muted italic mt-0.5">Source: {tip.src}</span>
                   )}

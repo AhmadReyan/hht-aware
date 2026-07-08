@@ -12,6 +12,15 @@ import { useResearchFeed } from '../hooks/useResearchFeed';
 import { ResearchSpotlight } from '../components/research/ResearchSpotlight';
 import { Palette, ShieldAlert, BookOpen, Trophy, HeartPulse, Microscope, ExternalLink, Share2, RefreshCw } from 'lucide-react';
 
+const navGridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+};
+const navItemVariants = {
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0 },
+};
+
 export const Home = () => {
   const navigate = useNavigate();
   const { shareContent, toastMessage, triggerToast } = useShare();
@@ -112,7 +121,7 @@ export const Home = () => {
               </div>
             </div>
 
-            <h1 className="font-serif text-3xl md:text-4xl text-white font-bold leading-tight mt-1">
+            <h1 className="font-serif text-3xl md:text-4xl text-app-ink font-bold leading-tight mt-1">
               1 in 5,000 people have <span className="text-brand-red-mid italic">HHT</span>
             </h1>
             
@@ -145,38 +154,44 @@ export const Home = () => {
         {/* 2x2 Grid of Navigation Cards */}
         <section className="flex flex-col gap-3">
           <h2 className="font-sans font-bold text-xs uppercase tracking-wider text-app-muted px-1">Interactive Features</h2>
-          <div className="grid grid-cols-2 gap-3">
+          <motion.div
+            variants={navGridVariants}
+            initial="hidden"
+            animate="show"
+            className="grid grid-cols-2 gap-3"
+          >
             {navCards.map((card) => {
               const Icon = card.icon;
               return (
-                <Card
-                  key={card.title}
-                  interactive
-                  variant={card.color === 'dark' ? 'dark' : card.color}
-                  onClick={() => navigate(card.path)}
-                  className="p-4 flex flex-col gap-3 justify-between h-32"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className={`p-2 rounded-custom-sm ${
-                      card.color === 'red' ? 'bg-brand-red/10 text-brand-red-mid' :
-                      card.color === 'orange' ? 'bg-brand-orange/10 text-brand-orange' :
-                      card.color === 'teal' ? 'bg-brand-teal/10 text-brand-teal' :
-                      'bg-app-dark/60 text-brand-red-mid'
-                    }`}>
-                      <Icon size={20} />
+                <motion.div key={card.title} variants={navItemVariants}>
+                  <Card
+                    interactive
+                    variant={card.color === 'dark' ? 'dark' : card.color}
+                    onClick={() => navigate(card.path)}
+                    className="p-4 flex flex-col gap-3 justify-between h-32"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className={`p-2 rounded-custom-sm ${
+                        card.color === 'red' ? 'bg-brand-red/10 text-brand-red-mid' :
+                        card.color === 'orange' ? 'bg-brand-orange/10 text-brand-orange' :
+                        card.color === 'teal' ? 'bg-brand-teal/10 text-brand-teal' :
+                        'bg-app-dark/60 text-brand-red-mid'
+                      }`}>
+                        <Icon size={20} />
+                      </div>
+                      <span className="text-lg">{card.emoji}</span>
                     </div>
-                    <span className="text-lg">{card.emoji}</span>
-                  </div>
-                  <div>
-                    <h3 className="font-sans font-bold text-sm tracking-tight text-white">{card.title}</h3>
-                    <p className={`text-[10px] ${
-                      card.color === 'dark' ? 'text-app-muted' : 'opacity-80'
-                    }`}>{card.desc}</p>
-                  </div>
-                </Card>
+                    <div>
+                      <h3 className="font-sans font-bold text-sm tracking-tight text-app-ink">{card.title}</h3>
+                      <p className={`text-[10px] ${
+                        card.color === 'dark' ? 'text-app-muted' : 'opacity-80'
+                      }`}>{card.desc}</p>
+                    </div>
+                  </Card>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         </section>
 
         {/* Quick Fact Strip */}
@@ -207,7 +222,7 @@ export const Home = () => {
             <div className="font-serif text-2xl font-bold text-brand-red-light group-hover:text-brand-red-mid transition-colors italic">
               {randomFact.stat}
             </div>
-            <p className="text-xs text-app-border leading-relaxed">
+            <p className="text-xs text-app-soft leading-relaxed">
               {randomFact.body}
             </p>
             <div className="text-[9px] text-app-muted italic text-right mt-1">

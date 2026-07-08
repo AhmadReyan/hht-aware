@@ -2,7 +2,7 @@
 // presets. Used by all 10 new poster templates so each one doesn't need its own
 // bespoke controls component. Styling mirrors the existing legacy control inputs.
 
-const inputClass = 'w-full bg-[#1C1C1E] border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
+const inputClass = 'w-full bg-app-surface2 border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
 
 export const GenericPosterControls = ({ template, data, onChange }) => {
   const fields = template.fields || [];

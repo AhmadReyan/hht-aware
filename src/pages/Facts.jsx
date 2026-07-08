@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { FactsFilter } from '../components/facts/FactsFilter';
 import { FactCard } from '../components/facts/FactCard';
@@ -36,16 +37,21 @@ export const Facts = () => {
     }
   };
 
-  const filteredFacts = activeCategory === 'all' 
-    ? facts 
+  const filteredFacts = activeCategory === 'all'
+    ? facts
     : facts.filter(f => f.cat === activeCategory);
+
+  const listContainer = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
 
   return (
     <PageWrapper>
       <div className="flex flex-col gap-5 font-sans">
         {/* Header Title */}
         <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-white">HHT Facts & Research</h1>
+          <h1 className="font-serif text-2xl font-bold text-app-ink">HHT Facts & Research</h1>
           <p className="text-xs text-app-muted leading-relaxed">
             Arm yourself with accurate medical statistics about Hereditary Hemorrhagic Telangiectasia. Tap any card to share it with your network.
           </p>
@@ -57,7 +63,12 @@ export const Facts = () => {
         </section>
 
         {/* Fact Cards List */}
-        <section className="flex flex-col gap-4 mb-6">
+        <motion.section
+          className="flex flex-col gap-4 mb-6"
+          variants={listContainer}
+          initial="hidden"
+          animate="show"
+        >
           {filteredFacts.map((fact) => (
             <FactCard key={fact.id} fact={fact} onShare={handleShareFact} />
           ))}
@@ -66,7 +77,7 @@ export const Facts = () => {
               No facts found in this category.
             </div>
           )}
-        </section>
+        </motion.section>
       </div>
 
       <Toast message={toastText} isOpen={showToast} onClose={() => setShowToast(false)} />

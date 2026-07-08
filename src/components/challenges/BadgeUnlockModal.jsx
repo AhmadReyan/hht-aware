@@ -44,7 +44,7 @@ export const BadgeUnlockModal = ({ badge, onClose }) => {
 
             <button
               onClick={onClose}
-              className="mt-2 w-full bg-brand-red hover:bg-brand-red-mid text-white text-sm font-bold py-2.5 rounded-custom-sm active:scale-95 transition-all"
+              className="mt-2 w-full bg-brand-red hover:brightness-110 text-white text-sm font-bold py-2.5 rounded-custom-sm active:scale-95 transition-all"
             >
               Awesome!
             </button>

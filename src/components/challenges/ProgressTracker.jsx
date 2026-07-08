@@ -46,7 +46,7 @@ export const ProgressTracker = ({ completedCount = 0, totalCount = 10, points = 
       <ProgressBar value={completedCount} max={totalCount} />
 
       {/* Subtitle Message */}
-      <p className="text-xs text-app-border leading-relaxed bg-app-dark2/50 px-3.5 py-2.5 rounded-custom border border-app-border/5">
+      <p className="text-xs text-app-soft leading-relaxed bg-app-dark2/50 px-3.5 py-2.5 rounded-custom border border-app-border/5">
         {getSubtitle()}
       </p>
     </div>

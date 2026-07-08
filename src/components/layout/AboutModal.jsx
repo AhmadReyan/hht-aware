@@ -6,7 +6,7 @@ import { ExternalLink, Info, AlertOctagon } from 'lucide-react';
 export const AboutModal = ({ isOpen, onClose }) => {
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="About HHT (Hereditary Hemorrhagic Telangiectasia)">
-      <div className="flex flex-col gap-6 text-sm text-app-border leading-relaxed font-sans">
+      <div className="flex flex-col gap-6 text-sm text-app-soft leading-relaxed font-sans">
         
         {/* Intro */}
         <section className="flex flex-col gap-2">
@@ -67,7 +67,7 @@ export const AboutModal = ({ isOpen, onClose }) => {
         </section>
 
         {/* Clinical Alert */}
-        <section className="bg-red-950/20 border border-brand-red/30 p-4 rounded-custom flex gap-3">
+        <section className="bg-brand-red/10 border border-brand-red/30 p-4 rounded-custom flex gap-3">
           <AlertOctagon size={24} className="text-brand-red-mid flex-shrink-0 mt-0.5" />
           <div className="flex flex-col gap-1.5">
             <h4 className="font-sans font-bold text-xs uppercase text-brand-red-mid tracking-wider">⚠️ Critical Emergency Safety</h4>

@@ -24,6 +24,10 @@ export default {
           muted: 'var(--muted)',
           border: 'var(--border)',
           bg: 'var(--bg)',
+          ink: 'var(--ink)',            // NEW — text-app-ink
+          soft: 'var(--ink-soft)',      // NEW — text-app-soft
+          surface: 'var(--surface)',    // NEW — bg-app-surface
+          surface2: 'var(--surface-2)', // NEW — bg-app-surface2
         }
       },
       fontFamily: {
@@ -33,10 +37,12 @@ export default {
       borderRadius: {
         custom: 'var(--radius)',
         'custom-sm': 'var(--radius-sm)',
+        'custom-lg': 'var(--radius-lg)',
         'custom-pill': 'var(--radius-pill)',
       },
       boxShadow: {
         card: 'var(--shadow-card)',
+        raised: 'var(--shadow-raised)',
         poster: 'var(--shadow-poster)',
       }
     },

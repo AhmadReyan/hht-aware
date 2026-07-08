@@ -2,12 +2,28 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Lock } from 'lucide-react';
 
+const listContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } }
+};
+
+const badgeVariants = {
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0 }
+};
+
 export const BadgeGrid = ({ badges }) => {
   return (
-    <div className="grid grid-cols-3 gap-2.5">
+    <motion.div
+      className="grid grid-cols-3 gap-2.5"
+      variants={listContainer}
+      initial="hidden"
+      animate="show"
+    >
       {badges.map((badge) => (
         <motion.div
           key={badge.id}
+          variants={badgeVariants}
           whileTap={{ scale: 0.96 }}
           className={`
             relative flex flex-col items-center justify-center gap-1 rounded-custom border p-3 text-center aspect-square
@@ -30,7 +46,7 @@ export const BadgeGrid = ({ badges }) => {
           </span>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 export default BadgeGrid;

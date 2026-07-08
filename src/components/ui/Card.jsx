@@ -5,25 +5,27 @@ export const Card = ({
   children,
   onClick,
   className = '',
-  variant = 'default', // 'default' (white/gray), 'dark' (app-dark2), 'red', 'orange', 'teal'
+  variant = 'default', // 'default' (app-surface), 'dark' (app-dark, recessed), 'red', 'orange', 'teal'
   interactive = false,
   ...props
 }) => {
   const baseStyle = 'rounded-custom shadow-card overflow-hidden border transition-all';
-  
+
   const variants = {
-    default: 'bg-white border-app-border text-app-mid',
-    dark: 'bg-app-dark2 border-app-border/10 text-white',
-    red: 'bg-brand-red-light border-brand-red-light/20 text-brand-red-dark',
-    orange: 'bg-brand-orange-light border-brand-orange-light/20 text-brand-orange',
-    teal: 'bg-brand-teal-light border-brand-teal-light/20 text-brand-teal'
+    default: 'bg-app-surface border-app-border/60 text-app-ink',
+    dark: 'bg-app-dark border-app-border/40 text-app-ink',       // recessed tone, for hero/inset panels
+    red: 'bg-brand-red/10 border-brand-red/25 text-app-ink',     // heading/icon inside uses text-brand-red-light
+    orange: 'bg-brand-orange/10 border-brand-orange/25 text-app-ink',
+    teal: 'bg-brand-teal/10 border-brand-teal/25 text-app-ink'
   };
 
   const Component = interactive ? motion.div : 'div';
-  const motionProps = interactive 
+  const motionProps = interactive
     ? {
         whileTap: { scale: 0.98 },
-        className: `${baseStyle} ${variants[variant]} cursor-pointer hover:shadow-md select-none ${className}`,
+        tabIndex: 0,
+        role: 'button',
+        className: `${baseStyle} ${variants[variant]} cursor-pointer hover:shadow-raised hover:border-app-border select-none focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-red-mid focus-visible:ring-offset-2 focus-visible:ring-offset-app-bg ${className}`,
         onClick
       }
     : {

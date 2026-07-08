@@ -33,7 +33,7 @@ export const ResearchSpotlight = ({ update, onClick, compact = false }) => {
           </div>
         </div>
 
-        <p className="text-xs text-app-border leading-relaxed">
+        <p className="text-xs text-app-soft leading-relaxed">
           {compact ? plain : (whyItMatters || plain)}
         </p>
 

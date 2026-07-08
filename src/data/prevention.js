@@ -455,3 +455,79 @@ export const everydayRoutine = [
     ]
   }
 ];
+
+// A 3-step "Nose care" mini-guide — sourced from the top nasal-care tips above
+// (same tips as `preventionCategories[0].tips[0]`, `[4]`, and `[7]`), just
+// re-presented as a short animated walkthrough. Nothing new is claimed here;
+// `detail` is the exact sourced body text, `line` is a short lead summary.
+export const noseCareSteps = [
+  {
+    title: "Moisturize",
+    line: "Moisturize twice a day, every day",
+    detail:
+      "Nosebleeds in HHT usually start because the nasal lining gets dry and cracks. Using a nasal moisturizer (saline gel, saline spray, or an oil-based emollient) morning and night — even on good days — is the first-line, most evidence-backed habit for reducing nosebleeds.",
+    illustration: "moisturize"
+  },
+  {
+    title: "Hands off",
+    line: "Hands off — avoid picking, rubbing, or forceful blowing",
+    detail:
+      "The fragile blood vessels (telangiectasias) inside an HHT nose sit close to the surface. Picking, vigorous rubbing, or forceful nose-blowing is one of the most common triggers for a bleed. Blow gently, one nostril at a time, and keep fingernails away from the inside of the nose.",
+    illustration: "handsOff"
+  },
+  {
+    title: "If it bleeds",
+    line: "Sit upright, lean forward, and pinch firmly for 10–15 minutes",
+    detail:
+      "Sit upright (don't tilt your head back), lean slightly forward, and pinch the soft lower part of your nose firmly for a full 10–15 minutes without checking. Have your bleeding plan and supplies (gauze, nasal moisturizer, a mirror) somewhere easy to grab.",
+    illustration: "bleed"
+  }
+];
+
+// Chips for the "Trigger or Helper?" sorting mini-game — classification and
+// hints are drawn straight from the tags/bodies already in `preventionCategories`
+// above (nasal-care + diet-nutrition + medication-safety), no new medical claims.
+export const triggerHelperItems = [
+  {
+    id: "spicy-food",
+    label: "Spicy food",
+    correctColumn: "trigger",
+    hint: "Very spicy meals can dilate blood vessels — if you notice a pattern after a spicy meal, it's reasonable to dial back the heat."
+  },
+  {
+    id: "alcohol",
+    label: "Alcohol",
+    correctColumn: "trigger",
+    hint: "Alcohol is the most commonly reported dietary trigger in the largest HHT lifestyle survey — it widens blood vessels and can interfere with clotting."
+  },
+  {
+    id: "nsaids",
+    label: "NSAIDs (ibuprofen, naproxen)",
+    correctColumn: "trigger",
+    hint: "NSAIDs reduce your platelets' ability to clump together, which can worsen bleeding."
+  },
+  {
+    id: "humidifier",
+    label: "Humidifier",
+    correctColumn: "helper",
+    hint: "A clean humidifier keeps room humidity around 40–60%, helping stop the nasal lining from drying out overnight."
+  },
+  {
+    id: "ponaris",
+    label: "Ponaris (nasal emollient)",
+    correctColumn: "helper",
+    hint: "Ponaris is a helper — it moisturizes the nose and has shown improvement in nosebleed severity scores in HHT studies."
+  },
+  {
+    id: "iron-rich-food",
+    label: "Iron-rich food",
+    correctColumn: "helper",
+    hint: "Red meat, beans, lentils, and iron-fortified cereals help replace the iron lost from ongoing small blood loss."
+  },
+  {
+    id: "saline-rinse",
+    label: "Gentle saline rinse",
+    correctColumn: "helper",
+    hint: "Gentle saline rinses can help clear crusting and add moisture — just avoid forceful, high-pressure irrigation."
+  }
+];

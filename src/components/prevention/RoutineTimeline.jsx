@@ -36,7 +36,7 @@ export const RoutineTimeline = ({ routine = [] }) => {
               </span>
               <ul className="flex flex-col gap-1.5">
                 {(block.items || []).map((item, i) => (
-                  <li key={i} className="text-[11px] text-app-border leading-relaxed flex gap-1.5">
+                  <li key={i} className="text-[11px] text-app-soft leading-relaxed flex gap-1.5">
                     <span className="text-brand-red-mid">•</span>
                     <span>{item}</span>
                   </li>

@@ -64,9 +64,11 @@ Zustand+localStorage, framer-motion, lucide-react).
 - [x] Routes added (App.jsx); BottomNav reworked (Home/Prevent/Research/Studio/Rewards + unseen badge);
       Emergency moved to Header; Home gets Research-of-Week spotlight + 6 nav cards.
 - [x] Weekly local notification: installed @capacitor/local-notifications, added useResearchNotifications, wired in App.jsx.
-- [~] Studio worker: all poster modules written; finishing PosterStudio.jsx. Awaiting completion.
-- [ ] FINAL: npm run build (Vite compile) once Studio done; fix any errors; git checkpoint commit.
-- [ ] npm run sync (cap sync android) to refresh native bundle.
+- [x] Studio worker DONE: 13 templates x 6 themes x 3 sizes (234 designs).
+- [x] FINAL: `npm run build` fully green (SW generated); durable webcrypto fix in npm scripts + vite.config.
+- [x] `npm run sync` succeeded — Android bundle refreshed, local-notifications plugin registered (8 plugins).
+- [x] Lint: 0 new real errors across src. Git checkpoint committed (86a5b2d).
+- ALL TASKS COMPLETE.
 
 ## Known non-blocking issues
 - Node 18 installed but toolchain wants >=20 → pre-existing workbox/path-scurry precache step fails
@@ -77,3 +79,23 @@ Zustand+localStorage, framer-motion, lucide-react).
 
 ## Verify
 - Build: `npm run build`  •  Lint: `npm run lint`  •  Sync Android: `npm run sync`.
+
+---
+
+## ROUND 2 — UI redesign (dark theme + interactivity), started after user feedback
+User feedback: not happy with UI — not interactive enough (esp. Prevention = too much reading),
+white-on-white contrast unreadable, wants modern standard UI, and Android app updated too.
+User chose: **cohesive DARK theme** + **rich & animated Prevention**.
+
+- [x] Designer (Sonnet) authored `DESIGN_SYSTEM.md` ("Vessel Dark") with AA-verified tokens, class-change
+      tables, and the Prevention interactivity blueprint. Keeps all CSS-var/Tailwind NAMES stable (values change);
+      adds app.ink/app.soft/app.surface/app.surface2, custom-lg, raised.
+- [~] Worker A (a4a4ff67): foundation — index.css, tailwind.config.js, index.html, App.jsx (+MotionConfig), ui/**, layout/**.
+- [~] Worker B (a2190cf6): Prevention — RoutineRing, TopicTileGrid/Tile/Sheet+SVG icons, AgePersonaSelector,
+      NoseCareSteps, TriggerHelperSorter; adds noseCareSteps + triggerHelperItems to data/prevention.js.
+- [~] Worker C (a328b4ce): Research + Home — contrast fixes + list-stagger.
+- [~] Worker D (a05a1d80): contrast pass on Facts/Challenges/Emergency/Studio-chrome (NOT canvas/drawers/themes).
+- [ ] Integrate → npm run build → npm run sync (Android) → attempt APK → re-screenshot to verify contrast + interactivity.
+
+Key cross-cutting fix: `text-app-border` was (mis)used as body copy in ~11 files; each worker converts its own
+occurrences to `text-app-soft` per DESIGN_SYSTEM.md §2.4. Poster CANVAS + PDF-export display hex are OUT of scope.

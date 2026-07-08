@@ -11,7 +11,7 @@ export const InfoBanner = ({
     info: 'bg-app-dark2 border-brand-teal/30 text-white',
     success: 'bg-brand-teal-light/20 border-brand-teal/30 text-brand-teal',
     warning: 'bg-brand-orange-light/20 border-brand-orange/30 text-brand-orange',
-    danger: 'bg-red-950/20 border-brand-red/30 text-brand-red-mid'
+    danger: 'bg-brand-red/10 border-brand-red/30 text-brand-red-light'
   };
 
   const icons = {

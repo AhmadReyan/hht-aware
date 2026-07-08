@@ -3,28 +3,34 @@
 @tailwind utilities;
 
 :root {
-  /* Brand */
-  --red:          #C0392B;   /* Primary — HHT red */
-  --red-mid:      #E74C3C;   /* Buttons, highlights */
-  --red-light:    #FADBD8;   /* Selected states, backgrounds */
-  --red-dark:     #922B21;   /* Pressed states */
+  /* Brand — red family */
+  --red:          #C0392B;   /* Deep red — solid CTA fills, pressed states (AA-safe w/ white text) */
+  --red-mid:      #E74C3C;   /* Primary accent — icons, links, borders, badges, small headings */
+  --red-light:    #F2A79B;   /* NEW ROLE: light coral TEXT/heading accent on dark surfaces (was a pastel bg tint) */
+  --red-dark:     #922B21;   /* Deepest red — active/pressed fill, highest-contrast text pairing */
 
-  /* Accent */
-  --orange:       #D35400;   /* Secondary accent */
-  --orange-light: #FDEBD0;   /* Orange backgrounds */
+  /* Accent — orange */
+  --orange:       #E8843C;   /* Secondary accent / warning — reads clearly as text or icon on dark */
+  --orange-light: #F3C08A;   /* NEW ROLE: light gold TEXT accent on dark surfaces (was a pastel bg tint) */
 
-  /* Safe / Info */
-  --teal:         #148F77;   /* Success, safe info */
-  --teal-light:   #D1F2EB;   /* Info backgrounds */
+  /* Safe / Info — teal */
+  --teal:         #2AA88B;   /* Success, safe info, verified */
+  --teal-light:   #7FD9BC;   /* NEW ROLE: light mint TEXT accent on dark surfaces (was a pastel bg tint) */
 
-  /* Neutrals */
-  --dark:         #1C1C1E;   /* Primary dark (iOS-style) */
-  --dark2:        #2C2C2E;   /* Card backgrounds */
-  --mid:          #48484A;   /* Body text */
-  --muted:        #8E8E93;   /* Labels, secondary text */
-  --border:       #E5E5EA;   /* Dividers */
-  --bg:           #F2F2F7;   /* App background */
-  --white:        #FFFFFF;   /* Cards */
+  /* Neutrals — surfaces & structure */
+  --dark:         #141013;   /* Recessed / chrome tone — header, bottom nav, hero panels. Equals --bg: seamless chrome. */
+  --dark2:        #1F1A1C;   /* First elevation — standard card surface. Alias of new --surface. */
+  --mid:          #4A4245;   /* NEW ROLE: neutral mid-tone for hover/press overlays & tertiary fills only — never body text */
+  --muted:        #8A8085;   /* Labels, meta text, icons, eyebrows */
+  --border:       #332C2F;   /* Hairline dividers ONLY — never used as a text color (see §2.4 bug fix) */
+  --bg:           #141013;   /* App background — near-black, faint warm/red bias */
+  --white:        #FFFFFF;   /* Reserved for on-color fills (e.g. white icon on a solid red bar) and the Poster canvas */
+
+  /* NEW — text & elevation tokens */
+  --ink:          #F4EEF0;   /* Primary text, headings — the fix for text-white on page titles */
+  --ink-soft:     #B7ADB0;   /* Secondary/body copy on any dark surface — replaces the text-app-border hack */
+  --surface:      #1F1A1C;   /* Explicit name for --dark2 (first elevation) */
+  --surface-2:    #251F21;   /* Second elevation — nested tips, inputs, pressed rows, sheets-on-sheets */
 
   /* Typography */
   --serif:        'DM Serif Display', Georgia, serif;
@@ -33,14 +39,18 @@
   /* Component Tokens */
   --radius:       16px;
   --radius-sm:    10px;
+  --radius-lg:    22px;       /* NEW — hero/spotlight cards, bottom sheets */
   --radius-pill:  99px;
-  --shadow-card:  0 2px 12px rgba(0,0,0,0.07);
-  --shadow-poster: 0 4px 24px rgba(0,0,0,0.15);
+
+  /* Elevation — dark themes need real shadow + hairline, not a faint light-mode shadow */
+  --shadow-card:    0 1px 2px rgba(0,0,0,0.45), 0 8px 24px rgba(0,0,0,0.30);
+  --shadow-raised:  0 2px 4px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35);   /* NEW — hero, sheets, modals */
+  --shadow-poster:  0 4px 24px rgba(0,0,0,0.15);  /* unchanged — poster canvas only */
 }
 
 body {
   background-color: var(--bg);
-  color: var(--mid);
+  color: var(--ink);          /* was var(--mid); mid is no longer a text color, see §2.4 */
   font-family: var(--sans);
   margin: 0;
   padding: 0;

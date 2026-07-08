@@ -140,7 +140,7 @@ export const PosterStudio = () => {
     <PageWrapper>
       <div className="flex flex-col gap-5 font-sans">
         <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
             <Palette className="text-brand-red-mid" size={24} />
             <span>Poster Studio</span>
           </h1>

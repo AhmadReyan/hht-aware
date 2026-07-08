@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ResearchSpotlight } from '../components/research/ResearchSpotlight';
 import { ResearchFilter } from '../components/research/ResearchFilter';
@@ -7,6 +8,15 @@ import { ExplainerChips } from '../components/research/ExplainerChips';
 import { useResearchFeed } from '../hooks/useResearchFeed';
 import { researchCategories, researchExplainers } from '../data/research';
 import { Microscope, CheckCheck, ShieldQuestion } from 'lucide-react';
+
+const feedListVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.05 } },
+};
+const feedItemVariants = {
+  hidden: { opacity: 0, y: 6 },
+  show: { opacity: 1, y: 0 },
+};
 
 export const Research = () => {
   const { updates, featured, isSeen, unseenCount, markSeen, markAllSeen } = useResearchFeed();
@@ -22,7 +32,7 @@ export const Research = () => {
       <div className="flex flex-col gap-5 font-sans">
         {/* Header */}
         <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
             <Microscope className="text-brand-red-mid" size={24} />
             <span>Research, Made Simple</span>
           </h1>
@@ -67,14 +77,23 @@ export const Research = () => {
             )}
           </div>
 
-          {filtered.map((update) => (
-            <ResearchCard
-              key={update.id}
-              update={update}
-              isNew={!isSeen(update.id)}
-              onOpen={markSeen}
-            />
-          ))}
+          <motion.div
+            key={activeCategory}
+            variants={feedListVariants}
+            initial="hidden"
+            animate="show"
+            className="flex flex-col gap-3"
+          >
+            {filtered.map((update) => (
+              <motion.div key={update.id} variants={feedItemVariants}>
+                <ResearchCard
+                  update={update}
+                  isNew={!isSeen(update.id)}
+                  onOpen={markSeen}
+                />
+              </motion.div>
+            ))}
+          </motion.div>
 
           {filtered.length === 0 && (
             <div className="text-center py-10 text-xs text-app-muted">

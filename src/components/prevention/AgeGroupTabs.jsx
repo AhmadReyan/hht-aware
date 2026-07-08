@@ -54,7 +54,7 @@ export const AgeGroupTabs = ({ groups = [] }) => {
                 <span className="text-[9px] font-bold uppercase tracking-wider text-brand-orange">
                   What matters most
                 </span>
-                <p className="text-xs text-app-border leading-relaxed">{active.focus}</p>
+                <p className="text-xs text-app-soft leading-relaxed">{active.focus}</p>
               </div>
             </div>
           )}
@@ -62,7 +62,7 @@ export const AgeGroupTabs = ({ groups = [] }) => {
             {(active.tips || []).map((tip, i) => (
               <li key={i} className="flex items-start gap-2.5">
                 <Check size={15} className="text-brand-teal flex-shrink-0 mt-0.5" />
-                <span className="text-xs text-app-border leading-relaxed">{tip}</span>
+                <span className="text-xs text-app-soft leading-relaxed">{tip}</span>
               </li>
             ))}
           </ul>

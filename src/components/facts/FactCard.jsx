@@ -14,8 +14,14 @@ export const FactCard = ({ fact, onShare }) => {
     treatment: 'teal'
   };
 
+  const cardVariants = {
+    hidden: { opacity: 0, y: 6 },
+    show: { opacity: 1, y: 0 }
+  };
+
   return (
     <motion.div
+      variants={cardVariants}
       whileTap={{ scale: 0.98 }}
       onClick={() => onShare(fact)}
       className="relative overflow-hidden bg-app-dark2 border border-app-border/10 rounded-custom p-5 flex flex-col gap-3.5 group hover:border-brand-red-mid/20 transition-all cursor-pointer shadow-sm select-none"
@@ -33,10 +39,10 @@ export const FactCard = ({ fact, onShare }) => {
 
       {/* Stat and Body */}
       <div className="flex flex-col gap-1.5 relative z-10">
-        <span className="font-serif text-3xl font-extrabold text-[#F8B0A0] leading-none">
+        <span className="font-serif text-3xl font-extrabold text-brand-red-light leading-none">
           {stat}
         </span>
-        <p className="text-sm text-app-border leading-relaxed font-sans">
+        <p className="text-sm text-app-soft leading-relaxed font-sans">
           {body}
         </p>
       </div>

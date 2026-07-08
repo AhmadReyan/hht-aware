@@ -19,6 +19,8 @@ export const Toast = ({
       {isOpen && (
         <div className="fixed bottom-20 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
           <motion.div
+            role="status"
+            aria-live="polite"
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.9, transition: { duration: 0.15 } }}

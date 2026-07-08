@@ -42,7 +42,7 @@ export const ExplainerChips = ({ explainers = [] }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-app-dark2 border border-brand-teal/20 rounded-custom p-4 text-xs text-app-border leading-relaxed"
+            className="bg-app-dark2 border border-brand-teal/20 rounded-custom p-4 text-xs text-app-soft leading-relaxed"
           >
             {explainers.find((e) => e.id === openId)?.plain}
           </motion.div>

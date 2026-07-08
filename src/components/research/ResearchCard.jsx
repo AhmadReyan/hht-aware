@@ -53,7 +53,7 @@ export const ResearchCard = ({ update, isNew = false, onOpen }) => {
         </div>
       </div>
 
-      <p className="text-xs text-app-border leading-relaxed">{plain}</p>
+      <p className="text-xs text-app-soft leading-relaxed">{plain}</p>
 
       <AnimatePresence initial={false}>
         {expanded && (
@@ -69,7 +69,7 @@ export const ResearchCard = ({ update, isNew = false, onOpen }) => {
                 <Sparkles size={15} className="text-brand-teal flex-shrink-0 mt-0.5" />
                 <div className="flex flex-col gap-0.5">
                   <span className="text-[9px] font-bold uppercase tracking-wider text-brand-teal">Why it matters for you</span>
-                  <p className="text-xs text-app-border leading-relaxed">{whyItMatters}</p>
+                  <p className="text-xs text-app-soft leading-relaxed">{whyItMatters}</p>
                 </div>
               </div>
             )}

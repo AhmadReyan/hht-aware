@@ -20,6 +20,16 @@ export const Modal = ({
     };
   }, [isOpen]);
 
+  // Escape key closes the modal (keyboard a11y — no trap hook existed yet)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') onClose?.();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   const overlayVariants = {
     hidden: { opacity: 0 },
     visible: { opacity: 1 }
@@ -65,7 +75,7 @@ export const Modal = ({
               animate="visible"
               exit="exit"
               variants={sheetVariants}
-              className="relative w-full max-w-md bg-app-dark2 text-white rounded-t-custom p-6 shadow-xl border-t border-app-border/10 flex flex-col max-h-[85vh] z-10"
+              className="relative w-full max-w-md bg-app-dark2 text-white rounded-t-custom p-6 shadow-raised border-t border-app-border/30 flex flex-col max-h-[85vh] z-10"
             >
               {/* Drag Handle indicator */}
               <div className="mx-auto w-12 h-1.5 bg-app-muted/30 rounded-full mb-4" />
@@ -91,7 +101,7 @@ export const Modal = ({
               animate="visible"
               exit="exit"
               variants={dialogVariants}
-              className="relative w-full max-w-sm mx-4 bg-app-dark2 text-white rounded-custom p-6 shadow-xl border border-app-border/10 flex flex-col z-10"
+              className="relative w-full max-w-sm mx-4 bg-app-dark2 text-white rounded-custom p-6 shadow-raised border border-app-border/30 flex flex-col z-10"
             >
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold font-serif text-white">{title}</h2>

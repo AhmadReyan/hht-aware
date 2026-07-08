@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProgressTracker } from '../components/challenges/ProgressTracker';
 import { ChallengeCard } from '../components/challenges/ChallengeCard';
@@ -43,6 +44,11 @@ export const Challenges = () => {
     recordActivity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const listContainer = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.05 } }
+  };
 
   const completedCount = completedChallenges.length;
 
@@ -116,7 +122,7 @@ export const Challenges = () => {
       <div className="flex flex-col gap-5 font-sans">
         {/* Header Title */}
         <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-white flex items-center gap-2">
+          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
             <Award className="text-brand-red-mid" size={24} />
             <span>Awareness Challenges</span>
           </h1>
@@ -153,16 +159,23 @@ export const Challenges = () => {
         {/* Challenge Cards List */}
         <section className="flex flex-col gap-3">
           <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Current Challenges</h2>
-          {challenges.map((c) => (
-            <ChallengeCard
-              key={c.id}
-              challenge={c}
-              isDone={completedChallenges.includes(c.id)}
-              isUnlocked={c.id !== 10 || isSpecialUnlocked}
-              onToggle={handleToggle}
-              onShowLockedWarning={handleLockedWarning}
-            />
-          ))}
+          <motion.div
+            className="flex flex-col gap-3"
+            variants={listContainer}
+            initial="hidden"
+            animate="show"
+          >
+            {challenges.map((c) => (
+              <ChallengeCard
+                key={c.id}
+                challenge={c}
+                isDone={completedChallenges.includes(c.id)}
+                isUnlocked={c.id !== 10 || isSpecialUnlocked}
+                onToggle={handleToggle}
+                onShowLockedWarning={handleLockedWarning}
+              />
+            ))}
+          </motion.div>
         </section>
 
         {/* Badges / Achievements */}

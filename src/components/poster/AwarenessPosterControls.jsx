@@ -5,7 +5,7 @@ export const AwarenessPosterControls = ({ data, onChange }) => {
     onChange({ ...data, [field]: val });
   };
 
-  const inputClass = 'w-full bg-[#1C1C1E] border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
+  const inputClass = 'w-full bg-app-surface2 border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
 
   return (
     <div className="flex flex-col gap-4 font-sans text-white">

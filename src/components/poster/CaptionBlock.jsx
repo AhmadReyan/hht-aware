@@ -52,7 +52,7 @@ export const CaptionBlock = ({ type, data, onCopied }) => {
         </button>
       </div>
 
-      <p className="text-[11px] text-app-border leading-relaxed bg-app-dark/40 p-3 rounded-custom max-h-32 overflow-y-auto select-text whitespace-pre-wrap">
+      <p className="text-[11px] text-app-soft leading-relaxed bg-app-dark/40 p-3 rounded-custom max-h-32 overflow-y-auto select-text whitespace-pre-wrap">
         {getCaptionText()}
       </p>
     </div>
