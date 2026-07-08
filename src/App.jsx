@@ -13,6 +13,7 @@ import { Prevention } from './pages/Prevention';
 import { Research } from './pages/Research';
 import { useResearchNotifications } from './hooks/useResearchNotifications';
 import { useFirebase } from './hooks/useFirebase';
+import { usePushNotifications } from './hooks/usePushNotifications';
 import { useDeepLinks } from './hooks/useDeepLinks';
 
 function AppContent() {
@@ -21,10 +22,10 @@ function AppContent() {
   // Initialize Native Features.
   // Firebase Analytics + Crashlytics (guarded — no-ops until google-services.json is added).
   useFirebase();
-  // NOTE: remote push (usePushNotifications) is intentionally NOT initialized —
-  // the old @capacitor/push-notifications register() crashed natively without Firebase.
-  // FCM push will be re-added via @capacitor-firebase/messaging once Firebase is set up.
-  // Periodic reminders currently use local notifications (useResearchNotifications).
+  // FCM push via @capacitor-firebase/messaging — fully guarded, safe with Firebase configured.
+  // (The old @capacitor/push-notifications register() crashed natively without Firebase; that's solved.)
+  usePushNotifications();
+  // Periodic reminders also use local notifications (useResearchNotifications).
   useResearchNotifications();
   useDeepLinks();
 
