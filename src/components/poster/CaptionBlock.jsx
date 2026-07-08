@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { captions } from '../../data/captions';
 import { getTemplate } from './posterTemplates';
+import { haptics } from '../../hooks/useHaptics';
 
 export const CaptionBlock = ({ type, data, onCopied }) => {
   const [copied, setCopied] = useState(false);
@@ -29,10 +30,12 @@ export const CaptionBlock = ({ type, data, onCopied }) => {
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
+      haptics.success();
       if (onCopied) onCopied();
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy text:', err);
+      haptics.error();
     }
   };
 

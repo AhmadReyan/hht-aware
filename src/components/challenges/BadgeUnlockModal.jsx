@@ -20,7 +20,7 @@ export const BadgeUnlockModal = ({ badge, onClose }) => {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.85, opacity: 0 }}
             transition={{ type: 'spring', damping: 16, stiffness: 260 }}
-            className="relative w-full max-w-xs bg-app-dark2 border border-brand-orange/30 rounded-custom p-6 flex flex-col items-center text-center gap-3 shadow-xl z-10"
+            className="relative w-full max-w-xs bg-app-surface2 border border-brand-orange/30 rounded-custom-lg p-6 flex flex-col items-center text-center gap-3 shadow-xl z-10"
           >
             <Confetti trigger={badge.id} />
 
@@ -37,10 +37,10 @@ export const BadgeUnlockModal = ({ badge, onClose }) => {
               {badge.icon}
             </motion.span>
 
-            <h3 className="font-serif text-xl font-bold text-white leading-tight">
+            <h3 className="font-serif text-xl font-bold text-app-ink leading-tight">
               {badge.title}
             </h3>
-            <p className="text-xs text-app-muted leading-relaxed">{badge.desc}</p>
+            <p className="text-xs text-app-soft leading-relaxed">{badge.desc}</p>
 
             <button
               onClick={onClose}

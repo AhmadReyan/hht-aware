@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProgressTracker } from '../components/challenges/ProgressTracker';
@@ -8,9 +8,12 @@ import { LevelBar } from '../components/challenges/LevelBar';
 import { DailyChallengesSection } from '../components/challenges/DailyChallengesSection';
 import { BadgeGrid } from '../components/challenges/BadgeGrid';
 import { BadgeUnlockModal } from '../components/challenges/BadgeUnlockModal';
+import { LevelUpCelebration } from '../components/challenges/LevelUpCelebration';
 import { challenges } from '../data/challenges';
 import { useAppStore } from '../store/useAppStore';
 import { Toast } from '../components/ui/Toast';
+import { staggerContainer } from '../lib/motion';
+import { haptics } from '../hooks/useHaptics';
 import { Award, Medal } from 'lucide-react';
 
 export const Challenges = () => {
@@ -38,17 +41,13 @@ export const Challenges = () => {
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
   const [celebratingBadge, setCelebratingBadge] = useState(null);
+  const [celebratingLevel, setCelebratingLevel] = useState(null);
 
   // Record a day of activity as soon as the user opens the Challenges tab
   useEffect(() => {
     recordActivity();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const listContainer = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
 
   const completedCount = completedChallenges.length;
 
@@ -62,6 +61,19 @@ export const Challenges = () => {
   const levelInfo = getLevelInfo();
   const badges = getBadges();
 
+  // Detect genuine level-ups (never on initial mount) to fire a one-time
+  // full-screen celebration. The ref is seeded with the level seen on first
+  // render, so mounting itself never counts as a "level up".
+  const prevLevelRef = useRef(levelInfo.level);
+  useEffect(() => {
+    if (levelInfo.level > prevLevelRef.current) {
+      haptics.success();
+      setCelebratingLevel(levelInfo);
+    }
+    prevLevelRef.current = levelInfo.level;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [levelInfo.level]);
+
   const showCustomToast = (msg) => {
     setToastText(msg);
     setShowToast(true);
@@ -74,6 +86,7 @@ export const Challenges = () => {
     if (newBadgeIds.length > 0) {
       const badgeToShow = getBadges().find((b) => b.id === newBadgeIds[0]);
       if (badgeToShow) {
+        haptics.success();
         setCelebratingBadge(badgeToShow);
       }
       markBadgesSeen(newBadgeIds);
@@ -123,19 +136,25 @@ export const Challenges = () => {
         {/* Header Title */}
         <section className="flex flex-col gap-1 px-1">
           <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
-            <Award className="text-brand-red-mid" size={24} />
+            <motion.span
+              animate={{ rotate: [0, -8, 8, 0] }}
+              transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 3, ease: 'easeInOut' }}
+              className="inline-flex"
+            >
+              <Award className="text-brand-red-mid" size={24} />
+            </motion.span>
             <span>Awareness Challenges</span>
           </h1>
-          <p className="text-xs text-app-muted leading-relaxed">
+          <p className="text-xs text-app-soft leading-relaxed">
             Build a daily habit of spreading HHT awareness and caring for yourself. Level up, keep your streak alive, and unlock badges along the way!
           </p>
         </section>
 
-        {/* Streak + Level Header */}
-        <section className="flex gap-2.5">
-          <StreakWidget currentStreak={currentStreak} longestStreak={longestStreak} />
-          <LevelBar levelInfo={levelInfo} />
-        </section>
+        {/* Hero: Level / XP */}
+        <LevelBar levelInfo={levelInfo} />
+
+        {/* Streak flame */}
+        <StreakWidget currentStreak={currentStreak} longestStreak={longestStreak} />
 
         {/* Daily Challenges */}
         <DailyChallengesSection
@@ -161,7 +180,7 @@ export const Challenges = () => {
           <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Current Challenges</h2>
           <motion.div
             className="flex flex-col gap-3"
-            variants={listContainer}
+            variants={staggerContainer}
             initial="hidden"
             animate="show"
           >
@@ -190,6 +209,7 @@ export const Challenges = () => {
 
       <Toast message={toastText} isOpen={showToast} onClose={() => setShowToast(false)} />
       <BadgeUnlockModal badge={celebratingBadge} onClose={() => setCelebratingBadge(null)} />
+      <LevelUpCelebration levelInfo={celebratingLevel} onClose={() => setCelebratingLevel(null)} />
     </PageWrapper>
   );
 };

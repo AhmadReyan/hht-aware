@@ -1,8 +1,11 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, ArrowRight } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, Circle, ArrowRight, Lock } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { useNavigate } from 'react-router-dom';
+import { Confetti } from './Confetti';
+import { spring } from '../../lib/motion';
+import { haptics } from '../../hooks/useHaptics';
 
 export const ChallengeCard = ({
   challenge,
@@ -13,17 +16,32 @@ export const ChallengeCard = ({
 }) => {
   const navigate = useNavigate();
   const { id, icon, title, desc, pts, tag, link } = challenge;
+  const locked = id === 10 && !isUnlocked;
+
+  const wasDoneRef = useRef(isDone);
+  const [burst, setBurst] = useState(null);
+
+  // Confetti + a little celebration only on the actual completion moment.
+  useEffect(() => {
+    if (isDone && !wasDoneRef.current) {
+      setBurst(Date.now());
+    }
+    wasDoneRef.current = isDone;
+  }, [isDone]);
 
   const handleCardClick = () => {
-    if (id === 10 && !isUnlocked) {
+    if (locked) {
+      haptics.warning();
       onShowLockedWarning();
       return;
     }
+    haptics.tap();
     onToggle(id);
   };
 
   const handleLinkClick = (e) => {
     e.stopPropagation();
+    haptics.tap();
     if (link) {
       if (link.startsWith('http')) {
         window.open(link, '_blank', 'noopener,noreferrer');
@@ -41,31 +59,48 @@ export const ChallengeCard = ({
   return (
     <motion.div
       variants={cardVariants}
-      whileTap={{ scale: 0.98 }}
+      whileTap={{ scale: locked ? 1 : 0.98 }}
       onClick={handleCardClick}
       className={`
-        relative overflow-hidden border rounded-custom p-4 flex gap-3.5 items-start cursor-pointer transition-all select-none
+        relative overflow-visible border rounded-custom p-4 flex gap-3.5 items-start cursor-pointer transition-all select-none
         ${isDone
-          ? 'bg-brand-red/10 border-brand-red-mid/30 text-white shadow-sm'
-          : id === 10 && !isUnlocked
-            ? 'bg-app-dark2/40 border-app-border/5 opacity-55 cursor-not-allowed text-app-muted'
-            : 'bg-app-dark2 border-app-border/10 text-white hover:border-app-border/20'
+          ? 'bg-brand-red/10 border-brand-red-mid/30 text-white shadow-card'
+          : locked
+            ? 'bg-app-surface2/40 border-app-glass/40 opacity-55 cursor-not-allowed text-app-muted'
+            : 'bg-app-surface2 border-app-glass text-white hover:border-brand-teal/20'
         }
       `}
     >
+      <Confetti trigger={burst} count={20} />
+
       {/* Check Icon */}
       <div className="mt-0.5 flex-shrink-0">
-        {isDone ? (
-          <CheckCircle2 className="text-brand-red-mid fill-brand-red-mid/20" size={20} />
-        ) : (
-          <Circle className="text-app-muted" size={20} />
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {locked ? (
+            <motion.div key="lock" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+              <Lock className="text-app-muted" size={18} />
+            </motion.div>
+          ) : isDone ? (
+            <motion.div
+              key="done"
+              initial={{ scale: 0.4, rotate: -30, opacity: 0 }}
+              animate={{ scale: 1, rotate: 0, opacity: 1 }}
+              transition={spring.bouncy}
+            >
+              <CheckCircle2 className="text-brand-red-mid fill-brand-red-mid/20" size={20} />
+            </motion.div>
+          ) : (
+            <motion.div key="undone" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={spring.soft}>
+              <Circle className="text-app-muted" size={20} />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Info */}
-      <div className="flex-1 flex flex-col gap-1 pr-1">
+      <div className="flex-1 flex flex-col gap-1 pr-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <h3 className={`font-sans font-bold text-sm leading-snug ${isDone ? 'text-brand-red-light' : 'text-white'}`}>
+          <h3 className={`font-sans font-bold text-sm leading-snug ${isDone ? 'text-brand-red-light' : 'text-app-ink'}`}>
             <span className="mr-1.5">{icon}</span>
             {title}
           </h3>
@@ -73,7 +108,7 @@ export const ChallengeCard = ({
             +{pts} Pts
           </Badge>
         </div>
-        
+
         <p className="text-[11px] text-app-muted leading-relaxed">
           {desc}
         </p>
@@ -83,8 +118,8 @@ export const ChallengeCard = ({
           <Badge variant={isDone ? 'red' : 'default'} size="sm" className="text-[9px]">
             {tag}
           </Badge>
-          
-          {link && !isDone && (id !== 10 || isUnlocked) && (
+
+          {link && !isDone && !locked && (
             <button
               onClick={handleLinkClick}
               className="text-[10px] text-brand-teal font-bold flex items-center gap-0.5 hover:underline cursor-pointer select-none"

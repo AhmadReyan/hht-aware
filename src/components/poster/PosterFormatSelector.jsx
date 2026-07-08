@@ -1,5 +1,7 @@
 import { Square, RectangleVertical, Smartphone } from 'lucide-react';
+import { Segmented, SegmentedButton } from 'konsta/react';
 import { FORMATS } from './posterFormats';
+import { haptics } from '../../hooks/useHaptics';
 
 const ICONS = {
   square: Square,
@@ -8,31 +10,35 @@ const ICONS = {
 };
 
 export const PosterFormatSelector = ({ activeFormat, onSelectFormat }) => {
+  const handleSelect = (id) => {
+    if (id !== activeFormat) haptics.selection();
+    onSelectFormat(id);
+  };
+
   return (
     <div className="flex flex-col gap-2">
       <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Size / Format</h2>
-      <div className="w-full flex bg-app-dark rounded-custom border border-app-border/10 p-1 gap-1">
+      <Segmented strong rounded>
         {FORMATS.map((format) => {
           const isActive = activeFormat === format.id;
           const Icon = ICONS[format.icon] || Square;
           return (
-            <button
+            <SegmentedButton
               key={format.id}
-              onClick={() => onSelectFormat(format.id)}
-              className={`
-                flex-1 flex flex-col items-center gap-1 py-2.5 px-2 rounded-custom-sm transition-all select-none
-                ${isActive ? 'bg-brand-red text-white shadow-sm' : 'text-app-muted hover:text-white'}
-              `}
+              type="button"
+              active={isActive}
+              rounded
+              strong
+              onClick={() => handleSelect(format.id)}
+              className="flex-col gap-0.5 min-h-[52px] select-none"
             >
-              <Icon size={18} />
+              <Icon size={17} />
               <span className="text-[11px] font-bold leading-none">{format.label}</span>
-              <span className={`text-[9px] leading-none ${isActive ? 'text-white/70' : 'text-app-muted/70'}`}>
-                {format.sub}
-              </span>
-            </button>
+              <span className="text-[9px] leading-none opacity-70">{format.sub}</span>
+            </SegmentedButton>
           );
         })}
-      </div>
+      </Segmented>
     </div>
   );
 };

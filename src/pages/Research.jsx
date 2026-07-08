@@ -5,9 +5,12 @@ import { ResearchSpotlight } from '../components/research/ResearchSpotlight';
 import { ResearchFilter } from '../components/research/ResearchFilter';
 import { ResearchCard } from '../components/research/ResearchCard';
 import { ExplainerChips } from '../components/research/ExplainerChips';
+import { ResearchSwipeStack } from '../components/research/ResearchSwipeStack';
+import { SavedForAppointment } from '../components/research/SavedForAppointment';
 import { useResearchFeed } from '../hooks/useResearchFeed';
+import { useAppStore } from '../store/useAppStore';
 import { researchCategories, researchExplainers } from '../data/research';
-import { Microscope, CheckCheck, ShieldQuestion } from 'lucide-react';
+import { Microscope, CheckCheck, ShieldQuestion, Stethoscope } from 'lucide-react';
 
 const feedListVariants = {
   hidden: {},
@@ -19,29 +22,85 @@ const feedItemVariants = {
 };
 
 export const Research = () => {
-  const { updates, featured, isSeen, unseenCount, markSeen, markAllSeen } = useResearchFeed();
+  const {
+    updates,
+    featured,
+    isSeen,
+    unseenCount,
+    markSeen,
+    markAllSeen,
+    stackItems,
+    resolveStackItem,
+  } = useResearchFeed();
+
   const [activeCategory, setActiveCategory] = useState('all');
+  const [savedOpen, setSavedOpen] = useState(false);
+
+  // Subscribe reactively so the badge count updates the moment a card is saved.
+  const savedCount = useAppStore((s) => s.savedForAppt.length);
+  const toggleSavedForAppt = useAppStore((s) => s.toggleSavedForAppt);
 
   const filtered = useMemo(() => {
     if (activeCategory === 'all') return updates;
     return updates.filter((u) => u.category === activeCategory);
   }, [updates, activeCategory]);
 
+  // Swipe-stack handlers — resolve removes the item from the stack pool.
+  const handleStackSave = (id) => {
+    // Save-for-appointment is idempotent here; only add if not already saved.
+    if (!useAppStore.getState().savedForAppt.includes(id)) {
+      toggleSavedForAppt(id);
+    }
+    markSeen(id);
+    resolveStackItem(id);
+  };
+  const handleStackDismiss = (id) => {
+    markSeen(id);
+    resolveStackItem(id);
+  };
+
   return (
     <PageWrapper>
       <div className="flex flex-col gap-5 font-sans">
         {/* Header */}
-        <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
-            <Microscope className="text-brand-red-mid" size={24} />
-            <span>Research, Made Simple</span>
-          </h1>
-          <p className="text-xs text-app-muted leading-relaxed">
-            The latest HHT science and news — rewritten in plain, hopeful language. No medical degree needed.
-            {unseenCount > 0 && (
-              <span className="text-brand-red-mid font-bold"> {unseenCount} new to explore.</span>
-            )}
-          </p>
+        <section className="flex flex-col gap-2 px-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex flex-col gap-1">
+              <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
+                <Microscope className="text-brand-red-mid" size={24} />
+                <span>Research, Made Simple</span>
+              </h1>
+              <p className="text-xs text-app-muted leading-relaxed">
+                The latest HHT science — rewritten in plain, hopeful language.
+                {unseenCount > 0 && (
+                  <span className="text-brand-red-mid font-bold"> {unseenCount} new to explore.</span>
+                )}
+              </p>
+            </div>
+            {/* Saved-for-appointment opener */}
+            <button
+              type="button"
+              onClick={() => setSavedOpen(true)}
+              aria-label="Open my saved appointment list"
+              className="relative flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-custom bg-app-dark2 border border-app-border/15 text-brand-teal active:scale-90 transition-all"
+            >
+              <Stethoscope size={20} />
+              {savedCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-brand-teal text-white text-[10px] font-bold">
+                  {savedCount}
+                </span>
+              )}
+            </button>
+          </div>
+        </section>
+
+        {/* This Week in Science — swipe stack */}
+        <section>
+          <ResearchSwipeStack
+            items={stackItems}
+            onSave={handleStackSave}
+            onDismiss={handleStackDismiss}
+          />
         </section>
 
         {/* Research of the Week spotlight */}
@@ -122,6 +181,13 @@ export const Research = () => {
           </p>
         </section>
       </div>
+
+      {/* Saved-for-appointment bottom sheet */}
+      <SavedForAppointment
+        opened={savedOpen}
+        onClose={() => setSavedOpen(false)}
+        allUpdates={updates}
+      />
     </PageWrapper>
   );
 };

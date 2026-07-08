@@ -1,4 +1,7 @@
 import React from 'react';
+import { motion } from 'framer-motion';
+import { haptics } from '../../hooks/useHaptics';
+import { spring } from '../../lib/motion';
 
 export const ManifestationsSelector = ({ selected = [], onChange }) => {
   const options = [
@@ -13,6 +16,7 @@ export const ManifestationsSelector = ({ selected = [], onChange }) => {
   ];
 
   const handleToggle = (key) => {
+    haptics.selection();
     let updated;
     if (selected.includes(key)) {
       updated = selected.filter(item => item !== key);
@@ -31,20 +35,22 @@ export const ManifestationsSelector = ({ selected = [], onChange }) => {
         {options.map((opt) => {
           const isSelected = selected.includes(opt.key);
           return (
-            <button
+            <motion.button
               key={opt.key}
               type="button"
+              whileTap={{ scale: 0.94 }}
+              transition={spring.snappy}
               onClick={() => handleToggle(opt.key)}
               className={`
-                px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold border transition-all select-none
-                ${isSelected 
-                  ? 'bg-brand-red/10 border-brand-red-mid/50 text-brand-red-mid font-bold scale-[1.02]' 
-                  : 'bg-app-dark2 border-app-border/10 text-app-muted hover:text-white hover:border-app-muted/30'
+                min-h-[38px] px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold border transition-colors select-none
+                ${isSelected
+                  ? 'bg-brand-red/10 border-brand-red-mid/60 text-brand-red-light font-bold shadow-glow'
+                  : 'bg-app-surface2 border-app-border/40 text-app-muted hover:text-app-ink hover:border-app-muted/50'
                 }
               `}
             >
               {opt.label}
-            </button>
+            </motion.button>
           );
         })}
       </div>

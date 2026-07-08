@@ -1,4 +1,7 @@
+import { motion } from 'framer-motion';
 import { Sparkles, Ribbon, Circle, Triangle, Diamond } from 'lucide-react';
+import { haptics } from '../../hooks/useHaptics';
+import { spring } from '../../lib/motion';
 
 const SHAPES = [
   { key: 'circle', label: 'Circle', icon: Circle },
@@ -8,24 +11,29 @@ const SHAPES = [
 ];
 
 const Toggle = ({ label, icon: Icon, checked, onToggle }) => (
-  <button
+  <motion.button
     type="button"
+    whileTap={{ scale: 0.96 }}
+    transition={spring.snappy}
     onClick={onToggle}
     className={`
-      flex items-center gap-2 px-3 py-2 rounded-custom-sm border text-xs font-bold transition-all select-none
+      min-h-[44px] flex items-center gap-2 px-3 py-2 rounded-custom-sm border text-xs font-bold transition-colors select-none
       ${checked
-        ? 'bg-brand-red text-white border-brand-red'
-        : 'bg-app-dark text-app-muted border-app-border/10 hover:text-white'}
+        ? 'bg-ember text-white border-transparent shadow-glow'
+        : 'bg-app-surface2 text-app-soft border-app-border/40 hover:text-app-ink'}
     `}
   >
     <Icon size={15} />
     <span>{label}</span>
     <span className={`ml-auto h-3.5 w-3.5 rounded-full border ${checked ? 'bg-white border-white' : 'border-app-muted'}`} />
-  </button>
+  </motion.button>
 );
 
 export const PosterOptionsPanel = ({ options, onChange }) => {
-  const set = (patch) => onChange({ ...options, ...patch });
+  const set = (patch) => {
+    haptics.tap();
+    onChange({ ...options, ...patch });
+  };
 
   return (
     <div className="flex flex-col gap-3 font-sans">
@@ -52,20 +60,22 @@ export const PosterOptionsPanel = ({ options, onChange }) => {
             const isActive = (options.accentShape || 'circle') === shape.key;
             const Icon = shape.icon;
             return (
-              <button
+              <motion.button
                 key={shape.key}
                 type="button"
+                whileTap={{ scale: 0.94 }}
+                transition={spring.snappy}
                 onClick={() => set({ accentShape: shape.key })}
                 className={`
-                  flex items-center gap-1.5 px-2.5 py-1.5 rounded-custom-pill text-[10px] font-bold border transition-all select-none
+                  min-h-[40px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-custom-pill text-[10px] font-bold border transition-colors select-none
                   ${isActive
-                    ? 'bg-app-dark2 text-white border-brand-red-mid'
-                    : 'bg-app-dark text-app-muted border-app-border/10 hover:text-white'}
+                    ? 'bg-app-surface2 text-app-ink border-brand-teal shadow-glow'
+                    : 'bg-app-surface text-app-muted border-app-border/40 hover:text-app-ink'}
                 `}
               >
                 <Icon size={12} />
                 {shape.label}
-              </button>
+              </motion.button>
             );
           })}
         </div>

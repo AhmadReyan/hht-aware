@@ -11,6 +11,12 @@ import { researchUpdates } from '../data/research';
  */
 
 const SEEN_KEY = 'hht_seen_research';
+const STACK_RESOLVED_KEY = 'hht_research_stack_resolved';
+
+// How many of the newest updates are candidates for the swipeable
+// "This Week in Science" stack. Items leave the stack forever once swiped
+// (saved or dismissed), independent of the read/unread ("seen") state below.
+const STACK_POOL_SIZE = 8;
 
 const safeParse = (raw, fallback) => {
   try {
@@ -66,7 +72,46 @@ export const useResearchFeed = () => {
     setSeenIds(updates.map((u) => u.id));
   }, [updates]);
 
-  return { updates, featured, isSeen, unseenCount, markSeen, markAllSeen };
+  // ---------------------------------------------------------------------
+  // "This Week in Science" swipe stack — a small rotating pool of the
+  // newest updates. Swiping (or tapping a button) either saves an item for
+  // the user's next appointment or dismisses it; either way it leaves the
+  // stack for good (tracked in its own localStorage key so it never
+  // collides with the general "seen" tracking above).
+  // ---------------------------------------------------------------------
+  const [resolvedStackIds, setResolvedStackIds] = useState(() =>
+    safeParse(localStorage.getItem(STACK_RESOLVED_KEY), [])
+  );
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STACK_RESOLVED_KEY, JSON.stringify(resolvedStackIds));
+    } catch {
+      /* storage unavailable — non-fatal */
+    }
+  }, [resolvedStackIds]);
+
+  const resolvedStackSet = useMemo(() => new Set(resolvedStackIds), [resolvedStackIds]);
+
+  const stackItems = useMemo(
+    () => updates.slice(0, STACK_POOL_SIZE).filter((u) => !resolvedStackSet.has(u.id)),
+    [updates, resolvedStackSet]
+  );
+
+  const resolveStackItem = useCallback((id) => {
+    setResolvedStackIds((prev) => (prev.includes(id) ? prev : [...prev, id]));
+  }, []);
+
+  return {
+    updates,
+    featured,
+    isSeen,
+    unseenCount,
+    markSeen,
+    markAllSeen,
+    stackItems,
+    resolveStackItem,
+  };
 };
 
 export default useResearchFeed;

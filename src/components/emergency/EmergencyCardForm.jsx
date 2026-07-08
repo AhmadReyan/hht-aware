@@ -8,14 +8,15 @@ export const EmergencyCardForm = ({ data, onChange }) => {
 
   const bloodTypes = ['Unknown', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
-  const inputClass = 'w-full bg-app-surface2 border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
+  const inputClass = 'w-full bg-app-surface2 border border-app-border/40 rounded-custom-sm text-sm px-3.5 py-2.5 text-app-ink placeholder-app-muted focus:outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-colors min-h-[44px]';
+  const labelClass = 'font-bold text-xs uppercase tracking-wider text-app-muted';
 
   return (
-    <form className="flex flex-col gap-4 font-sans text-white">
+    <form className="flex flex-col gap-4 font-sans text-app-ink">
       {/* Name and DOB */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Full Name</label>
+          <label className={labelClass}>Full Name</label>
           <input
             type="text"
             placeholder="John Doe"
@@ -25,7 +26,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Date of Birth</label>
+          <label className={labelClass}>Date of Birth</label>
           <input
             type="date"
             value={data.dob || ''}
@@ -38,21 +39,21 @@ export const EmergencyCardForm = ({ data, onChange }) => {
       {/* Blood Type and Allergies */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Blood Type</label>
+          <label className={labelClass}>Blood Type</label>
           <select
             value={data.bloodType || 'Unknown'}
             onChange={(e) => handleChange('bloodType', e.target.value)}
             className={`${inputClass} appearance-none cursor-pointer`}
           >
             {bloodTypes.map((type) => (
-              <option key={type} value={type} className="bg-app-dark2">
+              <option key={type} value={type} className="bg-app-surface2">
                 {type}
               </option>
             ))}
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Drug Allergies</label>
+          <label className={labelClass}>Drug Allergies</label>
           <input
             type="text"
             placeholder="e.g. Penicillin, Aspirin"
@@ -66,7 +67,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
       {/* Specialist Name & Phone */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">HHT Specialist/Hospital</label>
+          <label className={labelClass}>HHT Specialist/Hospital</label>
           <input
             type="text"
             placeholder="Dr. Smith / Mayo Clinic"
@@ -76,7 +77,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Specialist Phone</label>
+          <label className={labelClass}>Specialist Phone</label>
           <input
             type="tel"
             placeholder="+1 (555) 019-2834"
@@ -90,7 +91,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
       {/* Emergency Contact Name & Phone */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Emergency Contact Name</label>
+          <label className={labelClass}>Emergency Contact Name</label>
           <input
             type="text"
             placeholder="Jane Doe (Spouse)"
@@ -100,7 +101,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Emergency Contact Phone</label>
+          <label className={labelClass}>Emergency Contact Phone</label>
           <input
             type="tel"
             placeholder="+1 (555) 987-6543"
@@ -119,7 +120,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
 
       {/* Additional Notes */}
       <div className="flex flex-col gap-1.5">
-        <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Additional Medical Notes / Medications</label>
+        <label className={labelClass}>Additional Medical Notes / Medications</label>
         <textarea
           rows={3}
           placeholder="e.g. Taking Bevacizumab, history of severe epistaxis, lung AVM coil embolization in 2022."

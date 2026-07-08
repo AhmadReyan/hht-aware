@@ -10,26 +10,60 @@ import { FactPosterControls } from '../components/poster/FactPosterControls';
 import { StoryPosterControls } from '../components/poster/StoryPosterControls';
 import { GenericPosterControls } from '../components/poster/GenericPosterControls';
 import { CaptionBlock } from '../components/poster/CaptionBlock';
+import { SavedCreationsShelf } from '../components/poster/SavedCreationsShelf';
+import { SavePosterSheet } from '../components/poster/SavePosterSheet';
 import { getTemplate, buildDefaultData } from '../components/poster/posterTemplates';
+import { getTheme } from '../components/poster/posterThemes';
+import { getFormat } from '../components/poster/posterFormats';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Toast } from '../components/ui/Toast';
-import { Download, Share2, Palette } from 'lucide-react';
+import { Download, Share2, Palette, Save } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
+import { haptics } from '../hooks/useHaptics';
+import { TapScale } from '../lib/motion';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
 import { Capacitor } from '@capacitor/core';
+
+// Downscale the currently-rendered poster PNG into a small JPEG thumbnail so
+// saved creations can show their real look in the "My Creations" shelf.
+const makeThumbnail = (url, targetWidth = 280) =>
+  new Promise((resolve) => {
+    if (!url) {
+      resolve(null);
+      return;
+    }
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const ratio = img.height / img.width || 1;
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = Math.round(targetWidth * ratio);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      } catch {
+        resolve(null);
+      }
+    };
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+
+const defaultOptions = {
+  pattern: true,
+  ribbon: false,
+  ribbonStyle: 'vector',
+  accentShape: 'circle',
+};
 
 export const PosterStudio = () => {
   const [posterType, setPosterType] = useState('awareness');
   const [themeId, setThemeId] = useState('classic');
   const [formatId, setFormatId] = useState('square');
-  const [options, setOptions] = useState({
-    pattern: true,
-    ribbon: false,
-    ribbonStyle: 'vector',
-    accentShape: 'circle',
-  });
+  const [options, setOptions] = useState(defaultOptions);
 
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
@@ -54,6 +88,11 @@ export const PosterStudio = () => {
 
   const [renderedBlob, setRenderedBlob] = useState(null);
   const [renderedUrl, setRenderedUrl] = useState('');
+
+  // Saved-creations wiring — the currently loaded/edited saved poster (if any).
+  const { savedPosters, savePoster, deletePoster } = useAppStore();
+  const [activePosterId, setActivePosterId] = useState(null);
+  const [saveSheetOpen, setSaveSheetOpen] = useState(false);
 
   const showCustomToast = (msg) => {
     setToastText(msg);
@@ -88,6 +127,7 @@ export const PosterStudio = () => {
 
   const handleDownload = async () => {
     if (!renderedUrl || !renderedBlob) return;
+    haptics.impact();
 
     if (Capacitor.isNativePlatform()) {
       try {
@@ -107,11 +147,13 @@ export const PosterStudio = () => {
             title: 'HHT Awareness Poster',
             url: savedFile.uri,
           });
+          haptics.success();
           showCustomToast('Poster ready to save/share! 🎨');
           triggerChallengeOne();
         };
       } catch (err) {
         console.error('Download failed:', err);
+        haptics.error();
         showCustomToast('Failed to process image.');
       }
     } else {
@@ -121,6 +163,7 @@ export const PosterStudio = () => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      haptics.success();
       showCustomToast('Poster downloaded successfully! 🎨');
       triggerChallengeOne();
     }
@@ -135,6 +178,63 @@ export const PosterStudio = () => {
   };
 
   const activeTemplate = getTemplate(posterType);
+  const activeTheme = getTheme(themeId);
+  const activeFormat = getFormat(formatId);
+
+  // ---- Saved creations: save / load / delete -------------------------------
+  const openSaveSheet = () => {
+    haptics.tap();
+    setSaveSheetOpen(true);
+  };
+
+  const buildDefaultTitle = () => {
+    if (activePosterId) {
+      const existing = savedPosters.find((p) => p.id === activePosterId);
+      if (existing) return existing.title;
+    }
+    return `${activeTemplate.label.replace(/^\S+\s*/, '')} · ${activeTheme.name}`;
+  };
+
+  const handleConfirmSave = async (title) => {
+    const thumbnail = await makeThumbnail(renderedUrl);
+    const id = savePoster({
+      id: activePosterId || undefined,
+      title: title || 'Untitled Poster',
+      type: posterType,
+      themeId,
+      formatId,
+      options,
+      data: getActiveData(),
+      thumbnail,
+    });
+    setActivePosterId(id);
+    setSaveSheetOpen(false);
+    haptics.success();
+    showCustomToast(activePosterId ? 'Creation updated! ✨' : 'Saved to My Creations! ✨');
+  };
+
+  const handleLoadPoster = (poster) => {
+    haptics.selection();
+    setPosterType(poster.type);
+    setThemeId(poster.themeId);
+    setFormatId(poster.formatId);
+    setOptions(poster.options || defaultOptions);
+
+    if (poster.type === 'awareness') setAwarenessData(poster.data || {});
+    else if (poster.type === 'fact') setFactData(poster.data || {});
+    else if (poster.type === 'story') setStoryData(poster.data || {});
+    else setTemplateData((prev) => ({ ...prev, [poster.type]: poster.data || {} }));
+
+    setActivePosterId(poster.id);
+    showCustomToast(`Loaded "${poster.title}" into the editor`);
+  };
+
+  const handleDeletePoster = (id) => {
+    const target = savedPosters.find((p) => p.id === id);
+    deletePoster(id);
+    if (activePosterId === id) setActivePosterId(null);
+    showCustomToast(target ? `Deleted "${target.title}"` : 'Creation deleted.');
+  };
 
   return (
     <PageWrapper>
@@ -144,14 +244,11 @@ export const PosterStudio = () => {
             <Palette className="text-brand-red-mid" size={24} />
             <span>Poster Studio</span>
           </h1>
-          <p className="text-xs text-app-muted">Design beautiful posters to spread HHT awareness.</p>
+          <p className="text-xs text-app-muted">Design beautiful posters to spread HHT awareness — tap, remix, save.</p>
         </section>
 
-        <section>
-          <PosterTypeSelector activeType={posterType} onSelectType={setPosterType} />
-        </section>
-
-        <section className="flex justify-center">
+        {/* Hero live preview — sticky under the header, reacts to every edit. */}
+        <section className="sticky top-14 z-30 -mx-4 px-4 pt-1 pb-3 bg-app-bg/85 backdrop-blur-glass">
           <PosterCanvas
             type={posterType}
             data={getActiveData()}
@@ -160,6 +257,29 @@ export const PosterStudio = () => {
             options={options}
             onRendered={handleCanvasRendered}
           />
+
+          <div className="flex items-center justify-between gap-2 mt-3 max-w-[420px] mx-auto">
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-app-ink truncate">
+                {activeTemplate.label} · {activeTheme.name}
+              </span>
+              <span className="text-[9px] text-app-muted truncate">
+                {activeFormat.sub} · {activeFormat.hint}
+              </span>
+            </div>
+            <TapScale
+              as="button"
+              onClick={openSaveSheet}
+              className="shrink-0 flex items-center gap-1.5 min-h-[44px] bg-app-surface2 border border-brand-teal/40 text-brand-teal-light font-bold text-xs px-4 py-2.5 rounded-custom-pill shadow-card select-none"
+            >
+              <Save size={14} />
+              {activePosterId ? 'Update' : 'Save'}
+            </TapScale>
+          </div>
+        </section>
+
+        <section>
+          <PosterTypeSelector activeType={posterType} onSelectType={setPosterType} />
         </section>
 
         <section>
@@ -196,11 +316,35 @@ export const PosterStudio = () => {
           <CaptionBlock type={posterType} data={getActiveData()} onCopied={() => showCustomToast('Caption copied! 📋')} />
         </section>
 
-        <section className="grid grid-cols-2 gap-3 mb-6">
-          <Button variant="primary" onClick={handleShare} icon={Share2}>Share Image</Button>
-          <Button variant="secondary" onClick={handleDownload} icon={Download}>Download PNG</Button>
+        <section className="grid grid-cols-2 gap-3">
+          <Button variant="teal" onClick={handleShare} icon={Share2} className="min-h-[44px] shadow-glow">Share Image</Button>
+          <Button variant="secondary" onClick={handleDownload} icon={Download} className="min-h-[44px]">Download PNG</Button>
+        </section>
+
+        <section className="flex flex-col gap-3 mb-6">
+          <div className="flex items-center justify-between px-1">
+            <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted">My Creations</h2>
+            {savedPosters.length > 0 && (
+              <span className="text-[10px] text-app-muted">{savedPosters.length} saved</span>
+            )}
+          </div>
+          <SavedCreationsShelf
+            posters={savedPosters}
+            activeId={activePosterId}
+            onSelect={handleLoadPoster}
+            onDelete={handleDeletePoster}
+          />
         </section>
       </div>
+
+      <SavePosterSheet
+        isOpen={saveSheetOpen}
+        onClose={() => setSaveSheetOpen(false)}
+        defaultTitle={buildDefaultTitle()}
+        isUpdate={!!activePosterId}
+        onConfirm={handleConfirmSave}
+      />
+
       <Toast message={toastText} isOpen={showToast} onClose={() => setShowToast(false)} />
     </PageWrapper>
   );
