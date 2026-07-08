@@ -8,7 +8,10 @@ import { PosterStudio } from './pages/PosterStudio';
 import { EmergencyCard } from './pages/EmergencyCard';
 import { Facts } from './pages/Facts';
 import { Challenges } from './pages/Challenges';
+import { Prevention } from './pages/Prevention';
+import { Research } from './pages/Research';
 import { usePushNotifications } from './hooks/usePushNotifications';
+import { useResearchNotifications } from './hooks/useResearchNotifications';
 import { useDeepLinks } from './hooks/useDeepLinks';
 
 function AppContent() {
@@ -16,6 +19,7 @@ function AppContent() {
 
   // Initialize Native Features
   usePushNotifications();
+  useResearchNotifications();
   useDeepLinks();
 
   return (
@@ -31,6 +35,8 @@ function AppContent() {
           <Route path="/emergency" element={<EmergencyCard />} />
           <Route path="/facts" element={<Facts />} />
           <Route path="/challenges" element={<Challenges />} />
+          <Route path="/prevention" element={<Prevention />} />
+          <Route path="/research" element={<Research />} />
         </Routes>
       </div>
 

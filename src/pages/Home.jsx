@@ -8,11 +8,14 @@ import { Button } from '../components/ui/Button';
 import { facts } from '../data/facts';
 import { resources } from '../data/resources';
 import { useShare } from '../hooks/useShare';
-import { Palette, ShieldAlert, BookOpen, Trophy, ExternalLink, Share2, RefreshCw } from 'lucide-react';
+import { useResearchFeed } from '../hooks/useResearchFeed';
+import { ResearchSpotlight } from '../components/research/ResearchSpotlight';
+import { Palette, ShieldAlert, BookOpen, Trophy, HeartPulse, Microscope, ExternalLink, Share2, RefreshCw } from 'lucide-react';
 
 export const Home = () => {
   const navigate = useNavigate();
   const { shareContent, toastMessage, triggerToast } = useShare();
+  const { featured, markSeen } = useResearchFeed();
   const [randomFact, setRandomFact] = useState(facts[0]);
 
   // Rotate a random fact
@@ -42,16 +45,40 @@ export const Home = () => {
 
   const navCards = [
     {
-      title: 'Poster Studio',
-      desc: 'Create social posters',
-      icon: Palette,
+      title: 'Prevention',
+      desc: 'Daily self-care tips',
+      icon: HeartPulse,
+      color: 'teal',
+      path: '/prevention',
+      emoji: '💧'
+    },
+    {
+      title: 'Research',
+      desc: 'Latest, made simple',
+      icon: Microscope,
       color: 'red',
+      path: '/research',
+      emoji: '🔬'
+    },
+    {
+      title: 'Poster Studio',
+      desc: 'Create social banners',
+      icon: Palette,
+      color: 'orange',
       path: '/poster',
       emoji: '🎨'
     },
     {
+      title: 'Challenges',
+      desc: 'Advocate & earn points',
+      icon: Trophy,
+      color: 'red',
+      path: '/challenges',
+      emoji: '🏆'
+    },
+    {
       title: 'Emergency Card',
-      desc: 'ER wallets alert info',
+      desc: 'ER wallet alert info',
       icon: ShieldAlert,
       color: 'dark',
       path: '/emergency',
@@ -64,14 +91,6 @@ export const Home = () => {
       color: 'orange',
       path: '/facts',
       emoji: '📊'
-    },
-    {
-      title: 'Challenges',
-      desc: 'Advocate & earn points',
-      icon: Trophy,
-      color: 'teal',
-      path: '/challenges',
-      emoji: '🏆'
     }
   ];
 
@@ -108,6 +127,20 @@ export const Home = () => {
             </div>
           </div>
         </section>
+
+        {/* Research of the Week — periodic delivery surface */}
+        {featured && (
+          <section>
+            <ResearchSpotlight
+              update={featured}
+              compact
+              onClick={() => {
+                markSeen(featured.id);
+                navigate('/research');
+              }}
+            />
+          </section>
+        )}
 
         {/* 2x2 Grid of Navigation Cards */}
         <section className="flex flex-col gap-3">

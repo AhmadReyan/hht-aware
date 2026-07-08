@@ -1,32 +1,28 @@
-import React from 'react';
+import { TEMPLATES } from './posterTemplates';
 
 export const PosterTypeSelector = ({ activeType = 'awareness', onSelectType }) => {
-  const types = [
-    { key: 'awareness', label: '🎗️ Awareness' },
-    { key: 'fact', label: '📊 HHT Fact' },
-    { key: 'story', label: '📖 My Story' }
-  ];
-
   return (
-    <div className="w-full flex bg-app-dark rounded-custom border border-app-border/10 p-1">
-      {types.map((type) => {
-        const isActive = activeType === type.key;
-        return (
-          <button
-            key={type.key}
-            onClick={() => onSelectType(type.key)}
-            className={`
-              flex-1 py-2 px-3 rounded-custom-sm text-xs font-bold text-center transition-all select-none
-              ${isActive 
-                ? 'bg-brand-red text-white shadow-sm' 
-                : 'text-app-muted hover:text-white'
-              }
-            `}
-          >
-            {type.label}
-          </button>
-        );
-      })}
+    <div className="flex flex-col gap-2">
+      <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Template</h2>
+      <div className="w-full flex gap-1.5 overflow-x-auto snap-x bg-app-dark rounded-custom border border-app-border/10 p-1">
+        {TEMPLATES.map((type) => {
+          const isActive = activeType === type.id;
+          return (
+            <button
+              key={type.id}
+              onClick={() => onSelectType(type.id)}
+              className={`
+                shrink-0 snap-start py-2 px-3.5 rounded-custom-sm text-xs font-bold text-center whitespace-nowrap transition-all select-none
+                ${isActive
+                  ? 'bg-brand-red text-white shadow-sm'
+                  : 'text-app-muted hover:text-white'}
+              `}
+            >
+              {type.label}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };

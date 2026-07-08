@@ -1,9 +1,10 @@
-import React from 'react';
+import { useState } from 'react';
 import { Copy, Check } from 'lucide-react';
 import { captions } from '../../data/captions';
+import { getTemplate } from './posterTemplates';
 
 export const CaptionBlock = ({ type, data, onCopied }) => {
-  const [copied, setCopied] = React.useState(false);
+  const [copied, setCopied] = useState(false);
 
   const getCaptionText = () => {
     if (type === 'awareness') {
@@ -14,6 +15,11 @@ export const CaptionBlock = ({ type, data, onCopied }) => {
     }
     if (type === 'story') {
       return captions.story(data.quote, data.name, data.role);
+    }
+    // New templates supply their own caption builder.
+    const template = getTemplate(type);
+    if (template && typeof template.getCaption === 'function') {
+      return template.getCaption(data);
     }
     return '';
   };

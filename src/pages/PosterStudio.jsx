@@ -1,16 +1,20 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { PosterTypeSelector } from '../components/poster/PosterTypeSelector';
+import { PosterThemeSelector } from '../components/poster/PosterThemeSelector';
+import { PosterFormatSelector } from '../components/poster/PosterFormatSelector';
+import { PosterOptionsPanel } from '../components/poster/PosterOptionsPanel';
 import { PosterCanvas } from '../components/poster/PosterCanvas';
 import { AwarenessPosterControls } from '../components/poster/AwarenessPosterControls';
 import { FactPosterControls } from '../components/poster/FactPosterControls';
 import { StoryPosterControls } from '../components/poster/StoryPosterControls';
+import { GenericPosterControls } from '../components/poster/GenericPosterControls';
 import { CaptionBlock } from '../components/poster/CaptionBlock';
+import { getTemplate, buildDefaultData } from '../components/poster/posterTemplates';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { Toast } from '../components/ui/Toast';
 import { Download, Share2, Palette } from 'lucide-react';
-import { useShare } from '../hooks/useShare';
 import { useAppStore } from '../store/useAppStore';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Share } from '@capacitor/share';
@@ -18,25 +22,35 @@ import { Capacitor } from '@capacitor/core';
 
 export const PosterStudio = () => {
   const [posterType, setPosterType] = useState('awareness');
-  const { shareContent } = useShare();
+  const [themeId, setThemeId] = useState('classic');
+  const [formatId, setFormatId] = useState('square');
+  const [options, setOptions] = useState({
+    pattern: true,
+    ribbon: false,
+    ribbonStyle: 'vector',
+    accentShape: 'circle',
+  });
+
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
 
+  // Legacy templates keep their bespoke shapes/controls.
   const [awarenessData, setAwarenessData] = useState({
     headline: 'HHT is Real. HHT is Rare.',
-    body: 'Hereditary Hemorrhagic Telangiectasia is a genetic vascular disorder that affects 1 in 5,000 people.'
+    body: 'Hereditary Hemorrhagic Telangiectasia is a genetic vascular disorder that affects 1 in 5,000 people.',
   });
-
   const [factData, setFactData] = useState({
     stat: '1 in 5,000',
-    body: 'people have HHT worldwide. Over 90% remain undiagnosed.'
+    body: 'people have HHT worldwide. Over 90% remain undiagnosed.',
   });
-
   const [storyData, setStoryData] = useState({
     quote: 'Sharing my story makes an invisible disease visible.',
     name: 'Alex Rivera',
-    role: 'HHT Patient'
+    role: 'HHT Patient',
   });
+
+  // New templates share one keyed data map seeded from their defaults.
+  const [templateData, setTemplateData] = useState(() => buildDefaultData());
 
   const [renderedBlob, setRenderedBlob] = useState(null);
   const [renderedUrl, setRenderedUrl] = useState('');
@@ -51,21 +65,17 @@ export const PosterStudio = () => {
     setRenderedUrl(url);
   }, []);
 
+  const isLegacy = posterType === 'awareness' || posterType === 'fact' || posterType === 'story';
+
   const getActiveData = () => {
     if (posterType === 'awareness') return awarenessData;
     if (posterType === 'fact') return factData;
-    return storyData;
+    if (posterType === 'story') return storyData;
+    return templateData[posterType] || {};
   };
 
-  const getCaptionText = () => {
-    const data = getActiveData();
-    if (posterType === 'awareness') {
-      return `HHT affects 1 in 5,000 people. #HHTAwareness`;
-    }
-    if (posterType === 'fact') {
-      return `HHT Fact: ${data.stat} — ${data.body} #HHT`;
-    }
-    return `"${data.quote}" — ${data.name} #HHTAwareness`;
+  const updateTemplateData = (next) => {
+    setTemplateData((prev) => ({ ...prev, [posterType]: next }));
   };
 
   const triggerChallengeOne = () => {
@@ -85,12 +95,12 @@ export const PosterStudio = () => {
         reader.readAsDataURL(renderedBlob);
         reader.onloadend = async () => {
           const base64data = reader.result.split(',')[1];
-          const fileName = `HHT-Poster-${posterType}.png`;
+          const fileName = `HHT-Poster-${posterType}-${formatId}.png`;
 
           const savedFile = await Filesystem.writeFile({
             path: fileName,
             data: base64data,
-            directory: Directory.Cache
+            directory: Directory.Cache,
           });
 
           await Share.share({
@@ -107,7 +117,7 @@ export const PosterStudio = () => {
     } else {
       const link = document.createElement('a');
       link.href = renderedUrl;
-      link.download = `HHT-Awareness-${posterType}-Poster.png`;
+      link.download = `HHT-Awareness-${posterType}-${formatId}-Poster.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -121,8 +131,10 @@ export const PosterStudio = () => {
       showCustomToast('Poster is rendering...');
       return;
     }
-    await handleDownload(); // In native, download triggers share which is what they want
+    await handleDownload(); // On native, download triggers the share sheet.
   };
+
+  const activeTemplate = getTemplate(posterType);
 
   return (
     <PageWrapper>
@@ -132,7 +144,7 @@ export const PosterStudio = () => {
             <Palette className="text-brand-red-mid" size={24} />
             <span>Poster Studio</span>
           </h1>
-          <p className="text-xs text-app-muted">Design posters to spread HHT awareness.</p>
+          <p className="text-xs text-app-muted">Design beautiful posters to spread HHT awareness.</p>
         </section>
 
         <section>
@@ -140,7 +152,22 @@ export const PosterStudio = () => {
         </section>
 
         <section className="flex justify-center">
-          <PosterCanvas type={posterType} data={getActiveData()} onRendered={handleCanvasRendered} />
+          <PosterCanvas
+            type={posterType}
+            data={getActiveData()}
+            theme={themeId}
+            format={formatId}
+            options={options}
+            onRendered={handleCanvasRendered}
+          />
+        </section>
+
+        <section>
+          <PosterFormatSelector activeFormat={formatId} onSelectFormat={setFormatId} />
+        </section>
+
+        <section>
+          <PosterThemeSelector activeTheme={themeId} onSelectTheme={setThemeId} />
         </section>
 
         <section className="flex flex-col gap-3">
@@ -149,6 +176,19 @@ export const PosterStudio = () => {
             {posterType === 'awareness' && <AwarenessPosterControls data={awarenessData} onChange={setAwarenessData} />}
             {posterType === 'fact' && <FactPosterControls data={factData} onChange={setFactData} />}
             {posterType === 'story' && <StoryPosterControls data={storyData} onChange={setStoryData} />}
+            {!isLegacy && (
+              <GenericPosterControls
+                template={activeTemplate}
+                data={templateData[posterType] || {}}
+                onChange={updateTemplateData}
+              />
+            )}
+          </Card>
+        </section>
+
+        <section>
+          <Card variant="dark" className="p-5 border-app-border/5">
+            <PosterOptionsPanel options={options} onChange={setOptions} />
           </Card>
         </section>
 

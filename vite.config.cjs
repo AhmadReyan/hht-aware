@@ -1,6 +1,18 @@
-// Polyfill crypto for Node < 19 where globalThis.crypto is not defined
-if (typeof globalThis.crypto === 'undefined') {
-  globalThis.crypto = require('node:crypto').webcrypto || require('node:crypto');
+// Polyfill crypto for Node < 19 where globalThis.crypto is not a usable global.
+// On Node 18 `globalThis.crypto` is a getter-only accessor returning undefined, so a
+// plain assignment silently no-ops — workbox's `crypto.*` then throws "crypto is not
+// defined". defineProperty forcibly installs the WebCrypto implementation so
+// `vite-plugin-pwa`'s service-worker generation works without a runtime flag.
+if (!globalThis.crypto || typeof globalThis.crypto.subtle === 'undefined') {
+  const { webcrypto } = require('node:crypto');
+  if (webcrypto) {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: webcrypto,
+      configurable: true,
+      writable: true,
+      enumerable: false,
+    });
+  }
 }
 
 const { defineConfig } = require('vite');

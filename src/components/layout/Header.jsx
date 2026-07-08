@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
-import { Download, Info } from 'lucide-react';
+import { Download, Info, ShieldAlert } from 'lucide-react';
 
 export const Header = ({ onOpenAbout }) => {
   const { isInstallable, installPWA } = usePWAInstall();
@@ -28,6 +29,14 @@ export const Header = ({ onOpenAbout }) => {
               <span>Install</span>
             </button>
           )}
+
+          <Link
+            to="/emergency"
+            aria-label="Open Emergency Card"
+            className="p-2 hover:bg-app-dark2 text-brand-red-mid hover:text-brand-red-light rounded-full transition-colors active:scale-90"
+          >
+            <ShieldAlert size={20} />
+          </Link>
 
           <button
             onClick={onOpenAbout}
