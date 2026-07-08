@@ -11,15 +11,18 @@ import { Facts } from './pages/Facts';
 import { Challenges } from './pages/Challenges';
 import { Prevention } from './pages/Prevention';
 import { Research } from './pages/Research';
-import { usePushNotifications } from './hooks/usePushNotifications';
 import { useResearchNotifications } from './hooks/useResearchNotifications';
 import { useDeepLinks } from './hooks/useDeepLinks';
 
 function AppContent() {
   const [aboutOpen, setAboutOpen] = useState(false);
 
-  // Initialize Native Features
-  usePushNotifications();
+  // Initialize Native Features.
+  // NOTE: remote push (usePushNotifications) is intentionally NOT initialized —
+  // PushNotifications.register() requires Firebase/FCM (a google-services.json),
+  // which this app does not ship, and calling it crashes the app natively
+  // ("Default FirebaseApp is not initialized"). The app has no push backend;
+  // periodic reminders use local notifications instead (useResearchNotifications).
   useResearchNotifications();
   useDeepLinks();
 
