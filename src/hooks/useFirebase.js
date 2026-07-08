@@ -29,14 +29,15 @@ const SCREEN_NAMES = {
 export const useFirebase = () => {
   const location = useLocation();
 
-  // One-time init: enable collection + record an app_open.
+  // One-time init: enable collection.
+  // NOTE: we intentionally do NOT manually log `app_open` — GA4 auto-collects it
+  // natively, and the plugin's logEvent NPEs on a params-less event.
   useEffect(() => {
     if (!isNative) return;
     (async () => {
       try {
         await FirebaseCrashlytics.setEnabled({ enabled: true });
         await FirebaseAnalytics.setEnabled({ enabled: true });
-        await FirebaseAnalytics.logEvent({ name: 'app_open' });
       } catch (err) {
         // Firebase not configured yet (no google-services.json) — safe no-op.
         console.warn('Firebase init skipped:', err?.message || err);
