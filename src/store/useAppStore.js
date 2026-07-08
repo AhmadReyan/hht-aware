@@ -103,6 +103,27 @@ export const useAppStore = create((set, get) => {
   const parsedSeenBadges = safeParse('hht_seen_badges_v1', []);
   const initialSeenBadges = Array.isArray(parsedSeenBadges) ? parsedSeenBadges : [];
 
+  // Prevention self-care tracker (calorie-app style)
+  const parsedSelfCareToday = safeParse('hht_selfcare_today_v1', {});
+  const initialSelfCareToday = {
+    date: parsedSelfCareToday.date ?? null,
+    done: Array.isArray(parsedSelfCareToday.done) ? parsedSelfCareToday.done : [],
+  };
+  const parsedSelfCareHistory = safeParse('hht_selfcare_history_v1', []);
+  const initialSelfCareHistory = Array.isArray(parsedSelfCareHistory) ? parsedSelfCareHistory : [];
+  const parsedTriggerLog = safeParse('hht_trigger_log_v1', []);
+  const initialTriggerLog = Array.isArray(parsedTriggerLog) ? parsedTriggerLog : [];
+
+  // Studio saved creations
+  const parsedSavedPosters = safeParse('hht_saved_posters_v1', []);
+  const initialSavedPosters = Array.isArray(parsedSavedPosters) ? parsedSavedPosters : [];
+
+  // Research reactions + save-for-appointment
+  const parsedReactions = safeParse('hht_research_reactions_v1', {});
+  const initialReactions = parsedReactions && typeof parsedReactions === 'object' ? parsedReactions : {};
+  const parsedSavedAppt = safeParse('hht_research_saved_v1', []);
+  const initialSavedAppt = Array.isArray(parsedSavedAppt) ? parsedSavedAppt : [];
+
   return {
     // Emergency Card State
     emergencyData: initialEmergency,
@@ -355,6 +376,191 @@ export const useAppStore = create((set, get) => {
         return { seenBadgeIds: updated };
       });
     },
+
+    // -------------------------------------------------------------
+    // Prevention — daily self-care tracker (calorie-app pattern).
+    // Today's checklist under 'hht_selfcare_today_v1'; a rolling
+    // history (last 90 days) under 'hht_selfcare_history_v1' powers
+    // adherence charts & per-item streaks.
+    // -------------------------------------------------------------
+    selfCareToday: initialSelfCareToday,       // { date, done: [key] }
+    selfCareHistory: initialSelfCareHistory,   // [{ date, done: [key] }]
+    triggerLog: initialTriggerLog,             // [{ date, trigger }]
+
+    // Returns today's completed self-care keys (resets across day rollover).
+    getTodaySelfCare: () => {
+      const state = get();
+      const today = getDateString(new Date());
+      if (state.selfCareToday.date !== today) return [];
+      return state.selfCareToday.done;
+    },
+
+    isSelfCareDone: (key) => {
+      return get().getTodaySelfCare().includes(key);
+    },
+
+    // Toggle a regimen item for today; keeps the rolling history in sync.
+    toggleSelfCare: (key) => {
+      set((state) => {
+        const today = getDateString(new Date());
+        const base = state.selfCareToday.date === today
+          ? state.selfCareToday
+          : { date: today, done: [] };
+
+        let done = [...base.done];
+        if (done.includes(key)) {
+          done = done.filter((k) => k !== key);
+        } else {
+          done.push(key);
+        }
+        const newToday = { date: today, done };
+
+        // Upsert today's entry into history (most-recent-last), cap at 90 days.
+        let history = state.selfCareHistory.filter((h) => h.date !== today);
+        history.push({ date: today, done });
+        if (history.length > 90) history = history.slice(history.length - 90);
+
+        safeSetItem('hht_selfcare_today_v1', newToday);
+        safeSetItem('hht_selfcare_history_v1', history);
+        return { selfCareToday: newToday, selfCareHistory: history };
+      });
+      get().recordActivity();
+    },
+
+    // Consecutive days (ending today or yesterday) with at least one item done,
+    // or with a specific `key` done if provided.
+    getSelfCareStreak: (key = null) => {
+      const state = get();
+      const map = new Map(state.selfCareHistory.map((h) => [h.date, h.done]));
+      let streak = 0;
+      const cursor = new Date();
+      // Allow the streak to still count if today isn't logged yet.
+      const todayStr = getDateString(cursor);
+      const todayDone = map.get(todayStr) || [];
+      const todayCounts = key ? todayDone.includes(key) : todayDone.length > 0;
+      if (!todayCounts) cursor.setDate(cursor.getDate() - 1);
+      // Walk backwards while each day qualifies.
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const ds = getDateString(cursor);
+        const done = map.get(ds) || [];
+        const qualifies = key ? done.includes(key) : done.length > 0;
+        if (!qualifies) break;
+        streak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      return streak;
+    },
+
+    // Adherence for the last `days` days: [{ date, count, pct }] oldest→newest.
+    getAdherence: (days = 7, totalItems = 5) => {
+      const state = get();
+      const map = new Map(state.selfCareHistory.map((h) => [h.date, h.done]));
+      const out = [];
+      for (let i = days - 1; i >= 0; i -= 1) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const ds = getDateString(d);
+        const done = map.get(ds) || [];
+        out.push({
+          date: ds,
+          count: done.length,
+          pct: totalItems > 0 ? Math.round((done.length / totalItems) * 100) : 0,
+        });
+      }
+      return out;
+    },
+
+    logTrigger: (trigger) => {
+      set((state) => {
+        const entry = { date: getDateString(new Date()), trigger };
+        let log = [...state.triggerLog, entry];
+        if (log.length > 200) log = log.slice(log.length - 200);
+        safeSetItem('hht_trigger_log_v1', log);
+        return { triggerLog: log };
+      });
+      get().recordActivity();
+    },
+
+    getTriggerCounts: () => {
+      const log = get().triggerLog;
+      return log.reduce((acc, e) => {
+        acc[e.trigger] = (acc[e.trigger] || 0) + 1;
+        return acc;
+      }, {});
+    },
+
+    // -------------------------------------------------------------
+    // Studio — saved poster creations (persisted, re-editable).
+    // -------------------------------------------------------------
+    savedPosters: initialSavedPosters,  // [{ id, title, type, themeId, formatId, options, data, createdAt }]
+
+    savePoster: (poster) => {
+      const id = poster.id || `poster_${new Date().getTime()}_${Math.floor(get().savedPosters.length + 1)}`;
+      set((state) => {
+        const record = { ...poster, id, createdAt: poster.createdAt || getDateString(new Date()) };
+        const existing = state.savedPosters.some((p) => p.id === id);
+        const updated = existing
+          ? state.savedPosters.map((p) => (p.id === id ? record : p))
+          : [record, ...state.savedPosters];
+        safeSetItem('hht_saved_posters_v1', updated);
+        return { savedPosters: updated };
+      });
+      return id;
+    },
+
+    updatePoster: (id, patch) => {
+      set((state) => {
+        const updated = state.savedPosters.map((p) => (p.id === id ? { ...p, ...patch } : p));
+        safeSetItem('hht_saved_posters_v1', updated);
+        return { savedPosters: updated };
+      });
+    },
+
+    deletePoster: (id) => {
+      set((state) => {
+        const updated = state.savedPosters.filter((p) => p.id !== id);
+        safeSetItem('hht_saved_posters_v1', updated);
+        return { savedPosters: updated };
+      });
+    },
+
+    // -------------------------------------------------------------
+    // Research — per-update reactions + "save for my appointment".
+    // -------------------------------------------------------------
+    researchReactions: initialReactions,  // { [updateId]: reactionKey }
+    savedForAppt: initialSavedAppt,        // [updateId]
+
+    toggleReaction: (updateId, reactionKey) => {
+      set((state) => {
+        const current = state.researchReactions[updateId];
+        const next = { ...state.researchReactions };
+        if (current === reactionKey) {
+          delete next[updateId];
+        } else {
+          next[updateId] = reactionKey;
+        }
+        safeSetItem('hht_research_reactions_v1', next);
+        return { researchReactions: next };
+      });
+    },
+
+    getReaction: (updateId) => get().researchReactions[updateId] || null,
+
+    toggleSavedForAppt: (updateId) => {
+      set((state) => {
+        const has = state.savedForAppt.includes(updateId);
+        const updated = has
+          ? state.savedForAppt.filter((id) => id !== updateId)
+          : [updateId, ...state.savedForAppt];
+        safeSetItem('hht_research_saved_v1', updated);
+        return { savedForAppt: updated };
+      });
+    },
+
+    isSavedForAppt: (updateId) => get().savedForAppt.includes(updateId),
+
+    getSavedForAppt: () => get().savedForAppt,
 
     // PWA Install Prompt State
     deferredPrompt: null,

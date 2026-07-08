@@ -46,6 +46,37 @@
   --shadow-card:    0 1px 2px rgba(0,0,0,0.45), 0 8px 24px rgba(0,0,0,0.30);
   --shadow-raised:  0 2px 4px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35);   /* NEW — hero, sheets, modals */
   --shadow-poster:  0 4px 24px rgba(0,0,0,0.15);  /* unchanged — poster canvas only */
+  --shadow-glow:    0 0 0 1px rgba(231,76,60,0.35), 0 8px 30px -6px rgba(231,76,60,0.45);  /* NEW — accent glow */
+
+  /* ---- Design System v3: "Living Vessel" ---- */
+  --radius-xl:    28px;        /* hero surfaces, big sheets */
+
+  /* Glassmorphic surface — translucent fill for elevated glass cards (pair w/ backdrop-blur) */
+  --glass:        rgba(37, 31, 33, 0.62);
+  --glass-border: rgba(244, 238, 240, 0.08);
+
+  /* Aurora / gradient fields — reactive, "alive" backgrounds */
+  --gradient-aurora: radial-gradient(120% 80% at 0% 0%, rgba(231,76,60,0.20) 0%, rgba(231,76,60,0) 55%),
+                     radial-gradient(120% 90% at 100% 10%, rgba(42,168,139,0.16) 0%, rgba(42,168,139,0) 55%),
+                     radial-gradient(140% 120% at 50% 120%, rgba(232,132,60,0.14) 0%, rgba(232,132,60,0) 60%);
+  --gradient-ember:  linear-gradient(135deg, #E74C3C 0%, #C0392B 55%, #922B21 100%);
+  --gradient-teal:   linear-gradient(135deg, #2AA88B 0%, #1E7D68 100%);
+  --gradient-glass:  linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0) 100%);
+}
+
+/* Living aurora backdrop utility — a soft, fixed, animated color field behind content */
+.bg-living {
+  background-color: var(--bg);
+  background-image: var(--gradient-aurora);
+  background-attachment: fixed;
+}
+
+/* Glass surface helper (works with Tailwind backdrop-blur-glass) */
+.surface-glass {
+  background-color: var(--glass);
+  border: 1px solid var(--glass-border);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
 }
 
 body {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
+import { App as KonstaApp } from 'konsta/react';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { AboutModal } from './components/layout/AboutModal';
@@ -59,9 +60,13 @@ function AppContent() {
 function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <Router>
-        <AppContent />
-      </Router>
+      {/* Konsta provides iOS-flavored component theming; `dark` class on <html> keeps it dark.
+          It renders a plain wrapper div, so our own bg/layout classes still drive the look. */}
+      <KonstaApp theme="ios" safeAreas={false} className="bg-transparent">
+        <Router>
+          <AppContent />
+        </Router>
+      </KonstaApp>
     </MotionConfig>
   );
 }
