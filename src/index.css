@@ -1,0 +1,77 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand */
+  --red:          #C0392B;   /* Primary — HHT red */
+  --red-mid:      #E74C3C;   /* Buttons, highlights */
+  --red-light:    #FADBD8;   /* Selected states, backgrounds */
+  --red-dark:     #922B21;   /* Pressed states */
+
+  /* Accent */
+  --orange:       #D35400;   /* Secondary accent */
+  --orange-light: #FDEBD0;   /* Orange backgrounds */
+
+  /* Safe / Info */
+  --teal:         #148F77;   /* Success, safe info */
+  --teal-light:   #D1F2EB;   /* Info backgrounds */
+
+  /* Neutrals */
+  --dark:         #1C1C1E;   /* Primary dark (iOS-style) */
+  --dark2:        #2C2C2E;   /* Card backgrounds */
+  --mid:          #48484A;   /* Body text */
+  --muted:        #8E8E93;   /* Labels, secondary text */
+  --border:       #E5E5EA;   /* Dividers */
+  --bg:           #F2F2F7;   /* App background */
+  --white:        #FFFFFF;   /* Cards */
+
+  /* Typography */
+  --serif:        'DM Serif Display', Georgia, serif;
+  --sans:         'DM Sans', system-ui, sans-serif;
+
+  /* Component Tokens */
+  --radius:       16px;
+  --radius-sm:    10px;
+  --radius-pill:  99px;
+  --shadow-card:  0 2px 12px rgba(0,0,0,0.07);
+  --shadow-poster: 0 4px 24px rgba(0,0,0,0.15);
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--mid);
+  font-family: var(--sans);
+  margin: 0;
+  padding: 0;
+}
+
+/* Custom Scrollbar for clean aesthetics */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: var(--radius-pill);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--mid);
+}
+
+/* Safe areas support */
+.safe-padding-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.safe-padding-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-margin-top {
+  margin-top: env(safe-area-inset-top, 0px);
+}
+.safe-margin-bottom {
+  margin-bottom: env(safe-area-inset-bottom, 0px);
+}

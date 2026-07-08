@@ -1,0 +1,2 @@
+   node generate-assets.js
+   

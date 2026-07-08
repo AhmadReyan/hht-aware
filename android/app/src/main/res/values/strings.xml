@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HHTAware</string>
+    <string name="title_activity_main">HHTAware</string>
+    <string name="package_name">com.hhtaware.app</string>
+    <string name="custom_url_scheme">com.hhtaware.app</string>
+</resources>
