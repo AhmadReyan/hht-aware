@@ -40,7 +40,11 @@ export const Challenges = () => {
 
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
-  const [celebratingBadge, setCelebratingBadge] = useState(null);
+  // Queue of badges awaiting their unlock celebration. When more than one badge
+  // unlocks on a single toggle, we show them one-at-a-time instead of dropping
+  // all but the first. The head of the queue is the badge currently on screen.
+  const [badgeQueue, setBadgeQueue] = useState([]);
+  const enqueuedBadgeIdsRef = useRef(new Set());
   const [celebratingLevel, setCelebratingLevel] = useState(null);
 
   // Record a day of activity as soon as the user opens the Challenges tab
@@ -79,18 +83,29 @@ export const Challenges = () => {
     setShowToast(true);
   };
 
-  // Checks for any badge that just became unlocked and, if so, queues the
-  // celebratory modal + confetti for it.
+  // Checks for badges that just became unlocked and enqueues EACH for its own
+  // celebration. A single toggle can cross two thresholds at once (e.g. a daily
+  // completion that unlocks both a streak badge and a lifetime badge); every one
+  // gets celebrated in turn rather than silently marked seen. Badges are only
+  // marked seen after their modal is dismissed (handleBadgeClose), so the queue
+  // is the single source of truth for "shown yet?".
   const checkForNewBadges = () => {
-    const newBadgeIds = getNewlyUnlockedBadges();
-    if (newBadgeIds.length > 0) {
-      const badgeToShow = getBadges().find((b) => b.id === newBadgeIds[0]);
-      if (badgeToShow) {
-        haptics.success();
-        setCelebratingBadge(badgeToShow);
-      }
-      markBadgesSeen(newBadgeIds);
-    }
+    const freshIds = getNewlyUnlockedBadges().filter(
+      (id) => !enqueuedBadgeIdsRef.current.has(id)
+    );
+    if (freshIds.length === 0) return;
+    freshIds.forEach((id) => enqueuedBadgeIdsRef.current.add(id));
+    const freshBadges = getBadges().filter((b) => freshIds.includes(b.id));
+    if (freshBadges.length === 0) return;
+    haptics.success();
+    setBadgeQueue((prev) => [...prev, ...freshBadges]);
+  };
+
+  // Dismiss the badge currently on screen: mark just that one seen, then advance.
+  const handleBadgeClose = () => {
+    const shown = badgeQueue[0];
+    if (shown) markBadgesSeen([shown.id]);
+    setBadgeQueue((prev) => prev.slice(1));
   };
 
   const handleToggle = (id) => {
@@ -208,7 +223,7 @@ export const Challenges = () => {
       </div>
 
       <Toast message={toastText} isOpen={showToast} onClose={() => setShowToast(false)} />
-      <BadgeUnlockModal badge={celebratingBadge} onClose={() => setCelebratingBadge(null)} />
+      <BadgeUnlockModal badge={badgeQueue[0] || null} onClose={handleBadgeClose} />
       <LevelUpCelebration levelInfo={celebratingLevel} onClose={() => setCelebratingLevel(null)} />
     </PageWrapper>
   );

@@ -60,7 +60,7 @@ export const EmergencyCard = () => {
       spinal: 'Spinal AVM'
     };
 
-    const formattedManifestations = emergencyData.manifestations
+    const formattedManifestations = (emergencyData.manifestations || [])
       .map(m => labels[m] || m)
       .join(', ');
 
