@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
+import { Vessels } from '../ui/Vessels';
 import { spring } from '../../lib/motion';
 import { haptics } from '../../hooks/useHaptics';
 
@@ -36,13 +37,15 @@ export const StreakWidget = ({ currentStreak = 0, longestStreak = 0 }) => {
   return (
     <div
       className={`
-        relative flex items-center gap-3.5 rounded-custom-lg border p-4 w-full
+        relative overflow-hidden flex items-center gap-3.5 rounded-custom-lg border p-4 w-full
         ${isActive
-          ? 'bg-ember border-brand-orange/25 shadow-card'
-          : 'bg-app-surface2 border-app-glass'
+          ? 'bg-ember border-deep/30 shadow-card text-white'
+          : 'bg-app-surface2 border-line text-app-ink'
         }
       `}
     >
+      {isActive && <Vessels color="#fff" opacity={0.16} />}
+
       <motion.div
         animate={{
           scale: tier.glow ? [tier.scale, tier.scale * 1.12, tier.scale] : tier.scale,
@@ -50,22 +53,22 @@ export const StreakWidget = ({ currentStreak = 0, longestStreak = 0 }) => {
         }}
         transition={{ duration: 1.6, repeat: tier.glow ? Infinity : 0, ease: 'easeInOut' }}
         className={`
-          flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full
-          ${isActive ? 'bg-brand-orange/20' : 'bg-app-glass'}
+          relative z-10 flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full
+          ${isActive ? 'bg-gold-flow border border-white/30' : 'bg-app-glass border border-line'}
           ${tier.glow ? 'shadow-glow' : ''}
         `}
       >
         <Flame
           size={24}
-          className={isActive ? 'text-brand-orange fill-brand-orange/30' : 'text-app-muted'}
+          className={isActive ? 'text-white fill-white/40' : 'text-app-muted'}
         />
       </motion.div>
 
-      <div className="flex flex-col min-w-0 flex-1">
-        <span className="font-serif text-2xl font-bold text-app-ink leading-tight flex items-baseline gap-2 flex-wrap">
+      <div className="relative z-10 flex flex-col min-w-0 flex-1">
+        <span className={`font-serif text-2xl font-bold leading-tight flex items-baseline gap-2 flex-wrap ${isActive ? 'text-white' : 'text-app-ink'}`}>
           <span className="flex items-baseline gap-1.5">
             {currentStreak}
-            <span className="text-xs font-sans font-bold text-app-muted uppercase">
+            <span className={`text-xs font-sans font-bold uppercase ${isActive ? 'text-white/70' : 'text-app-muted'}`}>
               day{currentStreak === 1 ? '' : 's'}
             </span>
           </span>
@@ -76,16 +79,18 @@ export const StreakWidget = ({ currentStreak = 0, longestStreak = 0 }) => {
                 animate={{ opacity: 1, y: -4, scale: 1 }}
                 exit={{ opacity: 0 }}
                 transition={spring.bouncy}
-                className="text-xs font-extrabold text-brand-orange"
+                className="text-xs font-extrabold text-gold"
               >
                 +1 🔥
               </motion.span>
             )}
           </AnimatePresence>
         </span>
-        <span className="text-[10.5px] text-app-soft truncate">
+        <span className={`text-[10.5px] truncate ${isActive ? 'text-white/85' : 'text-app-soft'}`}>
           {isActive ? tier.label : 'Start your streak today'}
-          {longestStreak > 0 && <span className="text-app-muted"> · Best {longestStreak}</span>}
+          {longestStreak > 0 && (
+            <span className={isActive ? 'text-white/65' : 'text-app-muted'}> · Best {longestStreak}</span>
+          )}
         </span>
       </div>
     </div>

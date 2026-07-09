@@ -34,10 +34,10 @@ export const DailyChallengeCard = ({ task, isDone, onToggle }) => {
       transition={spring.snappy}
       onClick={handleTap}
       className={`
-        relative overflow-visible border rounded-custom p-3.5 flex gap-3 items-start cursor-pointer select-none
+        relative overflow-visible border rounded-custom p-3.5 flex gap-3 items-start cursor-pointer select-none transition-colors text-app-ink
         ${isDone
-          ? 'bg-brand-teal/10 border-brand-teal/30 text-white'
-          : 'bg-app-surface2 border-app-glass text-white hover:border-brand-teal/20'
+          ? 'bg-teal-soft border-brand-teal/40 shadow-card'
+          : 'bg-app-surface border-line hover:border-brand-teal/30'
         }
       `}
     >
@@ -73,12 +73,17 @@ export const DailyChallengeCard = ({ task, isDone, onToggle }) => {
             <span className="mr-1">{icon}</span>
             {title}
           </h4>
-          <Badge variant={isDone ? 'teal' : 'dark'} size="sm" className="flex-shrink-0 font-extrabold">
+          <Badge variant="teal" size="sm" className="flex-shrink-0 font-extrabold">
             +{xp} XP
           </Badge>
         </div>
         <p className="text-[10.5px] text-app-muted leading-relaxed">{desc}</p>
-        <Badge variant="default" size="sm" className="text-[8.5px] w-fit mt-1">{tag}</Badge>
+        <div className="flex items-center justify-between gap-2 mt-1">
+          <Badge variant="default" size="sm" className="text-[8.5px] w-fit">{tag}</Badge>
+          <span className={`text-[10px] font-bold ${isDone ? 'text-brand-teal' : 'text-brand-teal/80'}`}>
+            {isDone ? 'Done ✓' : 'Tap to log ➜'}
+          </span>
+        </div>
       </div>
     </motion.div>
   );

@@ -13,7 +13,7 @@ export const Badge = ({
     red: 'bg-brand-red/10 text-brand-red-mid border border-brand-red/20',
     orange: 'bg-brand-orange/10 text-brand-orange border border-brand-orange/20',
     teal: 'bg-brand-teal/10 text-brand-teal border border-brand-teal/20',
-    dark: 'bg-app-dark2 text-white border border-app-border/10'
+    dark: 'bg-deep text-white border border-transparent'
   };
 
   const sizes = {

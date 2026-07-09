@@ -12,14 +12,14 @@ export const Button = ({
   icon: Icon,
   ...props
 }) => {
-  const baseStyle = 'inline-flex items-center justify-center font-sans font-medium rounded-custom-sm transition-all focus:outline-none focus:ring-2 focus:ring-brand-red-mid focus:ring-offset-2 focus:ring-offset-app-dark active:scale-95 disabled:opacity-50 disabled:pointer-events-none select-none';
-  
+  const baseStyle = 'inline-flex items-center justify-center font-sans font-semibold rounded-custom-sm transition-all focus:outline-none focus:ring-2 focus:ring-garnet focus:ring-offset-2 focus:ring-offset-app-bg active:scale-95 disabled:opacity-50 disabled:pointer-events-none select-none';
+
   const variants = {
-    primary: 'bg-brand-red hover:brightness-110 active:brightness-95 text-white shadow-sm',
-    secondary: 'bg-app-dark2 hover:bg-app-mid text-white border border-app-border/10',
-    outline: 'bg-transparent border border-app-muted hover:border-white text-app-muted hover:text-white',
+    primary: 'bg-garnet hover:brightness-110 active:brightness-95 text-white shadow-card',
+    secondary: 'bg-app-surface2 hover:bg-app-mid text-app-ink border border-line',
+    outline: 'bg-app-surface border border-line hover:border-garnet text-app-ink hover:text-garnet',
     danger: 'bg-brand-red-dark hover:brightness-110 text-white',
-    teal: 'bg-brand-teal hover:brightness-95 text-app-bg shadow-sm'
+    teal: 'bg-brand-teal hover:brightness-110 text-white shadow-card'
   };
 
   const sizes = {

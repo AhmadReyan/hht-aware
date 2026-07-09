@@ -9,7 +9,7 @@ export const ProgressBar = ({
   const percentage = Math.min(Math.max((value / max) * 100, 0), 100);
 
   return (
-    <div className={`w-full bg-app-dark2 rounded-custom-pill h-3.5 overflow-hidden border border-app-border/5 p-0.5 ${className}`}>
+    <div className={`w-full bg-app-mid rounded-custom-pill h-3.5 overflow-hidden border border-line p-0.5 ${className}`}>
       <motion.div
         initial={{ width: 0 }}
         animate={{ width: `${percentage}%` }}

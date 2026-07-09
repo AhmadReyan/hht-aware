@@ -1,52 +1,60 @@
 import { motion } from 'framer-motion';
-import { Check } from 'lucide-react';
+import { SectionTitle } from '../ui/SectionTitle';
 import { THEMES } from './posterThemes';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
+import { useAppStore } from '../../store/useAppStore';
+
+// A couple of richer palettes are treated as "premium" — they unlock once the
+// user has earned their first badge. Everything else is always available.
+const PREMIUM_THEMES = { midnight: 1, mono: 1 };
 
 export const PosterThemeSelector = ({ activeTheme, onSelectTheme }) => {
-  const handleSelect = (id) => {
+  const getBadges = useAppStore((s) => s.getBadges);
+  const earnedCount = getBadges().filter((b) => b.unlocked).length;
+
+  const handleSelect = (id, locked) => {
+    if (locked) {
+      haptics.warning();
+      return;
+    }
     if (id !== activeTheme) haptics.selection();
     onSelectTheme(id);
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Color Theme</h2>
-      <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
+    <div className="flex flex-col gap-2.5">
+      <SectionTitle kicker="Palette" title="Set the mood" className="mb-0" />
+      <div className="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1 snap-x">
         {THEMES.map((theme) => {
           const isActive = activeTheme === theme.id;
+          const need = PREMIUM_THEMES[theme.id] || 0;
+          const locked = earnedCount < need;
+          const gradient = `linear-gradient(150deg, ${theme.swatch[0]}, ${theme.swatch[1]} 55%, ${theme.swatch[2]})`;
           return (
             <motion.button
               key={theme.id}
               type="button"
-              whileTap={{ scale: 0.94 }}
+              whileTap={{ scale: locked ? 1 : 0.92 }}
               transition={spring.snappy}
-              onClick={() => handleSelect(theme.id)}
-              className={`
-                relative shrink-0 snap-start min-h-[44px] flex flex-col items-center justify-center gap-1.5 p-2
-                rounded-custom border transition-colors select-none
-                ${isActive
-                  ? 'border-brand-teal bg-app-surface2 shadow-glow'
-                  : 'border-app-border/40 bg-app-surface hover:border-app-muted/50'}
-              `}
+              onClick={() => handleSelect(theme.id, locked)}
+              title={locked ? 'Earn a badge to unlock' : theme.name}
+              className="shrink-0 snap-start flex flex-col items-center gap-1.5 select-none"
             >
-              <div className="relative flex h-10 w-16 overflow-hidden rounded-custom-sm border border-black/20">
-                {theme.swatch.map((c, i) => (
-                  <span key={i} className="flex-1" style={{ backgroundColor: c }} />
-                ))}
-                {isActive && (
-                  <motion.span
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={spring.bouncy}
-                    className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand-teal text-app-bg"
-                  >
-                    <Check size={11} strokeWidth={3} />
-                  </motion.span>
-                )}
-              </div>
-              <span className={`text-[10px] font-bold ${isActive ? 'text-app-ink' : 'text-app-muted'}`}>
+              <span
+                className="relative grid place-items-center h-12 w-12 rounded-custom"
+                style={{
+                  background: gradient,
+                  border: isActive ? '3px solid var(--ink)' : '1.5px solid var(--line)',
+                  opacity: locked ? 0.5 : 1,
+                }}
+              >
+                {locked && <span className="text-base drop-shadow">🔒</span>}
+              </span>
+              <span
+                className="text-[10px] font-semibold"
+                style={{ color: isActive ? 'var(--ink)' : 'var(--muted)' }}
+              >
                 {theme.name}
               </span>
             </motion.button>

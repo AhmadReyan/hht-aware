@@ -12,7 +12,7 @@ export const PreventionCategory = ({ category, defaultOpen = false }) => {
   const { icon, title, summary, tips = [] } = category;
 
   return (
-    <div className="bg-app-dark2 border border-app-border/10 rounded-custom overflow-hidden">
+    <div className="bg-app-surface border border-line rounded-custom overflow-hidden shadow-card">
       <button
         onClick={() => setOpen((o) => !o)}
         className="w-full flex items-start gap-3 p-4 text-left select-none"
@@ -20,9 +20,9 @@ export const PreventionCategory = ({ category, defaultOpen = false }) => {
         <span className="text-2xl leading-none flex-shrink-0 mt-0.5">{icon}</span>
         <div className="flex-1 flex flex-col gap-1">
           <div className="flex justify-between items-center gap-2">
-            <h3 className="font-sans font-bold text-sm text-white leading-snug">{title}</h3>
+            <h3 className="font-sans font-bold text-sm text-app-ink leading-snug">{title}</h3>
             <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge variant="dark" size="sm">{tips.length}</Badge>
+              <Badge variant="default" size="sm">{tips.length}</Badge>
               <ChevronDown
                 size={18}
                 className={`text-app-muted transition-transform ${open ? 'rotate-180' : ''}`}
@@ -46,7 +46,7 @@ export const PreventionCategory = ({ category, defaultOpen = false }) => {
               {tips.map((tip, i) => (
                 <div
                   key={i}
-                  className="bg-app-dark/60 border border-app-border/5 rounded-custom-sm p-3.5 flex flex-col gap-1.5"
+                  className="bg-app-surface2 border border-line rounded-custom-sm p-3.5 flex flex-col gap-1.5"
                 >
                   <div className="flex justify-between items-start gap-2">
                     <h4 className="font-sans font-bold text-xs text-brand-red-light leading-snug">

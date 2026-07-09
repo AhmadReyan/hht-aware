@@ -37,22 +37,24 @@ export const BadgeGrid = ({ badges }) => {
             whileTap={{ scale: 0.94 }}
             onClick={() => handleSelect(badge)}
             className={`
-              relative flex flex-col items-center justify-center gap-1 rounded-custom border p-3 text-center aspect-square cursor-pointer select-none
+              relative flex flex-col items-center justify-center gap-1 rounded-custom border p-3 text-center aspect-square cursor-pointer select-none transition-colors
               ${badge.unlocked
-                ? 'bg-gradient-to-b from-brand-red/15 to-brand-orange/10 border-brand-red/25 shadow-card'
-                : 'bg-app-surface2 border-app-glass opacity-60'
+                ? 'bg-app-surface border-gold shadow-card'
+                : 'bg-app-surface2 border-line opacity-70'
               }
             `}
           >
-            {!badge.unlocked && (
+            {badge.unlocked ? (
+              <div className="pointer-events-none absolute inset-0 rounded-custom bg-gold/5" />
+            ) : (
               <div className="absolute top-1.5 right-1.5 text-app-muted">
                 <Lock size={11} />
               </div>
             )}
-            <span className={`text-2xl leading-none ${badge.unlocked ? '' : 'grayscale opacity-50'}`}>
+            <span className={`relative z-10 text-2xl leading-none ${badge.unlocked ? '' : 'grayscale opacity-50'}`}>
               {badge.icon}
             </span>
-            <span className={`text-[9.5px] font-bold leading-tight ${badge.unlocked ? 'text-app-ink' : 'text-app-muted'}`}>
+            <span className={`relative z-10 text-[9.5px] font-bold leading-tight ${badge.unlocked ? 'text-app-ink' : 'text-app-muted'}`}>
               {badge.title}
             </span>
           </motion.div>

@@ -6,17 +6,24 @@ export default konstaConfig({
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
-  // Force dark mode (the app is always dark). `dark` class is set on <html>.
+  // Warm editorial LIGHT theme — no `dark` class on <html>.
   darkMode: 'class',
   konsta: {
     colors: {
       // Konsta uses these to generate its component color variants.
-      primary: '#E74C3C',   // brand red-mid
+      primary: '#8E2D3B',   // garnet
     },
   },
   theme: {
     extend: {
       colors: {
+        // Warm editorial palette (reference names) — use directly, e.g. text-garnet, bg-rose.
+        garnet: 'var(--garnet)',
+        deep: 'var(--deep)',
+        rose: 'var(--rose)',
+        gold: 'var(--gold)',
+        'teal-soft': 'var(--teal-soft)',
+        line: 'var(--line)',
         brand: {
           red: 'var(--red)',
           'red-mid': 'var(--red-mid)',
@@ -38,12 +45,14 @@ export default konstaConfig({
           soft: 'var(--ink-soft)',      // text-app-soft
           surface: 'var(--surface)',    // bg-app-surface
           surface2: 'var(--surface-2)', // bg-app-surface2
-          glass: 'var(--glass)',        // NEW — glassmorphic surface fill
+          glass: 'var(--glass)',        // frosted light surface fill
         }
       },
       fontFamily: {
-        serif: ['"DM Serif Display"', 'Georgia', 'serif'],
-        sans: ['"DM Sans"', 'system-ui', 'sans-serif'],
+        // `font-serif` is the DISPLAY face across the app.
+        serif: ['"Bricolage Grotesque"', '"DM Serif Display"', 'Georgia', 'serif'],
+        sans: ['"Instrument Sans"', '"DM Sans"', 'system-ui', 'sans-serif'],
+        disp: ['"Bricolage Grotesque"', 'Georgia', 'serif'],
       },
       borderRadius: {
         custom: 'var(--radius)',
@@ -59,10 +68,11 @@ export default konstaConfig({
         glow: 'var(--shadow-glow)',        // NEW — accent glow for active/hero elements
       },
       backgroundImage: {
-        // NEW — "Living Vessel" gradients & aurora fields
+        // Warm editorial gradients & aurora fields
         'aurora': 'var(--gradient-aurora)',
-        'ember': 'var(--gradient-ember)',
+        'ember': 'var(--gradient-ember)',       // garnet hero
         'teal-flow': 'var(--gradient-teal)',
+        'gold-flow': 'var(--gradient-gold)',
         'glass-sheen': 'var(--gradient-glass)',
       },
       backdropBlur: {

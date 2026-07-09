@@ -40,22 +40,22 @@ export const CaptionBlock = ({ type, data, onCopied }) => {
   };
 
   return (
-    <div className="bg-app-dark2 border border-app-border/15 rounded-custom p-4 flex flex-col gap-3 font-sans text-white select-none">
-      <div className="flex justify-between items-center border-b border-app-border/5 pb-2">
+    <div className="bg-app-surface border border-line rounded-custom-lg p-4 flex flex-col gap-3 font-sans shadow-card select-none">
+      <div className="flex justify-between items-center border-b border-line pb-2.5">
         <div className="flex items-center gap-1.5">
           <span className="text-xs">📝</span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-brand-teal">Social Media Caption</span>
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-garnet">Social caption</span>
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1 bg-app-dark hover:bg-app-mid/50 text-app-muted hover:text-white px-2.5 py-1.5 rounded-custom-sm text-[10px] font-bold transition-all border border-app-border/5 active:scale-95 cursor-pointer"
+          className="flex items-center gap-1 bg-app-surface2 hover:bg-teal-soft text-app-soft hover:text-brand-teal px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold transition-all border border-line active:scale-95 cursor-pointer"
         >
           {copied ? <Check size={11} className="text-brand-teal" /> : <Copy size={11} />}
-          <span>{copied ? 'Copied' : 'Copy Caption'}</span>
+          <span>{copied ? 'Copied' : 'Copy'}</span>
         </button>
       </div>
 
-      <p className="text-[11px] text-app-soft leading-relaxed bg-app-dark/40 p-3 rounded-custom max-h-32 overflow-y-auto select-text whitespace-pre-wrap">
+      <p className="text-[12px] text-app-soft leading-relaxed bg-app-surface2 p-3 rounded-custom max-h-32 overflow-y-auto select-text whitespace-pre-wrap">
         {getCaptionText()}
       </p>
     </div>

@@ -1,16 +1,84 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
+import { Share2 } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
-import { FactsFilter } from '../components/facts/FactsFilter';
-import { FactCard } from '../components/facts/FactCard';
+import { SectionTitle } from '../components/ui/SectionTitle';
+import { Chip } from '../components/ui/Chip';
+import { Vessels } from '../components/ui/Vessels';
+import { Toast } from '../components/ui/Toast';
 import { facts } from '../data/facts';
 import { useShare } from '../hooks/useShare';
 import { useAppStore } from '../store/useAppStore';
-import { Toast } from '../components/ui/Toast';
+import { staggerContainer, staggerItem } from '../lib/motion';
+import { haptics } from '../hooks/useHaptics';
+
+const CATEGORIES = [
+  { key: 'all', label: 'All Facts' },
+  { key: 'prevalence', label: 'Prevalence' },
+  { key: 'symptoms', label: 'Symptoms' },
+  { key: 'genetics', label: 'Genetics' },
+  { key: 'diagnosis', label: 'Diagnosis' },
+  { key: 'treatment', label: 'Treatment' },
+];
+
+// Accent tone per category — garnet for the clinical/urgent, teal for care.
+const CAT_TONE = {
+  prevalence: 'garnet',
+  symptoms: 'garnet',
+  genetics: 'garnet',
+  diagnosis: 'gold',
+  treatment: 'teal',
+};
+
+const FactCard = ({ fact, onShare }) => {
+  const { stat, body, cat, src } = fact;
+  const tone = CAT_TONE[cat] || 'garnet';
+  const statColor = tone === 'teal' ? 'text-brand-teal' : tone === 'gold' ? 'text-gold' : 'text-garnet';
+
+  return (
+    <motion.button
+      type="button"
+      variants={staggerItem}
+      whileTap={{ scale: 0.98 }}
+      onClick={() => onShare(fact)}
+      className="group relative overflow-hidden text-left bg-app-surface border border-line rounded-custom-lg p-5 flex flex-col gap-3 shadow-card cursor-pointer"
+    >
+      {/* Faint capillary motif in the corner */}
+      <Vessels
+        color={tone === 'teal' ? 'var(--teal)' : tone === 'gold' ? 'var(--gold)' : 'var(--garnet)'}
+        opacity={0.10}
+      />
+
+      {/* Category kicker + share glyph */}
+      <div className="relative z-10 flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-wider font-semibold text-garnet font-sans">
+          {cat}
+        </span>
+        <Share2 size={15} className="text-app-muted group-active:text-garnet transition-colors" />
+      </div>
+
+      {/* Stat + body */}
+      <div className="relative z-10 flex flex-col gap-1.5">
+        <span className={`font-serif text-[2rem] font-extrabold leading-none ${statColor}`}>
+          {stat}
+        </span>
+        <p className="text-sm text-app-soft leading-relaxed font-sans">
+          {body}
+        </p>
+      </div>
+
+      {/* Footer: source + share hint */}
+      <div className="relative z-10 flex justify-between items-center text-[10px] text-app-muted border-t border-line pt-2.5 font-sans">
+        <span className="italic">Source: {src}</span>
+        <span className="text-brand-teal font-bold not-italic">Tap to share →</span>
+      </div>
+    </motion.button>
+  );
+};
 
 export const Facts = () => {
   const [activeCategory, setActiveCategory] = useState('all');
-  const { shareContent, toastMessage, triggerToast } = useShare();
+  const { shareContent } = useShare();
   const [showToast, setShowToast] = useState(false);
   const [toastText, setToastText] = useState('');
 
@@ -27,6 +95,7 @@ export const Facts = () => {
     });
 
     if (success) {
+      haptics.success();
       showCustomToast('Fact shared! Thank you for spreading awareness. 🌟');
       // Automatically toggle Challenge 4: Share an HHT fact online
       const toggleChallenge = useAppStore.getState().toggleChallenge;
@@ -41,31 +110,35 @@ export const Facts = () => {
     ? facts
     : facts.filter(f => f.cat === activeCategory);
 
-  const listContainer = {
-    hidden: {},
-    show: { transition: { staggerChildren: 0.05 } }
-  };
-
   return (
     <PageWrapper>
       <div className="flex flex-col gap-5 font-sans">
-        {/* Header Title */}
-        <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-app-ink">HHT Facts & Research</h1>
-          <p className="text-xs text-app-muted leading-relaxed">
-            Arm yourself with accurate medical statistics about Hereditary Hemorrhagic Telangiectasia. Tap any card to share it with your network.
-          </p>
-        </section>
+        {/* Editorial header */}
+        <SectionTitle kicker="Facts & Research" title="Know the numbers" />
+        <p className="-mt-3 text-xs text-app-muted leading-relaxed px-0.5">
+          Accurate medical statistics about Hereditary Hemorrhagic Telangiectasia. Tap any card to share it and spread awareness.
+        </p>
 
-        {/* Categories Chips */}
-        <section className="sticky top-14 z-30 bg-app-bg py-2">
-          <FactsFilter activeCategory={activeCategory} onSelectCategory={setActiveCategory} />
-        </section>
+        {/* Category chips */}
+        <div className="sticky top-14 z-30 -mx-4 px-4 bg-app-bg py-2">
+          <div className="w-full overflow-x-auto scrollbar-none flex gap-2 pb-1">
+            {CATEGORIES.map((c) => (
+              <Chip
+                key={c.key}
+                label={c.label}
+                active={activeCategory === c.key}
+                onClick={() => setActiveCategory(c.key)}
+                className="whitespace-nowrap flex-shrink-0"
+              />
+            ))}
+          </div>
+        </div>
 
-        {/* Fact Cards List */}
+        {/* Fact cards */}
         <motion.section
-          className="flex flex-col gap-4 mb-6"
-          variants={listContainer}
+          key={activeCategory}
+          className="flex flex-col gap-4 mb-4"
+          variants={staggerContainer}
           initial="hidden"
           animate="show"
         >
@@ -84,4 +157,5 @@ export const Facts = () => {
     </PageWrapper>
   );
 };
+
 export default Facts;

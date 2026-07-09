@@ -7,6 +7,7 @@ import { selfCareItems, selfCareItemCount } from '../../data/selfCare';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
 import { Confetti } from '../challenges/Confetti';
+import { Vessels } from '../ui/Vessels';
 
 // Per-item accent styling, keyed by `selfCareItems[i].accent` from data/selfCare.js.
 const ACCENT = {
@@ -77,9 +78,13 @@ export const SelfCareChecklist = () => {
   const dashOffset = circumference - circumference * (pct / 100);
 
   return (
-    <div className="relative flex flex-col gap-4 surface-glass backdrop-blur-glass rounded-custom-xl p-5 shadow-raised overflow-hidden">
+    <div
+      className={`relative flex flex-col gap-4 rounded-custom-lg p-5 shadow-card overflow-hidden border transition-colors duration-300 ${
+        allDone ? 'bg-rose border-garnet/25' : 'bg-app-surface border-line'
+      }`}
+    >
       <Confetti trigger={celebrate} count={36} />
-      <div className="absolute inset-0 bg-glass-sheen pointer-events-none" />
+      {allDone && <Vessels color="var(--garnet)" opacity={0.12} />}
 
       <div className="relative flex items-center gap-4">
         <div className="relative flex-shrink-0" style={{ width: size, height: size }}>

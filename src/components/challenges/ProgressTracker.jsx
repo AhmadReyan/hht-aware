@@ -24,9 +24,9 @@ export const ProgressTracker = ({ completedCount = 0, totalCount = 10, points = 
   };
 
   return (
-    <div className="relative overflow-hidden bg-app-surface2 border border-app-glass rounded-custom-lg p-5 shadow-card flex flex-col gap-4 font-sans text-white">
+    <div className={`relative overflow-hidden rounded-custom-lg p-5 shadow-card flex flex-col gap-4 font-sans text-app-ink border ${isComplete ? 'bg-gold/10 border-gold' : 'bg-app-surface border-line'}`}>
       {isComplete && (
-        <div className="pointer-events-none absolute inset-0 bg-glass-sheen opacity-30 bg-[length:200%_100%] animate-shimmer" />
+        <div className="pointer-events-none absolute inset-0 bg-glass-sheen opacity-40 bg-[length:200%_100%] animate-shimmer" />
       )}
 
       {/* Header Info */}
@@ -38,7 +38,7 @@ export const ProgressTracker = ({ completedCount = 0, totalCount = 10, points = 
               animate={isComplete ? { rotate: [0, -10, 10, 0] } : {}}
               transition={{ duration: 1.8, repeat: isComplete ? Infinity : 0, repeatDelay: 1 }}
             >
-              <Trophy className="text-brand-orange" size={20} />
+              <Trophy className="text-gold" size={20} />
             </motion.span>
             <span>Your Progress</span>
           </h3>
@@ -60,7 +60,7 @@ export const ProgressTracker = ({ completedCount = 0, totalCount = 10, points = 
       </div>
 
       {/* Subtitle Message */}
-      <p className="relative z-10 text-xs text-app-soft leading-relaxed bg-app-surface/60 px-3.5 py-2.5 rounded-custom border border-app-glass">
+      <p className="relative z-10 text-xs text-app-soft leading-relaxed bg-app-surface2 px-3.5 py-2.5 rounded-custom border border-line">
         {getSubtitle()}
       </p>
     </div>

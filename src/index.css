@@ -2,117 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   Design System v4 — "Warm Editorial" (BleedAware)
+   A warm, light, editorial palette: porcelain surfaces, garnet
+   + deep-wine + teal accents, gold highlights. Replaces the old
+   dark "Living Vessel" theme. Token NAMES are kept stable so the
+   whole component tree re-themes from here.
+   ============================================================ */
 :root {
-  /* Brand — red family */
-  --red:          #C0392B;   /* Deep red — solid CTA fills, pressed states (AA-safe w/ white text) */
-  --red-mid:      #E74C3C;   /* Primary accent — icons, links, borders, badges, small headings */
-  --red-light:    #F2A79B;   /* NEW ROLE: light coral TEXT/heading accent on dark surfaces (was a pastel bg tint) */
-  --red-dark:     #922B21;   /* Deepest red — active/pressed fill, highest-contrast text pairing */
+  /* ---- Brand — garnet / wine family ---- */
+  --garnet:       #8E2D3B;   /* PRIMARY accent + solid CTA fill (white text = AA) */
+  --deep:         #571826;   /* deepest wine — hero gradients, high-contrast fills */
+  --rose:         #F3DDD9;   /* soft rose tint — flip-card fronts, callout panels */
+  --gold:         #D9A13B;   /* highlight / earned-badge accent */
 
-  /* Accent — orange */
-  --orange:       #E8843C;   /* Secondary accent / warning — reads clearly as text or icon on dark */
-  --orange-light: #F3C08A;   /* NEW ROLE: light gold TEXT accent on dark surfaces (was a pastel bg tint) */
+  /* Legacy brand var names remapped to the new palette so existing
+     `brand-red*` / `brand-orange*` utility classes adopt the new look. */
+  --red:          #8E2D3B;   /* solid CTA fill (was deep red) */
+  --red-mid:      #8E2D3B;   /* primary accent text/icons/links (was #E74C3C) */
+  --red-light:    #A8394A;   /* lighter garnet — still AA as text on porcelain/white */
+  --red-dark:     #571826;   /* pressed/active fill, deepest pairing */
+  --orange:       #B67A1E;   /* secondary accent / warning — gold-brown, readable on light */
+  --orange-light: #D9A13B;   /* gold highlight */
 
-  /* Safe / Info — teal */
-  --teal:         #2AA88B;   /* Success, safe info, verified */
-  --teal-light:   #7FD9BC;   /* NEW ROLE: light mint TEXT accent on dark surfaces (was a pastel bg tint) */
+  /* ---- Safe / Info — teal ---- */
+  --teal:         #15756C;   /* success, safe info, verified */
+  --teal-light:   #0E4A45;   /* deep teal — teal TEXT accent on light surfaces (AA) */
+  --teal-soft:    #E2F0EE;   /* teal wash — success panels, chips */
 
-  /* Neutrals — surfaces & structure */
-  --dark:         #141013;   /* Recessed / chrome tone — header, bottom nav, hero panels. Equals --bg: seamless chrome. */
-  --dark2:        #1F1A1C;   /* First elevation — standard card surface. Alias of new --surface. */
-  --mid:          #4A4245;   /* NEW ROLE: neutral mid-tone for hover/press overlays & tertiary fills only — never body text */
-  --muted:        #8A8085;   /* Labels, meta text, icons, eyebrows */
-  --border:       #332C2F;   /* Hairline dividers ONLY — never used as a text color (see §2.4 bug fix) */
-  --bg:           #141013;   /* App background — near-black, faint warm/red bias */
-  --white:        #FFFFFF;   /* Reserved for on-color fills (e.g. white icon on a solid red bar) and the Poster canvas */
+  /* ---- Neutrals — warm surfaces & structure ---- */
+  --bg:           #F6EFEB;   /* app background — warm porcelain */
+  --surface:      #FFFFFF;   /* card surface */
+  --surface-2:    #FFF7F3;   /* second elevation — inputs, nested tips, sheets */
+  --dark:         #FFFFFF;   /* chrome tone — header/nav are now light (kept name for compat) */
+  --dark2:        #FFF7F3;   /* alias of surface-2 */
+  --mid:          #EADFDA;   /* hover/press overlay & tertiary fills — never text */
+  --muted:        #7A5F63;   /* labels, meta, secondary icons (warm taupe, AA on porcelain) */
+  --border:       #E9DAD4;   /* hairline dividers */
+  --line:         #E9DAD4;   /* alias — reference name */
+  --white:        #FFFFFF;   /* on-color fills / poster canvas */
 
-  /* NEW — text & elevation tokens */
-  --ink:          #F4EEF0;   /* Primary text, headings — the fix for text-white on page titles */
-  --ink-soft:     #B7ADB0;   /* Secondary/body copy on any dark surface — replaces the text-app-border hack */
-  --surface:      #1F1A1C;   /* Explicit name for --dark2 (first elevation) */
-  --surface-2:    #251F21;   /* Second elevation — nested tips, inputs, pressed rows, sheets-on-sheets */
+  /* ---- Text tokens ---- */
+  --ink:          #2A181D;   /* primary text & headings — warm near-black */
+  --ink-soft:     #7A5F63;   /* secondary/body copy */
 
-  /* Typography */
-  --serif:        'DM Serif Display', Georgia, serif;
-  --sans:         'DM Sans', system-ui, sans-serif;
+  /* ---- Typography ---- */
+  --serif:        'Bricolage Grotesque', 'DM Serif Display', Georgia, serif;  /* display */
+  --sans:         'Instrument Sans', 'DM Sans', system-ui, sans-serif;        /* body */
 
-  /* Component Tokens */
+  /* ---- Component tokens ---- */
   --radius:       16px;
-  --radius-sm:    10px;
-  --radius-lg:    22px;       /* NEW — hero/spotlight cards, bottom sheets */
-  --radius-pill:  99px;
+  --radius-sm:    12px;
+  --radius-lg:    20px;       /* hero/spotlight cards, sheets */
+  --radius-xl:    24px;
+  --radius-pill:  999px;
 
-  /* Elevation — dark themes need real shadow + hairline, not a faint light-mode shadow */
-  --shadow-card:    0 1px 2px rgba(0,0,0,0.45), 0 8px 24px rgba(0,0,0,0.30);
-  --shadow-raised:  0 2px 4px rgba(0,0,0,0.5), 0 12px 32px rgba(0,0,0,0.35);   /* NEW — hero, sheets, modals */
-  --shadow-poster:  0 4px 24px rgba(0,0,0,0.15);  /* unchanged — poster canvas only */
-  --shadow-glow:    0 0 0 1px rgba(231,76,60,0.35), 0 8px 30px -6px rgba(231,76,60,0.45);  /* NEW — accent glow */
+  /* ---- Elevation — soft warm shadows for a light theme ---- */
+  --shadow-card:    0 1px 2px rgba(42,24,29,0.05), 0 6px 20px rgba(42,24,29,0.07);
+  --shadow-raised:  0 2px 6px rgba(42,24,29,0.08), 0 16px 40px rgba(42,24,29,0.12);
+  --shadow-poster:  0 20px 50px rgba(42,24,29,0.18);
+  --shadow-glow:    0 0 0 1px rgba(142,45,59,0.14), 0 10px 30px -8px rgba(142,45,59,0.30);
 
-  /* ---- Design System v3: "Living Vessel" ---- */
-  --radius-xl:    28px;        /* hero surfaces, big sheets */
+  /* ---- Glass (kept for compat; a light frosted surface now) ---- */
+  --glass:        rgba(255,255,255,0.72);
+  --glass-border: rgba(42,24,29,0.06);
 
-  /* Glassmorphic surface — translucent fill for elevated glass cards (pair w/ backdrop-blur) */
-  --glass:        rgba(37, 31, 33, 0.62);
-  --glass-border: rgba(244, 238, 240, 0.08);
-
-  /* Aurora / gradient fields — reactive, "alive" backgrounds */
-  --gradient-aurora: radial-gradient(120% 80% at 0% 0%, rgba(231,76,60,0.20) 0%, rgba(231,76,60,0) 55%),
-                     radial-gradient(120% 90% at 100% 10%, rgba(42,168,139,0.16) 0%, rgba(42,168,139,0) 55%),
-                     radial-gradient(140% 120% at 50% 120%, rgba(232,132,60,0.14) 0%, rgba(232,132,60,0) 60%);
-  --gradient-ember:  linear-gradient(135deg, #E74C3C 0%, #C0392B 55%, #922B21 100%);
-  --gradient-teal:   linear-gradient(135deg, #2AA88B 0%, #1E7D68 100%);
-  --gradient-glass:  linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0) 100%);
+  /* ---- Gradient fields ---- */
+  --gradient-aurora: radial-gradient(120% 80% at 0% 0%, rgba(142,45,59,0.10) 0%, rgba(142,45,59,0) 55%),
+                     radial-gradient(120% 90% at 100% 8%, rgba(21,117,108,0.09) 0%, rgba(21,117,108,0) 55%),
+                     radial-gradient(140% 120% at 50% 120%, rgba(217,161,59,0.10) 0%, rgba(217,161,59,0) 60%);
+  --gradient-ember:  linear-gradient(140deg, #571826 0%, #8E2D3B 100%);   /* garnet hero */
+  --gradient-teal:   linear-gradient(140deg, #0E4A45 0%, #15756C 100%);
+  --gradient-gold:   linear-gradient(150deg, #B67A1E 0%, #D9A13B 100%);
+  --gradient-glass:  linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%);
 }
 
-/* Living aurora backdrop utility — a soft, fixed, animated color field behind content */
+/* Font role helpers (parity with the reference primitives) */
+.disp { font-family: var(--serif); }
+.body-font { font-family: var(--sans); }
+
+/* Living aurora backdrop utility — a soft, fixed warm color field */
 .bg-living {
   background-color: var(--bg);
   background-image: var(--gradient-aurora);
   background-attachment: fixed;
 }
 
-/* Glass surface helper (works with Tailwind backdrop-blur-glass) */
+/* Frosted light surface helper */
 .surface-glass {
   background-color: var(--glass);
   border: 1px solid var(--glass-border);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+}
+
+/* ---- Signature motion (from the reference) ---- */
+@keyframes pop  { 0% { transform: scale(.92); opacity: 0 } 100% { transform: scale(1); opacity: 1 } }
+@keyframes rise { 0% { transform: translateY(10px); opacity: 0 } 100% { transform: translateY(0); opacity: 1 } }
+.pop  { animation: pop .35s ease both; }
+.rise { animation: rise .4s ease both; }
+
+/* 3D flip card scaffolding */
+.flip3d { transform-style: preserve-3d; transition: transform .6s cubic-bezier(.4,.1,.2,1); }
+.flip3d-face { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pop, .rise { animation: none; }
+  .flip3d { transition: none; }
 }
 
 body {
   background-color: var(--bg);
-  color: var(--ink);          /* was var(--mid); mid is no longer a text color, see §2.4 */
+  color: var(--ink);
   font-family: var(--sans);
   margin: 0;
   padding: 0;
 }
 
-/* Custom Scrollbar for clean aesthetics */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--muted);
-  border-radius: var(--radius-pill);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--mid);
-}
+/* Custom scrollbar — warm, subtle */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--muted); border-radius: var(--radius-pill); opacity: .5; }
+::-webkit-scrollbar-thumb:hover { background: var(--garnet); }
 
 /* Safe areas support */
-.safe-padding-top {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.safe-padding-bottom {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.safe-margin-top {
-  margin-top: env(safe-area-inset-top, 0px);
-}
-.safe-margin-bottom {
-  margin-bottom: env(safe-area-inset-bottom, 0px);
-}
+.safe-padding-top    { padding-top: env(safe-area-inset-top, 0px); }
+.safe-padding-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+.safe-margin-top     { margin-top: env(safe-area-inset-top, 0px); }
+.safe-margin-bottom  { margin-bottom: env(safe-area-inset-bottom, 0px); }

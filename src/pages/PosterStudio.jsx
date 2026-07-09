@@ -15,10 +15,9 @@ import { SavePosterSheet } from '../components/poster/SavePosterSheet';
 import { getTemplate, buildDefaultData } from '../components/poster/posterTemplates';
 import { getTheme } from '../components/poster/posterThemes';
 import { getFormat } from '../components/poster/posterFormats';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { SectionTitle } from '../components/ui/SectionTitle';
 import { Toast } from '../components/ui/Toast';
-import { Download, Share2, Palette, Save } from 'lucide-react';
+import { Download, Share2, Save } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { haptics } from '../hooks/useHaptics';
 import { TapScale } from '../lib/motion';
@@ -238,17 +237,11 @@ export const PosterStudio = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-5 font-sans">
-        <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
-            <Palette className="text-brand-red-mid" size={24} />
-            <span>Poster Studio</span>
-          </h1>
-          <p className="text-xs text-app-muted">Design beautiful posters to spread HHT awareness — tap, remix, save.</p>
-        </section>
+      <div className="flex flex-col gap-6 font-sans">
+        <SectionTitle kicker="Create studio" title="Turn your story into a poster" className="mb-0" />
 
-        {/* Hero live preview — sticky under the header, reacts to every edit. */}
-        <section className="sticky top-14 z-30 -mx-4 px-4 pt-1 pb-3 bg-app-bg/85 backdrop-blur-glass">
+        {/* Hero live preview — a warm card that pops on every selection change. */}
+        <section className="flex flex-col gap-3">
           <PosterCanvas
             type={posterType}
             data={getActiveData()}
@@ -258,22 +251,42 @@ export const PosterStudio = () => {
             onRendered={handleCanvasRendered}
           />
 
-          <div className="flex items-center justify-between gap-2 mt-3 max-w-[420px] mx-auto">
+          <div className="flex items-center justify-between gap-2 max-w-[420px] mx-auto w-full">
             <div className="flex flex-col gap-0.5 min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-app-ink truncate">
+              <span className="text-[11px] font-semibold uppercase tracking-wide text-garnet truncate">
                 {activeTemplate.label} · {activeTheme.name}
               </span>
-              <span className="text-[9px] text-app-muted truncate">
+              <span className="text-[10px] text-app-muted truncate">
                 {activeFormat.sub} · {activeFormat.hint}
               </span>
             </div>
             <TapScale
               as="button"
               onClick={openSaveSheet}
-              className="shrink-0 flex items-center gap-1.5 min-h-[44px] bg-app-surface2 border border-brand-teal/40 text-brand-teal-light font-bold text-xs px-4 py-2.5 rounded-custom-pill shadow-card select-none"
+              className="shrink-0 flex items-center gap-1.5 min-h-[40px] bg-app-surface2 border border-line text-garnet font-semibold text-xs px-4 py-2 rounded-custom-pill shadow-card select-none"
             >
               <Save size={14} />
               {activePosterId ? 'Update' : 'Save'}
+            </TapScale>
+          </div>
+
+          {/* Primary actions — garnet Share + outline Download, reference style. */}
+          <div className="grid grid-cols-2 gap-3 max-w-[420px] mx-auto w-full">
+            <TapScale
+              as="button"
+              onClick={handleShare}
+              className="min-h-[48px] flex items-center justify-center gap-2 rounded-custom bg-garnet text-white font-semibold text-sm shadow-card select-none active:brightness-95"
+            >
+              <Share2 size={16} />
+              Share
+            </TapScale>
+            <TapScale
+              as="button"
+              onClick={handleDownload}
+              className="min-h-[48px] flex items-center justify-center gap-2 rounded-custom bg-app-surface border border-line text-app-ink font-semibold text-sm shadow-card select-none"
+            >
+              <Download size={16} />
+              Download
             </TapScale>
           </div>
         </section>
@@ -291,8 +304,8 @@ export const PosterStudio = () => {
         </section>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Personalize Details</h2>
-          <Card variant="dark" className="p-5 border-app-border/5">
+          <SectionTitle kicker="Personalize" title="Make it yours" className="mb-0" />
+          <div className="bg-app-surface border border-line rounded-custom-lg p-5 shadow-card">
             {posterType === 'awareness' && <AwarenessPosterControls data={awarenessData} onChange={setAwarenessData} />}
             {posterType === 'fact' && <FactPosterControls data={factData} onChange={setFactData} />}
             {posterType === 'story' && <StoryPosterControls data={storyData} onChange={setStoryData} />}
@@ -303,29 +316,24 @@ export const PosterStudio = () => {
                 onChange={updateTemplateData}
               />
             )}
-          </Card>
+          </div>
         </section>
 
         <section>
-          <Card variant="dark" className="p-5 border-app-border/5">
+          <div className="bg-app-surface border border-line rounded-custom-lg p-5 shadow-card">
             <PosterOptionsPanel options={options} onChange={setOptions} />
-          </Card>
+          </div>
         </section>
 
         <section>
           <CaptionBlock type={posterType} data={getActiveData()} onCopied={() => showCustomToast('Caption copied! 📋')} />
         </section>
 
-        <section className="grid grid-cols-2 gap-3">
-          <Button variant="teal" onClick={handleShare} icon={Share2} className="min-h-[44px] shadow-glow">Share Image</Button>
-          <Button variant="secondary" onClick={handleDownload} icon={Download} className="min-h-[44px]">Download PNG</Button>
-        </section>
-
         <section className="flex flex-col gap-3 mb-6">
-          <div className="flex items-center justify-between px-1">
-            <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted">My Creations</h2>
+          <div className="flex items-end justify-between">
+            <SectionTitle kicker="My creations" title="Saved posters" className="mb-0" />
             {savedPosters.length > 0 && (
-              <span className="text-[10px] text-app-muted">{savedPosters.length} saved</span>
+              <span className="text-[10px] text-app-muted pb-1">{savedPosters.length} saved</span>
             )}
           </div>
           <SavedCreationsShelf

@@ -22,8 +22,8 @@ export const ExplainerChips = ({ explainers = [] }) => {
               className={`
                 px-3 py-1.5 rounded-custom-pill text-xs font-semibold border transition-all select-none flex items-center gap-1.5
                 ${isOpen
-                  ? 'bg-brand-teal text-white border-brand-teal'
-                  : 'bg-app-dark2 border-app-border/10 text-app-muted hover:text-white'
+                  ? 'bg-brand-teal text-white border-transparent'
+                  : 'bg-app-surface border-line text-app-ink'
                 }
               `}
             >
@@ -42,7 +42,7 @@ export const ExplainerChips = ({ explainers = [] }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2 }}
-            className="bg-app-dark2 border border-brand-teal/20 rounded-custom p-4 text-xs text-app-soft leading-relaxed"
+            className="bg-teal-soft rounded-custom p-4 text-xs text-app-soft leading-relaxed"
           >
             {explainers.find((e) => e.id === openId)?.plain}
           </motion.div>

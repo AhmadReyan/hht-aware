@@ -1,44 +1,21 @@
-import { Square, RectangleVertical, Smartphone } from 'lucide-react';
-import { Segmented, SegmentedButton } from 'konsta/react';
 import { FORMATS } from './posterFormats';
-import { haptics } from '../../hooks/useHaptics';
-
-const ICONS = {
-  square: Square,
-  rectangle: RectangleVertical,
-  phone: Smartphone,
-};
+import { Chip } from '../ui/Chip';
+import { SectionTitle } from '../ui/SectionTitle';
 
 export const PosterFormatSelector = ({ activeFormat, onSelectFormat }) => {
-  const handleSelect = (id) => {
-    if (id !== activeFormat) haptics.selection();
-    onSelectFormat(id);
-  };
-
   return (
-    <div className="flex flex-col gap-2">
-      <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Size / Format</h2>
-      <Segmented strong rounded>
-        {FORMATS.map((format) => {
-          const isActive = activeFormat === format.id;
-          const Icon = ICONS[format.icon] || Square;
-          return (
-            <SegmentedButton
-              key={format.id}
-              type="button"
-              active={isActive}
-              rounded
-              strong
-              onClick={() => handleSelect(format.id)}
-              className="flex-col gap-0.5 min-h-[52px] select-none"
-            >
-              <Icon size={17} />
-              <span className="text-[11px] font-bold leading-none">{format.label}</span>
-              <span className="text-[9px] leading-none opacity-70">{format.sub}</span>
-            </SegmentedButton>
-          );
-        })}
-      </Segmented>
+    <div className="flex flex-col gap-2.5">
+      <SectionTitle kicker="Size" title="Choose a format" className="mb-0" />
+      <div className="flex flex-wrap gap-2">
+        {FORMATS.map((format) => (
+          <Chip
+            key={format.id}
+            label={`${format.label} · ${format.sub}`}
+            active={activeFormat === format.id}
+            onClick={() => onSelectFormat(format.id)}
+          />
+        ))}
+      </div>
     </div>
   );
 };

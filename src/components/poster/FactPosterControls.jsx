@@ -42,10 +42,10 @@ export const FactPosterControls = ({ data, onChange }) => {
     onChange({ ...data, [field]: val });
   };
 
-  const inputClass = 'w-full bg-app-surface2 border border-app-border/10 rounded-custom-sm text-sm px-3.5 py-2.5 text-white placeholder-app-muted focus:outline-none focus:border-brand-red-mid focus:ring-1 focus:ring-brand-red-mid transition-colors';
+  const inputClass = 'w-full bg-app-surface2 border border-line rounded-custom text-sm px-3.5 py-2.5 text-app-ink placeholder:text-app-muted focus:outline-none focus:border-garnet focus:ring-1 focus:ring-garnet transition-colors';
 
   return (
-    <div className="flex flex-col gap-4 font-sans text-white">
+    <div className="flex flex-col gap-4 font-sans text-app-ink">
       {/* Preloaded Chips */}
       <div className="flex flex-col gap-1.5">
         <label className="font-bold text-xs uppercase tracking-wider text-app-muted">Auto-fill HHT Fact</label>
@@ -55,7 +55,7 @@ export const FactPosterControls = ({ data, onChange }) => {
               key={index}
               type="button"
               onClick={() => handleChipSelect(fact)}
-              className="bg-app-dark2 hover:bg-app-mid/40 border border-app-border/10 hover:border-app-muted text-app-muted hover:text-white px-2.5 py-1.5 rounded-custom-pill text-[10px] font-bold transition-all select-none"
+              className="bg-app-surface hover:bg-teal-soft border border-line hover:border-brand-teal text-app-soft hover:text-brand-teal px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold transition-all select-none"
             >
               {fact.chipLabel}
             </button>

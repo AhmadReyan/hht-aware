@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
+import { SectionTitle } from '../components/ui/SectionTitle';
+import { MythFactQuiz } from '../components/research/MythFactQuiz';
 import { ResearchSpotlight } from '../components/research/ResearchSpotlight';
 import { ResearchFilter } from '../components/research/ResearchFilter';
 import { ResearchCard } from '../components/research/ResearchCard';
@@ -10,7 +12,7 @@ import { SavedForAppointment } from '../components/research/SavedForAppointment'
 import { useResearchFeed } from '../hooks/useResearchFeed';
 import { useAppStore } from '../store/useAppStore';
 import { researchCategories, researchExplainers } from '../data/research';
-import { Microscope, CheckCheck, ShieldQuestion, Stethoscope } from 'lucide-react';
+import { CheckCheck, ShieldQuestion, Stethoscope } from 'lucide-react';
 
 const feedListVariants = {
   hidden: {},
@@ -47,7 +49,6 @@ export const Research = () => {
 
   // Swipe-stack handlers — resolve removes the item from the stack pool.
   const handleStackSave = (id) => {
-    // Save-for-appointment is idempotent here; only add if not already saved.
     if (!useAppStore.getState().savedForAppt.includes(id)) {
       toggleSavedForAppt(id);
     }
@@ -61,37 +62,37 @@ export const Research = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-5 font-sans">
+      <div className="flex flex-col gap-6 font-sans rise">
         {/* Header */}
-        <section className="flex flex-col gap-2 px-1">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
-                <Microscope className="text-brand-red-mid" size={24} />
-                <span>Research, Made Simple</span>
-              </h1>
-              <p className="text-xs text-app-muted leading-relaxed">
-                The latest HHT science — rewritten in plain, hopeful language.
-                {unseenCount > 0 && (
-                  <span className="text-brand-red-mid font-bold"> {unseenCount} new to explore.</span>
-                )}
-              </p>
-            </div>
-            {/* Saved-for-appointment opener */}
-            <button
-              type="button"
-              onClick={() => setSavedOpen(true)}
-              aria-label="Open my saved appointment list"
-              className="relative flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-custom bg-app-dark2 border border-app-border/15 text-brand-teal active:scale-90 transition-all"
-            >
-              <Stethoscope size={20} />
-              {savedCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-brand-teal text-white text-[10px] font-bold">
-                  {savedCount}
-                </span>
+        <section className="flex items-start justify-between gap-3 px-1">
+          <div className="flex flex-col">
+            <SectionTitle kicker="Research" title="Made simple, made hopeful" className="mb-1.5" />
+            <p className="text-xs text-app-soft leading-relaxed">
+              The latest HHT science — rewritten in plain, hopeful language.
+              {unseenCount > 0 && (
+                <span className="text-garnet font-bold"> {unseenCount} new to explore.</span>
               )}
-            </button>
+            </p>
           </div>
+          {/* Saved-for-appointment opener */}
+          <button
+            type="button"
+            onClick={() => setSavedOpen(true)}
+            aria-label="Open my saved appointment list"
+            className="relative flex-shrink-0 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-custom bg-app-surface border border-line text-brand-teal shadow-card active:scale-90 transition-all"
+          >
+            <Stethoscope size={20} />
+            {savedCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-brand-teal text-white text-[10px] font-bold">
+                {savedCount}
+              </span>
+            )}
+          </button>
+        </section>
+
+        {/* Featured interactive — Myth vs Fact quiz */}
+        <section>
+          <MythFactQuiz />
         </section>
 
         {/* This Week in Science — swipe stack */}
@@ -122,7 +123,7 @@ export const Research = () => {
         {/* Feed */}
         <section className="flex flex-col gap-3">
           <div className="flex justify-between items-center px-1">
-            <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted">
+            <h2 className="font-bold text-[11px] uppercase tracking-wide text-app-muted">
               {activeCategory === 'all' ? 'All Updates' : activeCategory}
             </h2>
             {unseenCount > 0 && (
@@ -164,7 +165,7 @@ export const Research = () => {
         {/* Plain-language glossary */}
         {researchExplainers && researchExplainers.length > 0 && (
           <section className="flex flex-col gap-3 mb-2">
-            <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1 flex items-center gap-1.5">
+            <h2 className="font-bold text-[11px] uppercase tracking-wide text-app-muted px-1 flex items-center gap-1.5">
               <ShieldQuestion size={14} className="text-brand-teal" />
               Confusing word? Tap it.
             </h2>
@@ -174,7 +175,7 @@ export const Research = () => {
 
         {/* Disclaimer */}
         <section className="mb-6">
-          <p className="text-[10px] text-app-muted leading-relaxed italic bg-app-dark2/50 border border-app-border/5 rounded-custom p-3">
+          <p className="text-[10px] text-app-muted leading-relaxed italic bg-app-surface2 border border-line rounded-custom p-3">
             This feed is for awareness and hope — not medical advice. Always talk with your HHT
             specialist before changing anything about your care. Bring an update that interests you
             to your next appointment.

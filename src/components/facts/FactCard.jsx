@@ -34,7 +34,7 @@ export const FactCard = ({ fact, onShare }) => {
         <Badge variant={categoryColors[cat] || 'default'} size="sm">
           {cat}
         </Badge>
-        <Share2 size={14} className="text-app-muted group-hover:text-white transition-colors" />
+        <Share2 size={14} className="text-app-muted group-hover:text-garnet transition-colors" />
       </div>
 
       {/* Stat and Body */}

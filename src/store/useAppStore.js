@@ -124,6 +124,10 @@ export const useAppStore = create((set, get) => {
   const parsedSavedAppt = safeParse('hht_research_saved_v1', []);
   const initialSavedAppt = Array.isArray(parsedSavedAppt) ? parsedSavedAppt : [];
 
+  // Home daily body check-in — { date, bleeds: [locationKey] }
+  const parsedCheckIn = safeParse('hht_body_checkin_v1', {});
+  const initialCheckIn = parsedCheckIn && typeof parsedCheckIn === 'object' ? parsedCheckIn : {};
+
   return {
     // Emergency Card State
     emergencyData: initialEmergency,
@@ -561,6 +565,36 @@ export const useAppStore = create((set, get) => {
     isSavedForAppt: (updateId) => get().savedForAppt.includes(updateId),
 
     getSavedForAppt: () => get().savedForAppt,
+
+    // -------------------------------------------------------------
+    // Home — daily body check-in ("How's your body today?").
+    // Records which bleed locations (if any) happened today, counts as
+    // a day of activity (feeds the streak), and is idempotent per day.
+    // bleeds: array of location keys, or ['none'] for a bleed-free day.
+    // -------------------------------------------------------------
+    bodyCheckIn: initialCheckIn,  // { date, bleeds }
+
+    logBodyCheckIn: (bleeds) => {
+      const today = getDateString(new Date());
+      const record = { date: today, bleeds: Array.isArray(bleeds) ? bleeds : [] };
+      set(() => {
+        safeSetItem('hht_body_checkin_v1', record);
+        return { bodyCheckIn: record };
+      });
+      get().recordActivity();
+      return record;
+    },
+
+    getTodayBodyCheckIn: () => {
+      const ci = get().bodyCheckIn;
+      const today = getDateString(new Date());
+      return ci && ci.date === today ? ci : null;
+    },
+
+    isCheckedInToday: () => {
+      const ci = get().bodyCheckIn;
+      return !!ci && ci.date === getDateString(new Date());
+    },
 
     // PWA Install Prompt State
     deferredPrompt: null,

@@ -14,7 +14,8 @@ import { useAppStore } from '../store/useAppStore';
 import { Toast } from '../components/ui/Toast';
 import { staggerContainer } from '../lib/motion';
 import { haptics } from '../hooks/useHaptics';
-import { Award, Medal } from 'lucide-react';
+import { SectionTitle } from '../components/ui/SectionTitle';
+import { ListChecks, Medal } from 'lucide-react';
 
 export const Challenges = () => {
   const completedChallenges = useAppStore((state) => state.completedChallenges);
@@ -147,21 +148,12 @@ export const Challenges = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-5 font-sans">
+      <div className="flex flex-col gap-5 font-sans rise">
         {/* Header Title */}
-        <section className="flex flex-col gap-1 px-1">
-          <h1 className="font-serif text-2xl font-bold text-app-ink flex items-center gap-2">
-            <motion.span
-              animate={{ rotate: [0, -8, 8, 0] }}
-              transition={{ duration: 2.6, repeat: Infinity, repeatDelay: 3, ease: 'easeInOut' }}
-              className="inline-flex"
-            >
-              <Award className="text-brand-red-mid" size={24} />
-            </motion.span>
-            <span>Awareness Challenges</span>
-          </h1>
+        <section className="px-1">
+          <SectionTitle kicker="Challenges" title="Earn badges, unlock the Studio" className="mb-1.5" />
           <p className="text-xs text-app-soft leading-relaxed">
-            Build a daily habit of spreading HHT awareness and caring for yourself. Level up, keep your streak alive, and unlock badges along the way!
+            Build a daily habit of spreading HHT awareness and caring for yourself. Level up, keep your streak alive, and collect gold badges along the way.
           </p>
         </section>
 
@@ -192,7 +184,10 @@ export const Challenges = () => {
 
         {/* Challenge Cards List */}
         <section className="flex flex-col gap-3">
-          <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Current Challenges</h2>
+          <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1 flex items-center gap-1.5">
+            <ListChecks size={13} className="text-garnet" />
+            Current Challenges
+          </h2>
           <motion.div
             className="flex flex-col gap-3"
             variants={staggerContainer}
@@ -215,7 +210,7 @@ export const Challenges = () => {
         {/* Badges / Achievements */}
         <section className="flex flex-col gap-3 mb-6">
           <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1 flex items-center gap-1.5">
-            <Medal size={13} className="text-brand-orange" />
+            <Medal size={13} className="text-gold" />
             Badges & Achievements
           </h2>
           <BadgeGrid badges={badges} />

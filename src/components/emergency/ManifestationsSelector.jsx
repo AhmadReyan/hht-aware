@@ -15,25 +15,25 @@ export const ManifestationsSelector = ({ selected = [], onChange }) => {
     { key: 'spinal', label: 'Spinal AVM' }
   ];
 
+  const list = Array.isArray(selected) ? selected : [];
+
   const handleToggle = (key) => {
     haptics.selection();
-    let updated;
-    if (selected.includes(key)) {
-      updated = selected.filter(item => item !== key);
-    } else {
-      updated = [...selected, key];
-    }
+    const updated = list.includes(key)
+      ? list.filter((item) => item !== key)
+      : [...list, key];
     onChange(updated);
   };
 
   return (
-    <div className="flex flex-col gap-2">
-      <label className="font-sans font-bold text-xs uppercase tracking-wider text-app-muted">
-        HHT Manifestations (Select all that apply)
+    <div className="flex flex-col gap-1.5">
+      <label className="font-sans text-[11px] font-semibold uppercase tracking-wider text-garnet">
+        HHT manifestations
+        <span className="ml-1 font-normal normal-case tracking-normal text-app-muted">select all that apply</span>
       </label>
-      <div className="flex flex-wrap gap-1.5 mt-1">
+      <div className="flex flex-wrap gap-2">
         {options.map((opt) => {
-          const isSelected = selected.includes(opt.key);
+          const isSelected = list.includes(opt.key);
           return (
             <motion.button
               key={opt.key}
@@ -41,13 +41,12 @@ export const ManifestationsSelector = ({ selected = [], onChange }) => {
               whileTap={{ scale: 0.94 }}
               transition={spring.snappy}
               onClick={() => handleToggle(opt.key)}
-              className={`
-                min-h-[38px] px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold border transition-colors select-none
-                ${isSelected
-                  ? 'bg-brand-red/10 border-brand-red-mid/60 text-brand-red-light font-bold shadow-glow'
-                  : 'bg-app-surface2 border-app-border/40 text-app-muted hover:text-app-ink hover:border-app-muted/50'
-                }
-              `}
+              aria-pressed={isSelected}
+              className={`min-h-[36px] rounded-custom-pill px-3.5 py-1.5 font-sans text-[12px] font-semibold transition-colors select-none border-[1.5px] ${
+                isSelected
+                  ? 'border-transparent bg-garnet text-white'
+                  : 'border-line bg-app-surface text-app-ink hover:border-app-muted/50'
+              }`}
             >
               {opt.label}
             </motion.button>
@@ -57,4 +56,5 @@ export const ManifestationsSelector = ({ selected = [], onChange }) => {
     </div>
   );
 };
+
 export default ManifestationsSelector;

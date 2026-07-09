@@ -71,16 +71,16 @@ export const PosterCanvas = ({ type, data, theme, format, options, onRendered })
 
   return (
     <div className="relative w-full max-w-[420px] mx-auto">
-      {/* Ambient aurora glow behind the hero canvas — purely decorative, reacts to nothing itself. */}
+      {/* Soft warm halo behind the hero canvas — purely decorative. */}
       <div
         aria-hidden
-        className="absolute -inset-3 rounded-custom-xl bg-aurora opacity-80 blur-2xl pointer-events-none"
+        className="absolute -inset-2 rounded-custom-lg bg-rose opacity-60 blur-2xl pointer-events-none"
       />
 
       <motion.div
         animate={{ scale: rendering ? 0.985 : 1 }}
         transition={spring.soft}
-        className="relative w-full rounded-custom-xl overflow-hidden bg-app-dark shadow-raised shadow-glow border border-app-glass flex items-center justify-center"
+        className="relative w-full rounded-custom-lg overflow-hidden bg-app-surface2 shadow-raised border border-line flex items-center justify-center"
         style={{ aspectRatio }}
       >
         <canvas
@@ -91,9 +91,9 @@ export const PosterCanvas = ({ type, data, theme, format, options, onRendered })
         />
 
         {rendering && (
-          <div className="absolute inset-0 z-10 flex flex-col gap-2 items-center justify-center bg-app-dark/80 text-white backdrop-blur-sm">
-            <Loader2 className="animate-spin text-brand-red-mid" size={32} />
-            <span className="text-xs font-semibold uppercase tracking-wider text-app-muted">Rendering Poster…</span>
+          <div className="absolute inset-0 z-10 flex flex-col gap-2 items-center justify-center bg-app-surface2/80 text-app-ink backdrop-blur-sm">
+            <Loader2 className="animate-spin text-garnet" size={30} />
+            <span className="text-[11px] font-semibold uppercase tracking-wider text-app-muted">Rendering poster…</span>
           </div>
         )}
 

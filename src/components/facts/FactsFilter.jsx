@@ -22,7 +22,7 @@ export const FactsFilter = ({ activeCategory = 'all', onSelectCategory }) => {
               px-3.5 py-1.5 rounded-custom-pill text-xs font-semibold whitespace-nowrap transition-all border select-none
               ${isActive 
                 ? 'bg-brand-red text-white border-brand-red font-bold scale-[1.02] shadow-sm' 
-                : 'bg-app-dark2 border-app-border/10 text-app-muted hover:text-white'
+                : 'bg-app-surface border-line text-app-muted hover:text-app-ink'
               }
             `}
           >

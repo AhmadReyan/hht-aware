@@ -8,7 +8,7 @@ import { spring, staggerContainer, staggerItem } from '../../lib/motion';
 export const SavedCreationsShelf = ({ posters = [], activeId, onSelect, onDelete }) => {
   if (!posters.length) {
     return (
-      <div className="flex flex-col items-center gap-2 text-center py-8 px-4 rounded-custom-xl border border-dashed border-app-border/50 bg-app-surface/60">
+      <div className="flex flex-col items-center gap-2 text-center py-8 px-4 rounded-custom-lg border border-dashed border-line bg-app-surface2/70">
         <Sparkles className="text-brand-teal" size={22} />
         <p className="text-sm font-semibold text-app-ink">No creations yet</p>
         <p className="text-xs text-app-muted max-w-[240px] leading-relaxed">
@@ -47,8 +47,8 @@ export const SavedCreationsShelf = ({ posters = [], activeId, onSelect, onDelete
               }}
               className={`
                 relative shrink-0 snap-start w-[132px] rounded-custom-lg overflow-hidden border cursor-pointer select-none
-                bg-app-surface2 transition-colors
-                ${isActive ? 'border-brand-teal shadow-glow' : 'border-app-border/40 hover:border-app-muted/60'}
+                bg-app-surface shadow-card transition-colors
+                ${isActive ? 'border-garnet shadow-raised' : 'border-line hover:border-app-muted/60'}
               `}
             >
               <div
@@ -81,7 +81,7 @@ export const SavedCreationsShelf = ({ posters = [], activeId, onSelect, onDelete
               </button>
 
               {isActive && (
-                <span className="absolute top-1.5 left-1.5 bg-brand-teal text-app-bg text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-custom-pill">
+                <span className="absolute top-1.5 left-1.5 bg-garnet text-white text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-custom-pill">
                   Editing
                 </span>
               )}

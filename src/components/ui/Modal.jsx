@@ -75,17 +75,17 @@ export const Modal = ({
               animate="visible"
               exit="exit"
               variants={sheetVariants}
-              className="relative w-full max-w-md bg-app-dark2 text-white rounded-t-custom p-6 shadow-raised border-t border-app-border/30 flex flex-col max-h-[85vh] z-10"
+              className="relative w-full max-w-md bg-app-surface text-app-ink rounded-t-custom-lg p-6 shadow-raised border-t border-line flex flex-col max-h-[85vh] z-10"
             >
               {/* Drag Handle indicator */}
               <div className="mx-auto w-12 h-1.5 bg-app-muted/30 rounded-full mb-4" />
-              
+
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-serif font-bold text-white leading-tight">{title}</h2>
+                <h2 className="text-xl font-serif font-bold text-app-ink leading-tight">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="p-1.5 hover:bg-app-mid/50 text-app-muted hover:text-white rounded-full transition-colors active:scale-90"
+                  className="p-1.5 hover:bg-app-surface2 text-app-muted hover:text-app-ink rounded-full transition-colors active:scale-90"
                 >
                   <X size={18} />
                 </button>
@@ -101,14 +101,14 @@ export const Modal = ({
               animate="visible"
               exit="exit"
               variants={dialogVariants}
-              className="relative w-full max-w-sm mx-4 bg-app-dark2 text-white rounded-custom p-6 shadow-raised border border-app-border/30 flex flex-col z-10"
+              className="relative w-full max-w-sm mx-4 bg-app-surface text-app-ink rounded-custom p-6 shadow-raised border border-line flex flex-col z-10"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold font-serif text-white">{title}</h2>
+                <h2 className="text-lg font-bold font-serif text-app-ink">{title}</h2>
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
-                  className="p-1.5 hover:bg-app-mid/50 text-app-muted hover:text-white rounded-full transition-colors active:scale-95"
+                  className="p-1.5 hover:bg-app-surface2 text-app-muted hover:text-app-ink rounded-full transition-colors active:scale-95"
                 >
                   <X size={18} />
                 </button>

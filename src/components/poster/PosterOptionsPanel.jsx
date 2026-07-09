@@ -17,10 +17,10 @@ const Toggle = ({ label, icon: Icon, checked, onToggle }) => (
     transition={spring.snappy}
     onClick={onToggle}
     className={`
-      min-h-[44px] flex items-center gap-2 px-3 py-2 rounded-custom-sm border text-xs font-bold transition-colors select-none
+      min-h-[44px] flex items-center gap-2 px-3 py-2 rounded-custom border text-xs font-bold transition-colors select-none
       ${checked
-        ? 'bg-ember text-white border-transparent shadow-glow'
-        : 'bg-app-surface2 text-app-soft border-app-border/40 hover:text-app-ink'}
+        ? 'bg-garnet text-white border-transparent shadow-card'
+        : 'bg-app-surface2 text-app-soft border-line hover:text-app-ink'}
     `}
   >
     <Icon size={15} />
@@ -37,7 +37,7 @@ export const PosterOptionsPanel = ({ options, onChange }) => {
 
   return (
     <div className="flex flex-col gap-3 font-sans">
-      <h2 className="font-bold text-xs uppercase tracking-wider text-app-muted px-1">Accents</h2>
+      <h2 className="text-[11px] font-semibold uppercase tracking-wide text-garnet px-0.5">Accents</h2>
       <div className="grid grid-cols-2 gap-2">
         <Toggle
           label="Background Pattern"
@@ -54,7 +54,7 @@ export const PosterOptionsPanel = ({ options, onChange }) => {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="font-bold text-[10px] uppercase tracking-wider text-app-muted px-1">Accent Shape</label>
+        <label className="text-[10px] font-semibold uppercase tracking-wide text-app-muted px-0.5">Accent Shape</label>
         <div className="flex flex-wrap gap-1.5">
           {SHAPES.map((shape) => {
             const isActive = (options.accentShape || 'circle') === shape.key;
@@ -67,10 +67,10 @@ export const PosterOptionsPanel = ({ options, onChange }) => {
                 transition={spring.snappy}
                 onClick={() => set({ accentShape: shape.key })}
                 className={`
-                  min-h-[40px] flex items-center gap-1.5 px-2.5 py-1.5 rounded-custom-pill text-[10px] font-bold border transition-colors select-none
+                  min-h-[40px] flex items-center gap-1.5 px-3 py-1.5 rounded-custom-pill text-[11px] font-semibold border transition-colors select-none
                   ${isActive
-                    ? 'bg-app-surface2 text-app-ink border-brand-teal shadow-glow'
-                    : 'bg-app-surface text-app-muted border-app-border/40 hover:text-app-ink'}
+                    ? 'bg-teal-soft text-brand-teal border-brand-teal'
+                    : 'bg-app-surface text-app-muted border-line hover:text-app-ink'}
                 `}
               >
                 <Icon size={12} />

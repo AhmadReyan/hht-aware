@@ -30,8 +30,8 @@ export const BadgeDetailModal = ({ badge, onClose }) => {
             transition={spring.bouncy}
             className={`
               relative w-full max-w-xs rounded-custom-lg p-6 flex flex-col items-center text-center gap-3
-              shadow-xl z-10 border overflow-hidden bg-app-surface2
-              ${badge.unlocked ? 'border-brand-teal/30' : 'border-app-glass'}
+              shadow-raised z-10 border overflow-hidden bg-app-surface
+              ${badge.unlocked ? 'border-gold' : 'border-line'}
             `}
           >
             {badge.unlocked && (
@@ -46,8 +46,8 @@ export const BadgeDetailModal = ({ badge, onClose }) => {
             <span className="text-[10px] font-bold uppercase tracking-widest text-app-muted flex items-center gap-1.5">
               {badge.unlocked ? (
                 <>
-                  <Sparkles size={11} className="text-brand-teal" />
-                  <span className="text-brand-teal">Unlocked</span>
+                  <Sparkles size={11} className="text-gold" />
+                  <span className="text-gold">Unlocked</span>
                 </>
               ) : (
                 <>
@@ -57,7 +57,11 @@ export const BadgeDetailModal = ({ badge, onClose }) => {
               )}
             </span>
 
-            <span className={`text-5xl leading-none ${badge.unlocked ? '' : 'grayscale opacity-50'}`}>
+            <span
+              className={`flex items-center justify-center w-20 h-20 rounded-full text-4xl leading-none ${
+                badge.unlocked ? 'bg-gold-flow shadow-glow' : 'bg-app-surface2 border border-line grayscale opacity-50'
+              }`}
+            >
               {badge.icon}
             </span>
 
@@ -71,7 +75,7 @@ export const BadgeDetailModal = ({ badge, onClose }) => {
               onClick={onClose}
               className={`
                 mt-2 w-full text-sm font-bold py-2.5 rounded-custom-sm active:scale-95 transition-all
-                ${badge.unlocked ? 'bg-brand-teal text-white' : 'bg-app-glass text-app-ink border border-app-glass'}
+                ${badge.unlocked ? 'bg-garnet text-white' : 'bg-app-surface2 text-app-ink border border-line'}
               `}
             >
               {badge.unlocked ? 'Nice!' : 'Got it'}

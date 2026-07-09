@@ -8,10 +8,10 @@ export const InfoBanner = ({
   className = ''
 }) => {
   const styles = {
-    info: 'bg-app-dark2 border-brand-teal/30 text-white',
-    success: 'bg-brand-teal-light/20 border-brand-teal/30 text-brand-teal',
-    warning: 'bg-brand-orange-light/20 border-brand-orange/30 text-brand-orange',
-    danger: 'bg-brand-red/10 border-brand-red/30 text-brand-red-light'
+    info: 'bg-teal-soft border-brand-teal/30 text-brand-teal',
+    success: 'bg-teal-soft border-brand-teal/40 text-brand-teal',
+    warning: 'bg-brand-orange/10 border-brand-orange/30 text-brand-orange',
+    danger: 'bg-rose border-garnet/30 text-garnet'
   };
 
   const icons = {

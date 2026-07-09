@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
-import { Bookmark, X, Sparkles, ExternalLink, Baby } from 'lucide-react';
-import { Badge } from '../ui/Badge';
+import { Bookmark, X, Sparkles, Baby } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
 import { deriveSimpleSummary } from './researchText';
 import { ReactionRow } from './ReactionRow';
 
-const stageStyles = {
-  Approved: 'teal',
-  'In trials': 'orange',
-  'Early research': 'default',
-  Guideline: 'red',
-  News: 'dark',
+const stageTone = {
+  Approved: 'bg-teal-soft text-brand-teal',
+  'In trials': 'bg-rose text-garnet',
+  'Early research': 'bg-app-surface2 text-app-muted border border-line',
+  Guideline: 'bg-rose text-garnet',
+  News: 'bg-app-surface2 text-app-muted border border-line',
 };
+
+const Pill = ({ children, className = '' }) => (
+  <span
+    className={`inline-flex items-center rounded-custom-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${className}`}
+  >
+    {children}
+  </span>
+);
 
 const SWIPE_THRESHOLD = 90;
 
@@ -56,19 +63,17 @@ const TopCard = ({ update, onSave, onDismiss }) => {
       transition={spring.soft}
       whileTap={{ cursor: 'grabbing' }}
     >
-      <div className="relative h-full overflow-hidden rounded-custom-xl surface-glass backdrop-blur-glass shadow-raised p-5 flex flex-col gap-3 cursor-grab active:cursor-grabbing">
-        <div className="absolute inset-0 bg-glass-sheen pointer-events-none" />
-
+      <div className="relative h-full overflow-hidden rounded-custom-lg bg-app-surface border border-line shadow-raised p-5 flex flex-col gap-3 cursor-grab active:cursor-grabbing">
         {/* Swipe intent overlays */}
         <motion.div
           style={{ opacity: saveOpacity }}
-          className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-custom-pill bg-brand-teal/90 text-white text-[11px] font-bold uppercase tracking-wider rotate-[-8deg] pointer-events-none"
+          className="absolute top-4 left-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-custom-pill bg-brand-teal text-white text-[11px] font-bold uppercase tracking-wide rotate-[-8deg] pointer-events-none"
         >
           <Bookmark size={13} /> Save
         </motion.div>
         <motion.div
           style={{ opacity: dismissOpacity }}
-          className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-custom-pill bg-app-mid/90 text-white text-[11px] font-bold uppercase tracking-wider rotate-[8deg] pointer-events-none"
+          className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-custom-pill bg-garnet text-white text-[11px] font-bold uppercase tracking-wide rotate-[8deg] pointer-events-none"
         >
           Skip <X size={13} />
         </motion.div>
@@ -78,12 +83,12 @@ const TopCard = ({ update, onSave, onDismiss }) => {
             <span className="text-3xl leading-none flex-shrink-0">{update.emoji || '🔬'}</span>
             <div className="flex flex-col gap-1.5">
               <div className="flex flex-wrap items-center gap-1.5">
-                <Badge variant="red" size="sm">{update.category}</Badge>
+                <Pill className="bg-rose text-garnet">{update.category}</Pill>
                 {update.stage && (
-                  <Badge variant={stageStyles[update.stage] || 'default'} size="sm">{update.stage}</Badge>
+                  <Pill className={stageTone[update.stage] || stageTone.News}>{update.stage}</Pill>
                 )}
               </div>
-              <h3 className="font-serif text-lg font-bold text-app-ink leading-tight">{update.title}</h3>
+              <h3 className="font-serif text-lg font-extrabold text-app-ink leading-tight">{update.title}</h3>
             </div>
           </div>
 
@@ -97,8 +102,8 @@ const TopCard = ({ update, onSave, onDismiss }) => {
             onClick={() => { setSimple((s) => !s); haptics.tap(); }}
             className={`self-start flex items-center gap-1.5 min-h-[36px] px-3 rounded-custom-pill text-[11px] font-bold border transition-all active:scale-95 select-none
               ${simple
-                ? 'bg-brand-orange/20 border-brand-orange/50 text-brand-orange'
-                : 'bg-app-dark2 border-app-border/10 text-app-muted hover:text-white'}`}
+                ? 'bg-gold/15 border-gold/40 text-gold'
+                : 'bg-app-surface2 border-line text-app-muted'}`}
           >
             <Baby size={13} />
             {simple ? 'Showing simplest' : 'Explain simply'}
@@ -113,7 +118,7 @@ const TopCard = ({ update, onSave, onDismiss }) => {
             type="button"
             onClick={() => onDismiss(update.id, 'left')}
             aria-label="Skip this update"
-            className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-custom-pill bg-app-dark2 border border-app-border/15 text-app-soft text-xs font-bold active:scale-95 transition-all"
+            className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-custom-pill bg-app-surface2 border border-line text-app-soft text-xs font-bold active:scale-95 transition-all"
           >
             <X size={15} /> Skip
           </button>
@@ -121,7 +126,7 @@ const TopCard = ({ update, onSave, onDismiss }) => {
             type="button"
             onClick={() => onSave(update.id, 'right')}
             aria-label="Save this update for my appointment"
-            className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-custom-pill bg-brand-teal text-white text-xs font-bold active:scale-95 transition-all shadow-glow"
+            className="flex-1 min-h-[44px] flex items-center justify-center gap-1.5 rounded-custom-pill bg-brand-teal text-white text-xs font-bold active:scale-95 transition-all shadow-card"
           >
             <Bookmark size={15} /> Save
           </button>
@@ -135,11 +140,11 @@ export const ResearchSwipeStack = ({ items = [], onSave, onDismiss }) => {
   // We render the top card + a peek of the next two for depth.
   const visible = items.slice(0, 3);
 
-  const handleSave = (id, dir) => {
+  const handleSave = (id) => {
     haptics.success();
     onSave?.(id);
   };
-  const handleDismiss = (id, dir) => {
+  const handleDismiss = (id) => {
     haptics.tap();
     onDismiss?.(id);
   };
@@ -147,8 +152,8 @@ export const ResearchSwipeStack = ({ items = [], onSave, onDismiss }) => {
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-center justify-between px-1">
-        <h2 className="font-serif text-base font-bold text-app-ink flex items-center gap-1.5">
-          <Sparkles size={16} className="text-brand-red-mid" />
+        <h2 className="font-serif text-base font-extrabold text-app-ink flex items-center gap-1.5">
+          <Sparkles size={16} className="text-garnet" />
           This Week in Science
         </h2>
         {items.length > 0 && (
@@ -166,12 +171,11 @@ export const ResearchSwipeStack = ({ items = [], onSave, onDismiss }) => {
           >
             {/* Under-cards (peek) — rendered back-to-front */}
             {visible.slice(1).reverse().map((u, idx) => {
-              // idx 0 => the furthest (3rd) card, idx last => 2nd card
               const depth = visible.slice(1).length - idx; // 2 or 1
               return (
                 <div
                   key={u.id}
-                  className="absolute inset-0 rounded-custom-xl surface-glass backdrop-blur-glass shadow-card"
+                  className="absolute inset-0 rounded-custom-lg bg-app-surface border border-line shadow-card"
                   style={{
                     transform: `scale(${1 - depth * 0.04}) translateY(${depth * 10}px)`,
                     opacity: 1 - depth * 0.25,
@@ -194,12 +198,12 @@ export const ResearchSwipeStack = ({ items = [], onSave, onDismiss }) => {
             key="empty"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            className="rounded-custom-xl surface-glass backdrop-blur-glass p-6 text-center flex flex-col items-center gap-2"
+            className="rounded-custom-lg bg-teal-soft p-6 text-center flex flex-col items-center gap-2"
           >
             <span className="text-3xl">🎉</span>
-            <p className="text-sm font-bold text-app-ink">You're all caught up!</p>
-            <p className="text-xs text-app-muted leading-relaxed">
-              You've sorted this week's science. Explore the full feed below, or check your
+            <p className="text-sm font-extrabold text-app-ink font-serif">You&rsquo;re all caught up!</p>
+            <p className="text-xs text-app-soft leading-relaxed">
+              You&rsquo;ve sorted this week&rsquo;s science. Explore the full feed below, or check your
               saved list for your next appointment.
             </p>
           </motion.div>

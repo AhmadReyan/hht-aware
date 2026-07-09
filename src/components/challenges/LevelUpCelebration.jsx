@@ -35,26 +35,26 @@ export const LevelUpCelebration = ({ levelInfo, onClose }) => {
               <motion.div
                 animate={{ scale: [1, 1.08, 1] }}
                 transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
-                className="w-28 h-28 rounded-full bg-teal-flow border-4 border-app-glass flex items-center justify-center shadow-glow"
+                className="w-28 h-28 rounded-full bg-gold-flow border-4 border-white/40 flex items-center justify-center shadow-glow"
               >
                 <span className="font-serif text-5xl font-bold text-white">{levelInfo.level}</span>
               </motion.div>
 
-              <span className="text-xs font-bold uppercase tracking-[0.3em] text-brand-teal flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-[0.3em] text-gold flex items-center gap-1.5">
                 <Sparkles size={13} />
                 Level Up
                 <Sparkles size={13} />
               </span>
 
-              <h2 className="font-serif text-2xl font-bold text-app-ink">{levelInfo.title}</h2>
+              <h2 className="font-serif text-2xl font-bold text-white">{levelInfo.title}</h2>
 
-              <p className="text-xs text-app-soft leading-relaxed max-w-[230px]">
+              <p className="text-xs text-white/80 leading-relaxed max-w-[230px]">
                 You&apos;ve reached Level {levelInfo.level}. Keep spreading awareness — your advocacy is making a real difference!
               </p>
 
               <button
                 onClick={onClose}
-                className="mt-2 px-9 py-2.5 rounded-custom-pill bg-brand-red text-white text-sm font-bold active:scale-95 transition-all shadow-card"
+                className="mt-2 px-9 py-2.5 rounded-custom-pill bg-garnet text-white text-sm font-bold active:scale-95 transition-all shadow-card"
               >
                 Let&apos;s go!
               </button>

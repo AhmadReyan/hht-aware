@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const CONFETTI_COLORS = ['#C0392B', '#E74C3C', '#D35400', '#148F77', '#F4D03F', '#FADBD8'];
+// Warm-editorial confetti — garnet / deep-wine / gold / teal / rose.
+const CONFETTI_COLORS = ['#8E2D3B', '#571826', '#D9A13B', '#E9C87A', '#15756C', '#F3DDD9'];
 
 /**
  * Lightweight celebratory confetti burst — implemented with plain

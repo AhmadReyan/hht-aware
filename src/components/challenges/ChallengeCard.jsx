@@ -62,12 +62,12 @@ export const ChallengeCard = ({
       whileTap={{ scale: locked ? 1 : 0.98 }}
       onClick={handleCardClick}
       className={`
-        relative overflow-visible border rounded-custom p-4 flex gap-3.5 items-start cursor-pointer transition-all select-none
+        relative overflow-visible border rounded-custom p-4 flex gap-3.5 items-start cursor-pointer transition-all select-none text-app-ink
         ${isDone
-          ? 'bg-brand-red/10 border-brand-red-mid/30 text-white shadow-card'
+          ? 'bg-gold/10 border-gold shadow-card'
           : locked
-            ? 'bg-app-surface2/40 border-app-glass/40 opacity-55 cursor-not-allowed text-app-muted'
-            : 'bg-app-surface2 border-app-glass text-white hover:border-brand-teal/20'
+            ? 'bg-app-surface2/60 border-line opacity-60 cursor-not-allowed'
+            : 'bg-app-surface border-line hover:border-brand-teal/30'
         }
       `}
     >
@@ -87,11 +87,11 @@ export const ChallengeCard = ({
               animate={{ scale: 1, rotate: 0, opacity: 1 }}
               transition={spring.bouncy}
             >
-              <CheckCircle2 className="text-brand-red-mid fill-brand-red-mid/20" size={20} />
+              <CheckCircle2 className="text-gold fill-gold/20" size={20} />
             </motion.div>
           ) : (
             <motion.div key="undone" initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={spring.soft}>
-              <Circle className="text-app-muted" size={20} />
+              <Circle className="text-brand-teal/60" size={20} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -100,11 +100,11 @@ export const ChallengeCard = ({
       {/* Info */}
       <div className="flex-1 flex flex-col gap-1 pr-1 min-w-0">
         <div className="flex justify-between items-start gap-2">
-          <h3 className={`font-sans font-bold text-sm leading-snug ${isDone ? 'text-brand-red-light' : 'text-app-ink'}`}>
+          <h3 className={`font-sans font-bold text-sm leading-snug ${isDone ? 'text-garnet' : 'text-app-ink'}`}>
             <span className="mr-1.5">{icon}</span>
             {title}
           </h3>
-          <Badge variant={isDone ? 'red' : 'dark'} size="sm" className="flex-shrink-0 font-extrabold">
+          <Badge variant={isDone ? 'orange' : 'red'} size="sm" className="flex-shrink-0 font-extrabold">
             +{pts} Pts
           </Badge>
         </div>
@@ -115,11 +115,19 @@ export const ChallengeCard = ({
 
         {/* Dynamic Badge / Action Link */}
         <div className="flex justify-between items-center mt-2.5">
-          <Badge variant={isDone ? 'red' : 'default'} size="sm" className="text-[9px]">
+          <Badge variant={isDone ? 'orange' : 'default'} size="sm" className="text-[9px]">
             {tag}
           </Badge>
 
-          {link && !isDone && !locked && (
+          {isDone ? (
+            <span className="text-[10px] font-extrabold text-gold flex items-center gap-0.5">
+              Done ✓
+            </span>
+          ) : locked ? (
+            <span className="text-[10px] font-bold text-app-muted flex items-center gap-0.5">
+              Locked
+            </span>
+          ) : link ? (
             <button
               onClick={handleLinkClick}
               className="text-[10px] text-brand-teal font-bold flex items-center gap-0.5 hover:underline cursor-pointer select-none"
@@ -127,6 +135,10 @@ export const ChallengeCard = ({
               <span>Go to task</span>
               <ArrowRight size={10} />
             </button>
+          ) : (
+            <span className="text-[10px] font-bold text-brand-teal flex items-center gap-0.5">
+              Tap <ArrowRight size={10} />
+            </span>
           )}
         </div>
       </div>

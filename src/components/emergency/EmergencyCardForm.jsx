@@ -1,32 +1,35 @@
 import React from 'react';
 import { ManifestationsSelector } from './ManifestationsSelector';
 
-export const EmergencyCardForm = ({ data, onChange }) => {
+export const EmergencyCardForm = ({ data = {}, onChange }) => {
   const handleChange = (field, val) => {
     onChange({ [field]: val });
   };
 
   const bloodTypes = ['Unknown', 'A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-'];
 
-  const inputClass = 'w-full bg-app-surface2 border border-app-border/40 rounded-custom-sm text-sm px-3.5 py-2.5 text-app-ink placeholder-app-muted focus:outline-none focus:border-brand-teal focus:ring-1 focus:ring-brand-teal transition-colors min-h-[44px]';
-  const labelClass = 'font-bold text-xs uppercase tracking-wider text-app-muted';
+  const inputClass =
+    'w-full min-h-[44px] rounded-custom border border-line bg-app-surface2 px-3.5 py-2.5 font-sans text-sm text-app-ink placeholder-app-muted transition-colors focus:border-garnet focus:outline-none focus:ring-1 focus:ring-garnet';
+  const labelClass = 'font-sans text-[11px] font-semibold uppercase tracking-wider text-garnet';
 
   return (
     <form className="flex flex-col gap-4 font-sans text-app-ink">
-      {/* Name and DOB */}
+      {/* Full name */}
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Full name</label>
+        <input
+          type="text"
+          placeholder="John Doe"
+          value={data.name || ''}
+          onChange={(e) => handleChange('name', e.target.value)}
+          className={inputClass}
+        />
+      </div>
+
+      {/* DOB + Blood type */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Full Name</label>
-          <input
-            type="text"
-            placeholder="John Doe"
-            value={data.name || ''}
-            onChange={(e) => handleChange('name', e.target.value)}
-            className={inputClass}
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Date of Birth</label>
+          <label className={labelClass}>Date of birth</label>
           <input
             type="date"
             value={data.dob || ''}
@@ -34,40 +37,38 @@ export const EmergencyCardForm = ({ data, onChange }) => {
             className={inputClass}
           />
         </div>
-      </div>
-
-      {/* Blood Type and Allergies */}
-      <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Blood Type</label>
+          <label className={labelClass}>Blood type</label>
           <select
             value={data.bloodType || 'Unknown'}
             onChange={(e) => handleChange('bloodType', e.target.value)}
-            className={`${inputClass} appearance-none cursor-pointer`}
+            className={`${inputClass} cursor-pointer appearance-none`}
           >
             {bloodTypes.map((type) => (
-              <option key={type} value={type} className="bg-app-surface2">
+              <option key={type} value={type} className="bg-app-surface2 text-app-ink">
                 {type}
               </option>
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Drug Allergies</label>
-          <input
-            type="text"
-            placeholder="e.g. Penicillin, Aspirin"
-            value={data.drugAllergies || ''}
-            onChange={(e) => handleChange('drugAllergies', e.target.value)}
-            className={inputClass}
-          />
-        </div>
       </div>
 
-      {/* Specialist Name & Phone */}
+      {/* Drug allergies */}
+      <div className="flex flex-col gap-1.5">
+        <label className={labelClass}>Drug allergies</label>
+        <input
+          type="text"
+          placeholder="e.g. Penicillin, Aspirin"
+          value={data.drugAllergies || ''}
+          onChange={(e) => handleChange('drugAllergies', e.target.value)}
+          className={inputClass}
+        />
+      </div>
+
+      {/* Specialist name & phone */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>HHT Specialist/Hospital</label>
+          <label className={labelClass}>HHT specialist</label>
           <input
             type="text"
             placeholder="Dr. Smith / Mayo Clinic"
@@ -77,7 +78,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Specialist Phone</label>
+          <label className={labelClass}>Specialist phone</label>
           <input
             type="tel"
             placeholder="+1 (555) 019-2834"
@@ -88,10 +89,10 @@ export const EmergencyCardForm = ({ data, onChange }) => {
         </div>
       </div>
 
-      {/* Emergency Contact Name & Phone */}
+      {/* Emergency contact name & phone */}
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Emergency Contact Name</label>
+          <label className={labelClass}>Emergency contact</label>
           <input
             type="text"
             placeholder="Jane Doe (Spouse)"
@@ -101,7 +102,7 @@ export const EmergencyCardForm = ({ data, onChange }) => {
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className={labelClass}>Emergency Contact Phone</label>
+          <label className={labelClass}>Contact phone</label>
           <input
             type="tel"
             placeholder="+1 (555) 987-6543"
@@ -112,15 +113,15 @@ export const EmergencyCardForm = ({ data, onChange }) => {
         </div>
       </div>
 
-      {/* Manifestations Selector */}
+      {/* Manifestations */}
       <ManifestationsSelector
         selected={data.manifestations || []}
         onChange={(selected) => handleChange('manifestations', selected)}
       />
 
-      {/* Additional Notes */}
+      {/* Notes */}
       <div className="flex flex-col gap-1.5">
-        <label className={labelClass}>Additional Medical Notes / Medications</label>
+        <label className={labelClass}>Medications &amp; notes for doctors</label>
         <textarea
           rows={3}
           placeholder="e.g. Taking Bevacizumab, history of severe epistaxis, lung AVM coil embolization in 2022."
@@ -132,4 +133,5 @@ export const EmergencyCardForm = ({ data, onChange }) => {
     </form>
   );
 };
+
 export default EmergencyCardForm;

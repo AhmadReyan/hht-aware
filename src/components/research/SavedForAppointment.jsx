@@ -2,18 +2,25 @@ import React from 'react';
 import { Sheet } from 'konsta/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Trash2, Stethoscope, ExternalLink, ClipboardList } from 'lucide-react';
-import { Badge } from '../ui/Badge';
 import { useAppStore } from '../../store/useAppStore';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
 
-const stageStyles = {
-  Approved: 'teal',
-  'In trials': 'orange',
-  'Early research': 'default',
-  Guideline: 'red',
-  News: 'dark',
+const stageTone = {
+  Approved: 'bg-teal-soft text-brand-teal',
+  'In trials': 'bg-rose text-garnet',
+  'Early research': 'bg-app-surface2 text-app-muted border border-line',
+  Guideline: 'bg-rose text-garnet',
+  News: 'bg-app-surface2 text-app-muted border border-line',
 };
+
+const Pill = ({ children, className = '' }) => (
+  <span
+    className={`inline-flex items-center rounded-custom-pill px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${className}`}
+  >
+    {children}
+  </span>
+);
 
 /**
  * Bottom-sheet list of updates the patient saved to bring to their doctor.
@@ -38,14 +45,14 @@ export const SavedForAppointment = ({ opened, onClose, allUpdates = [] }) => {
       opened={opened}
       onBackdropClick={onClose}
     >
-      <div className="w-full max-w-md mx-auto bg-app-dark2 border-t border-app-border/30 rounded-t-custom-lg shadow-raised max-h-[85vh] flex flex-col">
+      <div className="w-full max-w-md mx-auto bg-app-surface border-t border-line rounded-t-custom-lg shadow-raised max-h-[85vh] flex flex-col">
         <div className="mx-auto w-12 h-1.5 bg-app-muted/30 rounded-full mt-3 mb-2" />
 
         <div className="flex items-center justify-between px-5 pb-3">
           <div className="flex items-center gap-2">
             <Stethoscope size={20} className="text-brand-teal" />
             <div className="flex flex-col">
-              <h2 className="font-serif text-lg font-bold text-app-ink leading-tight">
+              <h2 className="font-serif text-lg font-extrabold text-app-ink leading-tight">
                 For My Appointment
               </h2>
               <span className="text-[10px] text-app-muted">
@@ -57,7 +64,7 @@ export const SavedForAppointment = ({ opened, onClose, allUpdates = [] }) => {
             type="button"
             onClick={onClose}
             aria-label="Close saved list"
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-app-muted hover:text-white rounded-full active:scale-90 transition-all"
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-app-muted hover:text-app-ink rounded-full active:scale-90 transition-all"
           >
             <X size={20} />
           </button>
@@ -88,24 +95,24 @@ export const SavedForAppointment = ({ opened, onClose, allUpdates = [] }) => {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, x: -40 }}
                     transition={spring.soft}
-                    className="bg-app-dark border border-app-border/10 rounded-custom p-3.5 flex flex-col gap-2"
+                    className="bg-app-surface2 border border-line rounded-custom p-3.5 flex flex-col gap-2"
                   >
                     <div className="flex items-start gap-2.5">
                       <span className="text-xl leading-none flex-shrink-0">{u.emoji || '🔬'}</span>
                       <div className="flex flex-col gap-1 flex-1">
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="red" size="sm">{u.category}</Badge>
+                          <Pill className="bg-rose text-garnet">{u.category}</Pill>
                           {u.stage && (
-                            <Badge variant={stageStyles[u.stage] || 'default'} size="sm">{u.stage}</Badge>
+                            <Pill className={stageTone[u.stage] || stageTone.News}>{u.stage}</Pill>
                           )}
                         </div>
-                        <h3 className="font-sans font-bold text-xs text-app-ink leading-snug">{u.title}</h3>
+                        <h3 className="font-serif font-extrabold text-[13px] text-app-ink leading-snug">{u.title}</h3>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleRemove(u.id)}
                         aria-label={`Remove ${u.title} from list`}
-                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-app-muted hover:text-brand-red-mid rounded-full active:scale-90 transition-all flex-shrink-0"
+                        className="min-h-[44px] min-w-[44px] flex items-center justify-center text-app-muted hover:text-garnet rounded-full active:scale-90 transition-all flex-shrink-0"
                       >
                         <Trash2 size={16} />
                       </button>

@@ -25,8 +25,8 @@ export const AgeGroupTabs = ({ groups = [] }) => {
               className={`
                 px-3 py-1.5 rounded-custom-pill text-xs font-semibold whitespace-nowrap transition-all border select-none flex items-center gap-1.5
                 ${isActive
-                  ? 'bg-brand-red text-white border-brand-red font-bold shadow-sm'
-                  : 'bg-app-dark2 border-app-border/10 text-app-muted hover:text-white'
+                  ? 'bg-garnet text-white border-garnet font-bold shadow-card'
+                  : 'bg-app-surface border-line text-app-muted hover:text-app-ink'
                 }
               `}
             >
@@ -45,7 +45,7 @@ export const AgeGroupTabs = ({ groups = [] }) => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -6 }}
           transition={{ duration: 0.2 }}
-          className="bg-app-dark2 border border-app-border/10 rounded-custom p-4 flex flex-col gap-3"
+          className="bg-app-surface2 border border-line rounded-custom p-4 flex flex-col gap-3"
         >
           {active.focus && (
             <div className="flex items-start gap-2 bg-brand-orange/10 border border-brand-orange/20 rounded-custom-sm p-3">
