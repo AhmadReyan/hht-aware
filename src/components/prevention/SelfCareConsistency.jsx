@@ -5,11 +5,20 @@ import { useAppStore } from '../../store/useAppStore';
 export const SelfCareConsistency = () => {
   const history = useAppStore(s => s.selfCareHistory);
 
+  // Local "YYYY-MM-DD" — matches how the store writes selfCareHistory dates
+  // (never UTC, so cells don't shift a day near midnight / outside UTC).
+  const toLocalDateStr = (d) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   // Last 21 days for a compact 3-week view
   const last21Days = Array.from({ length: 21 }).map((_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (20 - i));
-    const dateStr = d.toISOString().split('T')[0];
+    const dateStr = toLocalDateStr(d);
     const entry = history.find(h => h.date === dateStr);
     return {
       date: dateStr,
