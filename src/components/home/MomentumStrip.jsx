@@ -20,10 +20,22 @@ const StatTile = ({ label, value, sub, children }) => (
 );
 
 export const MomentumStrip = () => {
+  // Subscribe to raw state (primitives / stable refs) and the getter
+  // *functions* — never call a getter inside the selector, or zustand
+  // returns a new object every render and React infinite-loops (blank screen).
   const currentStreak = useAppStore(s => s.currentStreak);
-  const levelInfo = useAppStore(s => s.getLevelInfo());
-  const adherence = useAppStore(s => s.getAdherence());
-  const perfectDays = useAppStore(s => s.dailyStats.perfectDaysCount);
+  const dailyStats = useAppStore(s => s.dailyStats);
+  const getLevelInfo = useAppStore(s => s.getLevelInfo);
+  const getAdherence = useAppStore(s => s.getAdherence);
+
+  const levelInfo = getLevelInfo();
+  const perfectDays = dailyStats.perfectDaysCount;
+
+  // getAdherence returns [{ date, count, pct }] — average the last 7 days to a %.
+  const adherenceDays = getAdherence();
+  const adherence = adherenceDays.length
+    ? Math.round(adherenceDays.reduce((sum, d) => sum + d.pct, 0) / adherenceDays.length)
+    : 0;
 
   return (
     <motion.section
@@ -39,7 +51,7 @@ export const MomentumStrip = () => {
       </StatTile>
 
       <StatTile label="Level" value={levelInfo.level}>
-        <ProgressRing progress={levelInfo.progress} size={40} strokeWidth={4} color="var(--garnet)">
+        <ProgressRing progress={levelInfo.progressPct} size={40} strokeWidth={4} color="var(--garnet)">
           <span className="text-[10px] font-bold text-garnet">{levelInfo.level}</span>
         </ProgressRing>
       </StatTile>
