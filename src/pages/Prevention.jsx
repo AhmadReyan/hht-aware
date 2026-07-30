@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { SelfCareChecklist } from '../components/prevention/SelfCareChecklist';
+import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { QuickRoutine } from '../components/prevention/QuickRoutine';
+import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { PreventionCategory } from '../components/prevention/PreventionCategory';
 import { Card } from '../components/ui/Card';
 import { Vessels } from '../components/ui/Vessels';
@@ -39,7 +41,21 @@ export const Prevention = () => {
           <SelfCareChecklist />
         </section>
 
-        {/* 2. Simple Daily Routine — The "Why" behind the habits */}
+        {/* 2. Consistency Heatmap */}
+        <section>
+          <SelfCareConsistency />
+        </section>
+
+        {/* 3. Trigger Logger */}
+        <section>
+          <div className="px-1 mb-3">
+             <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Analytics</span>
+             <h2 className="font-serif text-xl font-extrabold text-ink leading-tight">Trigger Log</h2>
+          </div>
+          <TriggerLogger />
+        </section>
+
+        {/* 4. Simple Daily Routine */}
         <section className="flex flex-col gap-4">
           <div className="px-1 flex justify-between items-end">
             <div className="flex flex-col">
@@ -51,13 +67,13 @@ export const Prevention = () => {
             </span>
           </div>
 
-          <Card className="p-6 bg-white border-app-border/10 relative overflow-hidden shadow-card">
+          <Card className="p-6 bg-white border-app-border/10 relative overflow-hidden shadow-card rounded-custom-lg">
             <Vessels color="var(--garnet)" opacity={0.04} />
             <QuickRoutine items={everydayRoutine} />
           </Card>
         </section>
 
-        {/* 3. Knowledge Library — The collapsed detail */}
+        {/* 5. Knowledge Library */}
         <section className="flex flex-col gap-3">
           <button
             type="button"
@@ -85,7 +101,7 @@ export const Prevention = () => {
           )}
         </section>
 
-        {/* 4. Pro-Tip Callout */}
+        {/* 6. Pro-Tip Callout */}
         <section className="bg-rose border border-garnet/10 rounded-custom-lg p-5 flex gap-4 items-center">
             <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
                <Sparkles className="text-garnet" size={24} />

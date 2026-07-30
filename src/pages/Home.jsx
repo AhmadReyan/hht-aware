@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { HomeHero } from '../components/home/HomeHero';
 import { DailyCheckIn } from '../components/home/DailyCheckIn';
+import { MomentumStrip } from '../components/home/MomentumStrip';
 import { QuickAction } from '../components/home/QuickAction';
 import { FactSpotlight } from '../components/home/FactSpotlight';
 import { SectionTitle } from '../components/ui/SectionTitle';
@@ -23,6 +24,7 @@ export const Home = () => {
   const logBodyCheckIn = useAppStore((s) => s.logBodyCheckIn);
   const isCheckedInToday = useAppStore((s) => s.isCheckedInToday);
   const getTodayBodyCheckIn = useAppStore((s) => s.getTodayBodyCheckIn);
+  const recordActivity = useAppStore((s) => s.recordActivity);
 
   const [randomFact, setRandomFact] = useState(facts[0]);
 
@@ -46,9 +48,10 @@ export const Home = () => {
   };
 
   useEffect(() => {
+    recordActivity();
     const randomIndex = Math.floor(Math.random() * facts.length);
     setRandomFact(facts[randomIndex]);
-  }, []);
+  }, [recordActivity]);
 
   const handleShareFact = async () => {
     await shareContent({
@@ -78,15 +81,18 @@ export const Home = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-8 pb-8 rise">
+      <div className="flex flex-col gap-6 pb-8 rise">
 
-        {/* Hero Section */}
+        {/* 1. Time-of-day + streak-aware hero */}
         <HomeHero
           greeting={greeting}
           onOpenPassport={() => navigate('/emergency')}
         />
 
-        {/* Daily Check-in */}
+        {/* 2. Momentum strip: compact animated stats */}
+        <MomentumStrip />
+
+        {/* 3. Daily ritual front-and-center */}
         <DailyCheckIn
           logged={logged}
           selected={selected}
@@ -95,7 +101,7 @@ export const Home = () => {
           currentStreak={currentStreak}
         />
 
-        {/* Quick Actions Row */}
+        {/* 4. Quick Actions Row */}
         <section className="flex justify-between gap-4 px-2">
           <QuickAction
             title="Studio"
@@ -123,14 +129,14 @@ export const Home = () => {
           />
         </section>
 
-        {/* Interactive Fact Spotlight */}
+        {/* 5. Interactive Fact Spotlight */}
         <FactSpotlight
           fact={randomFact}
           onRotate={rotateFact}
           onShare={handleShareFact}
         />
 
-        {/* Resource Directory */}
+        {/* 6. Resource Directory */}
         <section className="flex flex-col gap-4">
           <SectionTitle kicker="Community" title="Support & Resources" />
 
@@ -158,7 +164,6 @@ export const Home = () => {
           </div>
         </section>
 
-        {/* Footer Credit */}
         <div className="text-center py-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-app-muted opacity-40">
             Official awareness partner of <span className="text-garnet font-bold">Cure HHT</span>
