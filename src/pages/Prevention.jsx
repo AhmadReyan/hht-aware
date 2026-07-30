@@ -2,170 +2,107 @@ import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { SelfCareChecklist } from '../components/prevention/SelfCareChecklist';
-import { SelfCareStreakStrip } from '../components/prevention/SelfCareStreakStrip';
-import { SelfCareNudge } from '../components/prevention/SelfCareNudge';
-import { TriggerLogger } from '../components/prevention/TriggerLogger';
-import { TunedTips } from '../components/prevention/TunedTips';
-import { RoutineRing } from '../components/prevention/RoutineRing';
-import { AgePersonaSelector } from '../components/prevention/AgePersonaSelector';
-import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
-import { TopicTileGrid } from '../components/prevention/TopicTileGrid';
-import { TriggerHelperSorter } from '../components/prevention/TriggerHelperSorter';
+import { QuickRoutine } from '../components/prevention/QuickRoutine';
 import { PreventionCategory } from '../components/prevention/PreventionCategory';
+import { Card } from '../components/ui/Card';
+import { Vessels } from '../components/ui/Vessels';
 import {
   preventionDisclaimer,
   preventionCategories,
-  preventionByAge,
   everydayRoutine,
-  noseCareSteps,
-  triggerHelperItems,
 } from '../data/prevention';
 import {
-  Users,
-  Sparkles,
   Library,
   ChevronDown,
-  CalendarClock,
-  Shuffle,
   ShieldPlus,
+  ArrowRight,
+  Sparkles,
 } from 'lucide-react';
 
-const SubHeading = ({ icon: Icon, children }) => (
-  <h2 className="font-sans font-bold text-[11px] uppercase tracking-wider text-app-muted px-0.5 flex items-center gap-1.5">
-    {Icon && <Icon size={13} className="text-garnet" />}
-    {children}
-  </h2>
-);
-
 export const Prevention = () => {
-  const [showTopics, setShowTopics] = useState(false);
   const [showLibrary, setShowLibrary] = useState(false);
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-6 font-sans rise">
-        {/* Lead */}
-        <div className="flex flex-col gap-2">
-          <SectionTitle kicker="Prevention" title="Tips tuned to you" className="mb-0" />
-          <p className="text-[13px] text-app-soft leading-relaxed">
-            Log what you actually did today — small, repeated habits are what lower nosebleed risk
-            and protect your iron.
-          </p>
-        </div>
+      <div className="flex flex-col gap-8 font-sans rise pb-8">
 
-        {/* 1. Today's Self-Care — primary actionable module */}
+        {/* Header */}
+        <section className="px-1">
+          <SectionTitle kicker="Self-Care" title="Protect your iron" />
+          <p className="text-[13px] text-app-soft leading-relaxed pr-8">
+            Daily habits are your strongest defense. Moisturizing and gentle care can reduce nosebleed frequency by up to 50%.
+          </p>
+        </section>
+
+        {/* 1. Daily Checklist — Main Action */}
         <section>
           <SelfCareChecklist />
         </section>
 
-        {/* 2. Reactive feedback strip — streak + 7-day adherence */}
-        <section>
-          <SelfCareStreakStrip />
+        {/* 2. Simple Daily Routine — The "Why" behind the habits */}
+        <section className="flex flex-col gap-4">
+          <div className="px-1 flex justify-between items-end">
+            <div className="flex flex-col">
+               <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Guidelines</span>
+               <h2 className="font-serif text-xl font-extrabold text-ink leading-tight">Daily Rhythm</h2>
+            </div>
+            <span className="text-[11px] font-bold text-garnet flex items-center gap-1">
+              Scroll down <ArrowRight size={12} />
+            </span>
+          </div>
+
+          <Card className="p-6 bg-white border-app-border/10 relative overflow-hidden shadow-card">
+            <Vessels color="var(--garnet)" opacity={0.04} />
+            <QuickRoutine items={everydayRoutine} />
+          </Card>
         </section>
 
-        {/* 3. Gentle nudge — only while something's still unlogged */}
-        <SelfCareNudge />
-
-        {/* 4. Trigger logger */}
-        <section>
-          <TriggerLogger />
-        </section>
-
-        {/* 5. Tuned tips — time-of-day + age swap tips & a rose diet callout */}
-        <section>
-          <TunedTips />
-        </section>
-
-        {/* 6. Care by life stage */}
-        {preventionByAge && preventionByAge.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <SubHeading icon={Users}>Care by Life Stage</SubHeading>
-            <AgePersonaSelector groups={preventionByAge} />
-          </section>
-        )}
-
-        {/* 7. Nose care in 3 steps */}
-        {noseCareSteps && noseCareSteps.length > 0 && (
-          <section className="flex flex-col gap-3">
-            <SubHeading icon={Sparkles}>Nose Care in 3 Steps</SubHeading>
-            <NoseCareSteps steps={noseCareSteps} />
-          </section>
-        )}
-
-        {/* 8. Topic depth — collapsed, secondary. Reading stays optional. */}
+        {/* 3. Knowledge Library — The collapsed detail */}
         <section className="flex flex-col gap-3">
           <button
             type="button"
-            onClick={() => setShowTopics((s) => !s)}
-            className="flex items-center gap-1.5 text-xs font-bold text-app-soft px-0.5 select-none min-h-[44px]"
+            onClick={() => setShowLibrary((s) => !s)}
+            className="flex items-center justify-between w-full bg-surface-2 border border-line rounded-custom-lg p-5 text-left shadow-sm group hover:border-garnet/30 transition-all"
           >
-            <Library size={14} className="text-app-muted" />
-            Explore prevention topics
-            <ChevronDown size={14} className={`transition-transform ${showTopics ? 'rotate-180' : ''}`} />
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-garnet text-white flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+                <Library size={20} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm font-bold text-ink">Topic Library</span>
+                <span className="text-[11px] text-app-muted">Deep dives on diet, meds, and genetics</span>
+              </div>
+            </div>
+            <ChevronDown size={20} className={`text-app-muted transition-transform duration-300 ${showLibrary ? 'rotate-180' : ''}`} />
           </button>
 
-          {showTopics && (
-            <div className="flex flex-col gap-6 rise">
-              {everydayRoutine && everydayRoutine.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <SubHeading icon={CalendarClock}>A Simple Daily Rhythm</SubHeading>
-                  <div className="bg-app-surface border border-line rounded-custom-lg p-5 shadow-card">
-                    <RoutineRing routine={everydayRoutine} />
-                  </div>
-                </div>
-              )}
-
-              <div className="flex flex-col gap-3">
-                <SubHeading>Every Topic</SubHeading>
-                <TopicTileGrid categories={preventionCategories || []} />
-              </div>
-
-              {triggerHelperItems && triggerHelperItems.length > 0 && (
-                <div className="flex flex-col gap-3">
-                  <SubHeading icon={Shuffle}>Trigger or Helper?</SubHeading>
-                  <p className="text-[11px] text-app-muted px-0.5 -mt-1 leading-relaxed">
-                    Tap a chip, then tap the column where you think it belongs.
-                  </p>
-                  <TriggerHelperSorter items={triggerHelperItems} />
-                </div>
-              )}
-
-              {/* Full topic library — the linear accordion, nested one level deeper */}
-              <div className="flex flex-col gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowLibrary((s) => !s)}
-                  className="flex items-center gap-1.5 text-[11px] font-bold text-app-soft px-0.5 select-none min-h-[44px]"
-                >
-                  <Library size={13} className="text-app-muted" />
-                  Browse the full topic library
-                  <ChevronDown size={13} className={`transition-transform ${showLibrary ? 'rotate-180' : ''}`} />
-                </button>
-
-                {showLibrary && (
-                  <div className="flex flex-col gap-2.5 rise">
-                    {(preventionCategories || []).map((cat) => (
-                      <PreventionCategory key={cat.id} category={cat} defaultOpen={false} />
-                    ))}
-                  </div>
-                )}
-              </div>
+          {showLibrary && (
+            <div className="flex flex-col gap-3 rise pt-2">
+              {preventionCategories.map((cat) => (
+                <PreventionCategory key={cat.id} category={cat} defaultOpen={false} />
+              ))}
             </div>
           )}
         </section>
 
-        {/* Medical disclaimer — warm, always present */}
-        {preventionDisclaimer && (
-          <div className="bg-app-surface2 border border-line rounded-custom p-4 flex items-start gap-2.5">
-            <ShieldPlus size={16} className="text-garnet flex-shrink-0 mt-0.5" />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-garnet">
-                Gentle reminder
-              </span>
-              <p className="text-[11.5px] text-app-soft leading-relaxed">{preventionDisclaimer}</p>
+        {/* 4. Pro-Tip Callout */}
+        <section className="bg-rose border border-garnet/10 rounded-custom-lg p-5 flex gap-4 items-center">
+            <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
+               <Sparkles className="text-garnet" size={24} />
             </div>
-          </div>
-        )}
+            <div className="flex flex-col gap-0.5">
+               <span className="text-[11px] font-extrabold uppercase tracking-widest text-garnet">Pro Tip</span>
+               <p className="text-xs text-ink font-medium leading-relaxed">
+                 Apply saline gel <span className="text-garnet font-bold underline">before</span> you feel dry to prevent micro-cracks.
+               </p>
+            </div>
+        </section>
+
+        {/* Medical disclaimer */}
+        <div className="bg-white/50 border border-line rounded-custom p-4 flex items-start gap-2.5 opacity-80">
+          <ShieldPlus size={16} className="text-garnet flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-app-muted leading-relaxed italic">{preventionDisclaimer}</p>
+        </div>
       </div>
     </PageWrapper>
   );
