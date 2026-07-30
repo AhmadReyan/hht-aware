@@ -4,6 +4,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { HomeHero } from '../components/home/HomeHero';
 import { DailyCheckIn } from '../components/home/DailyCheckIn';
 import { MomentumStrip } from '../components/home/MomentumStrip';
+import { NoseCast } from '../components/home/NoseCast';
 import { QuickAction } from '../components/home/QuickAction';
 import { FactSpotlight } from '../components/home/FactSpotlight';
 import { SectionTitle } from '../components/ui/SectionTitle';
@@ -13,7 +14,7 @@ import { resources } from '../data/resources';
 import { useShare } from '../hooks/useShare';
 import { useAppStore } from '../store/useAppStore';
 import { haptics } from '../hooks/useHaptics';
-import { Palette, ShieldAlert, BookOpen, Trophy, ChevronRight } from 'lucide-react';
+import { Palette, ShieldAlert, BookOpen, Trophy, ChevronRight, Activity } from 'lucide-react';
 
 export const Home = () => {
   const navigate = useNavigate();
@@ -92,6 +93,9 @@ export const Home = () => {
         {/* 2. Momentum strip: compact animated stats */}
         <MomentumStrip />
 
+        {/* 2.5 NoseCast: dry-air bleed-risk forecast */}
+        <NoseCast />
+
         {/* 3. Daily ritual front-and-center */}
         <DailyCheckIn
           logged={logged}
@@ -102,7 +106,13 @@ export const Home = () => {
         />
 
         {/* 4. Quick Actions Row */}
-        <section className="flex justify-between gap-4 px-2">
+        <section className="flex justify-between gap-2 px-2">
+          <QuickAction
+            title="Track"
+            icon={Activity}
+            onClick={() => navigate('/tracker')}
+            color="#15756C"
+          />
           <QuickAction
             title="Studio"
             icon={Palette}

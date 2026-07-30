@@ -138,6 +138,26 @@ export const useAppStore = create((set, get) => {
   const parsedCheckIn = safeParse('hht_body_checkin_v1', {});
   const initialCheckIn = parsedCheckIn && typeof parsedCheckIn === 'object' ? parsedCheckIn : {};
 
+  // ---------------------------------------------------------------------
+  // Health tracker slices — nosebleed episodes, lab results, iron intake.
+  // PRIVACY: these are sensitive health records. They stay ON-DEVICE ONLY
+  // and are deliberately NOT added to buildSnapshot()/cloud sync.
+  // ---------------------------------------------------------------------
+  const parsedEpisodes = safeParse('hht_episodes_v1', []);
+  const initialEpisodes = Array.isArray(parsedEpisodes) ? parsedEpisodes : [];
+
+  const parsedLabs = safeParse('hht_labs_v1', []);
+  const initialLabs = Array.isArray(parsedLabs) ? parsedLabs : [];
+
+  // Iron intake: a per-day mg map { 'YYYY-MM-DD': mg } plus a weekly target.
+  const parsedIron = safeParse('hht_iron_v1', {});
+  const initialIronLog = parsedIron.log && typeof parsedIron.log === 'object' ? parsedIron.log : {};
+  const initialIronTarget = typeof parsedIron.target === 'number' && parsedIron.target > 0 ? parsedIron.target : 126;
+
+  // Premium / monetization surface (default off). No real billing SDK here.
+  const parsedPremium = safeParse('hht_premium_v1', {});
+  const initialPremium = parsedPremium.premiumEnabled === true;
+
   // Cloud backup toggle — opt-in, off by default. Only { enabled, lastSyncedAt }
   // persist; the live status is derived at runtime.
   const parsedCloudSync = safeParse('hht_cloud_sync_v1', {});
@@ -616,6 +636,174 @@ export const useAppStore = create((set, get) => {
       const ci = get().bodyCheckIn;
       return !!ci && ci.date === getDateString(new Date());
     },
+
+    // -------------------------------------------------------------
+    // Health tracker — nosebleed episodes.
+    // Record shape: { id, date(YYYY-MM-DD), durationMin, severity, triggers[], note }.
+    // PRIVACY: device-local only, never synced to the cloud.
+    // -------------------------------------------------------------
+    nosebleedEpisodes: initialEpisodes,
+
+    logEpisode: (ep) => {
+      set((state) => {
+        const src = ep || {};
+        const record = {
+          id: src.id || `ep_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`,
+          date: typeof src.date === 'string' && src.date ? src.date : getDateString(new Date()),
+          durationMin: Number(src.durationMin) || 0,
+          severity: ['mild', 'moderate', 'severe'].includes(src.severity) ? src.severity : 'mild',
+          triggers: Array.isArray(src.triggers) ? src.triggers : [],
+          note: typeof src.note === 'string' ? src.note : ''
+        };
+        // Keep newest-first for display.
+        const updated = [record, ...state.nosebleedEpisodes];
+        safeSetItem('hht_episodes_v1', updated);
+        return { nosebleedEpisodes: updated };
+      });
+      get().recordActivity();
+    },
+
+    deleteEpisode: (id) => {
+      set((state) => {
+        const updated = state.nosebleedEpisodes.filter((e) => e.id !== id);
+        safeSetItem('hht_episodes_v1', updated);
+        return { nosebleedEpisodes: updated };
+      });
+    },
+
+    // Stable reference (the state array) — safe to call inline in render.
+    getEpisodes: () => get().nosebleedEpisodes,
+
+    // Returns a NEW object each call — subscribe as a function reference,
+    // then call in the render body (see MEMORY getter-in-render convention).
+    getEpisodeStats: (days = 30) => {
+      const eps = get().nosebleedEpisodes;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - (Math.max(1, days) - 1));
+      const cutoffStr = getDateString(cutoff);
+      const inRange = eps.filter((e) => e.date >= cutoffStr);
+      const count = inRange.length;
+      const totalDurationMin = inRange.reduce((s, e) => s + (Number(e.durationMin) || 0), 0);
+      const avgDurationMin = count ? Math.round(totalDurationMin / count) : 0;
+      const bySeverity = { mild: 0, moderate: 0, severe: 0 };
+      inRange.forEach((e) => {
+        if (bySeverity[e.severity] !== undefined) bySeverity[e.severity] += 1;
+      });
+      return { days, count, totalDurationMin, avgDurationMin, bySeverity };
+    },
+
+    // Primitive number — safe to call inline.
+    getWeeklyEpisodeCount: () => {
+      const eps = get().nosebleedEpisodes;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 6);
+      const cutoffStr = getDateString(cutoff);
+      return eps.filter((e) => e.date >= cutoffStr).length;
+    },
+
+    // -------------------------------------------------------------
+    // Health tracker — lab results (hemoglobin / ferritin).
+    // Record shape: { id, date, hemoglobin(g/dL|null), ferritin(number|null), note }.
+    // PRIVACY: device-local only, never synced.
+    // -------------------------------------------------------------
+    labResults: initialLabs,
+
+    logLab: (lab) => {
+      set((state) => {
+        const src = lab || {};
+        const toNum = (v) => (v === null || v === undefined || v === '' || Number.isNaN(Number(v)) ? null : Number(v));
+        const record = {
+          id: src.id || `lab_${new Date().getTime()}_${Math.floor(Math.random() * 1000)}`,
+          date: typeof src.date === 'string' && src.date ? src.date : getDateString(new Date()),
+          hemoglobin: toNum(src.hemoglobin),
+          ferritin: toNum(src.ferritin),
+          note: typeof src.note === 'string' ? src.note : ''
+        };
+        const updated = [record, ...state.labResults];
+        safeSetItem('hht_labs_v1', updated);
+        return { labResults: updated };
+      });
+      get().recordActivity();
+    },
+
+    deleteLab: (id) => {
+      set((state) => {
+        const updated = state.labResults.filter((l) => l.id !== id);
+        safeSetItem('hht_labs_v1', updated);
+        return { labResults: updated };
+      });
+    },
+
+    getLabs: () => get().labResults,
+
+    // Most recent hemoglobin value (primitive number|null) — safe inline.
+    getLatestHemoglobin: () => {
+      const withHb = get().labResults.filter(
+        (l) => l.hemoglobin !== null && l.hemoglobin !== undefined && !Number.isNaN(Number(l.hemoglobin))
+      );
+      if (!withHb.length) return null;
+      const sorted = [...withHb].sort((a, b) => (a.date < b.date ? 1 : -1));
+      return Number(sorted[0].hemoglobin);
+    },
+
+    // -------------------------------------------------------------
+    // Health tracker — iron intake. `ironIntake` is a per-day mg map
+    // { 'YYYY-MM-DD': mg }; `ironTarget` is a weekly mg goal (default 126,
+    // i.e. ~18 mg/day). PRIVACY: device-local only, never synced.
+    // -------------------------------------------------------------
+    ironIntake: initialIronLog,
+    ironTarget: initialIronTarget,
+
+    addIron: (mg, date) => {
+      set((state) => {
+        const day = typeof date === 'string' && date ? date : getDateString(new Date());
+        const next = Math.max(0, (Number(state.ironIntake[day]) || 0) + (Number(mg) || 0));
+        const log = { ...state.ironIntake, [day]: next };
+        safeSetItem('hht_iron_v1', { log, target: state.ironTarget });
+        return { ironIntake: log };
+      });
+      get().recordActivity();
+    },
+
+    setIronTarget: (mgPerWeek = 126) => {
+      set((state) => {
+        const target = Number(mgPerWeek) > 0 ? Number(mgPerWeek) : 126;
+        safeSetItem('hht_iron_v1', { log: state.ironIntake, target });
+        return { ironTarget: target };
+      });
+    },
+
+    // Total mg logged across the last 7 days (primitive) — safe inline.
+    getIronThisWeek: () => {
+      const log = get().ironIntake;
+      let sum = 0;
+      for (let i = 0; i < 7; i += 1) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        sum += Number(log[getDateString(d)]) || 0;
+      }
+      return sum;
+    },
+
+    getIronTarget: () => get().ironTarget,
+
+    // -------------------------------------------------------------
+    // Premium / monetization surface. Default off. The "Upgrade" flow
+    // (see components/premium/UpgradeSheet) is a clearly-labeled preview
+    // toggle for now — a real billing provider (Google Play Billing via a
+    // Capacitor plugin, or RevenueCat/Stripe for the PWA) plugs in later.
+    // -------------------------------------------------------------
+    premiumEnabled: initialPremium,
+
+    setPremium: (val) => {
+      set(() => {
+        const enabled = !!val;
+        safeSetItem('hht_premium_v1', { premiumEnabled: enabled });
+        return { premiumEnabled: enabled };
+      });
+    },
+
+    isPremium: () => get().premiumEnabled,
 
     // -------------------------------------------------------------
     // Cloud backup (opt-in, anonymous) — mirrors gamification progress

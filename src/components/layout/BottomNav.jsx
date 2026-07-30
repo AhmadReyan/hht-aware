@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Home, HeartPulse, Microscope, Palette, Trophy } from 'lucide-react';
+import { Home, HeartPulse, Microscope, Palette, Trophy, Activity } from 'lucide-react';
 import { useResearchFeed } from '../../hooks/useResearchFeed';
 
 export const BottomNav = () => {
@@ -9,6 +9,7 @@ export const BottomNav = () => {
 
   const tabs = [
     { name: 'Home', path: '/', icon: Home },
+    { name: 'Track', path: '/tracker', icon: Activity },
     { name: 'Prevent', path: '/prevention', icon: HeartPulse },
     { name: 'Research', path: '/research', icon: Microscope, badge: unseenCount },
     { name: 'Studio', path: '/poster', icon: Palette },
@@ -25,7 +26,7 @@ export const BottomNav = () => {
               key={tab.name}
               to={tab.path}
               className={({ isActive }) => `
-                relative flex flex-col items-center justify-center flex-1 py-1 px-1 text-center transition-all duration-200 select-none
+                relative flex flex-col items-center justify-center flex-1 py-1 px-0.5 text-center transition-all duration-200 select-none
                 focus:outline-none focus-visible:ring-2 focus-visible:ring-garnet focus-visible:ring-offset-2 focus-visible:ring-offset-app-surface rounded-custom-sm
                 ${isActive
                   ? 'text-garnet scale-105 font-semibold'
@@ -36,7 +37,7 @@ export const BottomNav = () => {
               {({ isActive }) => (
                 <>
                   <div className="relative">
-                    <Icon size={20} className="mb-0.5 transition-transform" />
+                    <Icon size={19} className="mb-0.5 transition-transform" />
                     {tab.badge > 0 && (
                       <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] px-1 flex items-center justify-center bg-garnet text-white text-[8px] font-bold rounded-full leading-none">
                         {tab.badge > 9 ? '9+' : tab.badge}

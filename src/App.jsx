@@ -12,6 +12,7 @@ import { Facts } from './pages/Facts';
 import { Challenges } from './pages/Challenges';
 import { Prevention } from './pages/Prevention';
 import { Research } from './pages/Research';
+import { HealthTracker } from './pages/HealthTracker';
 import { useResearchNotifications } from './hooks/useResearchNotifications';
 import { useFirebase } from './hooks/useFirebase';
 import { usePushNotifications } from './hooks/usePushNotifications';
@@ -54,6 +55,7 @@ function AppContent() {
           <Route path="/challenges" element={<Challenges />} />
           <Route path="/prevention" element={<Prevention />} />
           <Route path="/research" element={<Research />} />
+          <Route path="/tracker" element={<HealthTracker />} />
         </Routes>
       </div>
 
