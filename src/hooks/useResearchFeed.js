@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { researchUpdates } from '../data/research';
+import {
+  fetchRemoteResearchUpdates,
+  getCachedRemoteUpdates,
+  mergeUpdates,
+} from '../services/researchRemote';
 
 /**
  * Self-contained research-feed state (seen tracking + weekly rotation).
@@ -30,12 +35,34 @@ const safeParse = (raw, fallback) => {
 const getWeekIndex = (date = new Date()) =>
   Math.floor(date.getTime() / (7 * 24 * 60 * 60 * 1000));
 
-// Sort newest-first using the "YYYY-MM" (or "YYYY-MM-DD") date strings.
-const sortByDateDesc = (items) =>
-  [...items].sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')));
-
 export const useResearchFeed = () => {
-  const updates = useMemo(() => sortByDateDesc(researchUpdates || []), []);
+  // Remote updates from Firestore: render bundled + last cached remote list
+  // immediately (synchronous, works offline), then refresh in the background
+  // and merge in anything new. When Firebase is unconfigured both calls
+  // yield [] and the feed is exactly the bundled list, as before.
+  const [remoteUpdates, setRemoteUpdates] = useState(() => getCachedRemoteUpdates());
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchRemoteResearchUpdates()
+      .then((remote) => {
+        // Empty also means "failed/unconfigured" — keep whatever we have.
+        if (!cancelled && remote.length) setRemoteUpdates(remote);
+      })
+      .catch(() => {
+        /* fetch never throws, but never risk an unhandled rejection */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Deduped by id (remote wins), sorted newest-first — same ordering the
+  // bundled-only feed used, so everything downstream is unchanged.
+  const updates = useMemo(
+    () => mergeUpdates(researchUpdates || [], remoteUpdates),
+    [remoteUpdates]
+  );
 
   const [seenIds, setSeenIds] = useState(() =>
     safeParse(localStorage.getItem(SEEN_KEY), [])

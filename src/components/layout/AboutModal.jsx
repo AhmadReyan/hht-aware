@@ -1,8 +1,9 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ExternalLink, AlertOctagon } from 'lucide-react';
+import { X, ExternalLink, AlertOctagon, CloudUpload } from 'lucide-react';
 import { Vessels } from '../ui/Vessels';
 import { haptics } from '../../hooks/useHaptics';
+import { useAppStore } from '../../store/useAppStore';
 
 /**
  * AboutModal — a warm-editorial bottom-sheet explaining HHT.
@@ -17,6 +18,78 @@ const Pill = ({ children }) => (
     {children}
   </span>
 );
+
+// Friendly "Last synced …" label from an ISO timestamp (guarded).
+const formatSyncedAt = (iso) => {
+  try {
+    return new Date(iso).toLocaleString(undefined, {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  } catch {
+    return '';
+  }
+};
+
+// Compact opt-in toggle for the anonymous progress backup (Firestore).
+const CloudBackupToggle = () => {
+  const enabled = useAppStore((s) => s.cloudSyncEnabled);
+  const status = useAppStore((s) => s.cloudSyncStatus);
+  const lastAt = useAppStore((s) => s.cloudSyncLastAt);
+  const enableCloudSync = useAppStore((s) => s.enableCloudSync);
+  const disableCloudSync = useAppStore((s) => s.disableCloudSync);
+
+  const handleToggle = () => {
+    if (enabled) {
+      haptics.tap();
+      disableCloudSync();
+    } else {
+      haptics.success();
+      enableCloudSync();
+    }
+  };
+
+  let hint = 'Off — your data stays on this device.';
+  if (enabled) {
+    if (status === 'syncing') hint = 'Syncing…';
+    else if (status === 'error') hint = 'Couldn’t sync — will retry next time you open the app.';
+    else if (lastAt) hint = `Last synced ${formatSyncedAt(lastAt)}.`;
+    else hint = 'Waiting for first sync…';
+  }
+
+  return (
+    <section className="bg-app-surface2 p-4 rounded-custom border border-line flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <CloudUpload size={16} className="text-brand-teal flex-shrink-0" />
+          <h3 className="font-serif font-bold text-base text-garnet">Cloud backup</h3>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          aria-label="Toggle cloud backup"
+          onClick={handleToggle}
+          className={`relative h-6 w-11 flex-shrink-0 rounded-full border transition-colors ${
+            enabled ? 'bg-brand-teal border-brand-teal' : 'bg-app-surface border-line'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-[18px] w-[18px] rounded-full bg-white shadow-card transition-all ${
+              enabled ? 'left-[22px]' : 'left-0.5'
+            }`}
+          />
+        </button>
+      </div>
+      <p className="text-xs text-app-muted">
+        Backs up your progress anonymously — never your emergency card.
+      </p>
+      <p className="text-[10px] text-app-muted">{hint}</p>
+    </section>
+  );
+};
 
 const criteria = [
   { n: 1, t: 'Nosebleeds', d: 'Spontaneous, recurrent epistaxis (nosebleeds), which worsen with age.' },
@@ -162,6 +235,9 @@ export const AboutModal = ({ isOpen, onClose }) => {
                   </a>
                 </div>
               </section>
+
+              {/* Settings — cloud backup opt-in */}
+              <CloudBackupToggle />
 
               {/* Footer */}
               <div className="text-center text-[10px] text-app-muted border-t border-line pt-4">

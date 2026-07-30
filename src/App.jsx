@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { MotionConfig } from 'framer-motion';
 import { App as KonstaApp } from 'konsta/react';
@@ -16,9 +16,11 @@ import { useResearchNotifications } from './hooks/useResearchNotifications';
 import { useFirebase } from './hooks/useFirebase';
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useDeepLinks } from './hooks/useDeepLinks';
+import { useAppStore } from './store/useAppStore';
 
 function AppContent() {
   const [aboutOpen, setAboutOpen] = useState(false);
+  const startCloudSync = useAppStore((s) => s.startCloudSync);
 
   // Initialize Native Features.
   // Firebase Analytics + Crashlytics (guarded — no-ops until google-services.json is added).
@@ -29,6 +31,13 @@ function AppContent() {
   // Periodic reminders also use local notifications (useResearchNotifications).
   useResearchNotifications();
   useDeepLinks();
+
+  // Resume opt-in cloud backup after first paint (no-op when the toggle is
+  // off or Firebase is unconfigured — never blocks rendering).
+  useEffect(() => {
+    const t = setTimeout(() => startCloudSync(), 0);
+    return () => clearTimeout(t);
+  }, [startCloudSync]);
 
   return (
     <div className="flex flex-col min-h-screen bg-app-bg text-app-ink select-none pb-16">

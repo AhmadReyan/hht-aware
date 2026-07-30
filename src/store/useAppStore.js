@@ -7,6 +7,16 @@ import {
   LEVEL_TITLES,
   badgeDefs
 } from '../data/challenges';
+import { ensureAnonymousAuth } from '../lib/firebase';
+import {
+  buildSnapshot,
+  pushProgress,
+  pullProgress,
+  mergeProgress,
+  schedulePush,
+  cancelScheduledPush,
+  flushScheduledPush
+} from '../services/progressSync';
 
 const defaultEmergencyData = {
   name: '',
@@ -127,6 +137,17 @@ export const useAppStore = create((set, get) => {
   // Home daily body check-in — { date, bleeds: [locationKey] }
   const parsedCheckIn = safeParse('hht_body_checkin_v1', {});
   const initialCheckIn = parsedCheckIn && typeof parsedCheckIn === 'object' ? parsedCheckIn : {};
+
+  // Cloud backup toggle — opt-in, off by default. Only { enabled, lastSyncedAt }
+  // persist; the live status is derived at runtime.
+  const parsedCloudSync = safeParse('hht_cloud_sync_v1', {});
+  const initialCloudSync = {
+    enabled: parsedCloudSync.enabled === true,
+    lastSyncedAt: parsedCloudSync.lastSyncedAt ?? null
+  };
+  const persistCloudSync = (enabled, lastSyncedAt) => {
+    safeSetItem('hht_cloud_sync_v1', { enabled, lastSyncedAt });
+  };
 
   return {
     // Emergency Card State
@@ -596,6 +617,138 @@ export const useAppStore = create((set, get) => {
       return !!ci && ci.date === getDateString(new Date());
     },
 
+    // -------------------------------------------------------------
+    // Cloud backup (opt-in, anonymous) — mirrors gamification progress
+    // to Firestore users/{uid} via services/progressSync. NEVER includes
+    // the emergency card or saved posters. Fully guarded: if Firebase is
+    // unconfigured or the device is offline, the app just stays on
+    // local data and retries on the next launch.
+    // -------------------------------------------------------------
+    cloudSyncEnabled: initialCloudSync.enabled,
+    cloudSyncStatus: 'off', // 'off' | 'syncing' | 'synced' | 'error'
+    cloudSyncLastAt: initialCloudSync.lastSyncedAt,
+
+    enableCloudSync: () => {
+      if (get().cloudSyncEnabled) return;
+      set({ cloudSyncEnabled: true });
+      persistCloudSync(true, get().cloudSyncLastAt);
+      get().startCloudSync();
+    },
+
+    disableCloudSync: () => {
+      cancelScheduledPush();
+      set({ cloudSyncEnabled: false, cloudSyncStatus: 'off' });
+      persistCloudSync(false, get().cloudSyncLastAt);
+    },
+
+    // Pull the remote backup (if any), merge it non-destructively into local
+    // state, then push the merged result back up. Runs on enable and once at
+    // app start when the toggle is already on. Never throws.
+    startCloudSync: async () => {
+      if (!get().cloudSyncEnabled) return;
+      set({ cloudSyncStatus: 'syncing' });
+      try {
+        const uid = await ensureAnonymousAuth();
+        // Re-check the toggle after every await: the user may have opted out
+        // while a network call was in flight, and then nothing may be merged,
+        // pushed, or re-persisted as enabled (mirrors queueCloudPush's guard).
+        if (!get().cloudSyncEnabled) return;
+        if (!uid) {
+          // Unconfigured / offline — stay enabled, try again next launch.
+          set({ cloudSyncStatus: 'error' });
+          return;
+        }
+        const pulled = await pullProgress(uid);
+        if (!get().cloudSyncEnabled) return;
+        if (!pulled.ok) {
+          // Pull FAILED (as opposed to "no backup yet") — pushing the
+          // unmerged local snapshot could overwrite a richer backup, so
+          // stop here and retry on the next launch.
+          set({ cloudSyncStatus: 'error' });
+          return;
+        }
+        if (pulled.snapshot) {
+          get().applyProgressSnapshot(mergeProgress(buildSnapshot(get()), pulled.snapshot));
+        }
+        const ok = await pushProgress(uid, buildSnapshot(get()));
+        if (!get().cloudSyncEnabled) return;
+        if (ok) {
+          const now = new Date().toISOString();
+          set({ cloudSyncStatus: 'synced', cloudSyncLastAt: now });
+          persistCloudSync(true, now);
+        } else {
+          set({ cloudSyncStatus: 'error' });
+        }
+      } catch (err) {
+        // Belt-and-braces for the "never throws" contract (e.g. a malformed
+        // remote snapshot). Leave the status alone if the user opted out.
+        console.warn('Cloud sync skipped:', err?.message || err);
+        if (get().cloudSyncEnabled) set({ cloudSyncStatus: 'error' });
+      }
+    },
+
+    // Apply a merged progress snapshot back into state AND localStorage so a
+    // restored backup survives a reload. Shapes mirror buildSnapshot exactly.
+    applyProgressSnapshot: (snap) => {
+      if (!snap || typeof snap !== 'object') return;
+      set(() => {
+        const streak = snap.streak || {};
+        const streakRecord = {
+          currentStreak: streak.currentStreak ?? 0,
+          longestStreak: streak.longestStreak ?? 0,
+          lastActiveDate: streak.lastActiveDate ?? null
+        };
+        const updated = {
+          completedChallenges: Array.isArray(snap.completedChallenges) ? snap.completedChallenges : [],
+          ...streakRecord,
+          dailyProgress: snap.dailyProgress || { date: null, completedIds: [] },
+          dailyStats: snap.dailyStats || { lifetimeCompletions: 0, taskCounts: {}, perfectDaysCount: 0, totalXPEarned: 0 },
+          seenBadgeIds: Array.isArray(snap.seenBadgeIds) ? snap.seenBadgeIds : [],
+          selfCareHistory: Array.isArray(snap.selfCareHistory) ? snap.selfCareHistory : [],
+          triggerLog: Array.isArray(snap.triggerLog) ? snap.triggerLog : [],
+          researchReactions: snap.researchReactions && typeof snap.researchReactions === 'object' ? snap.researchReactions : {},
+          savedForAppt: Array.isArray(snap.savedForAppt) ? snap.savedForAppt : []
+        };
+        // Keep today's self-care checklist consistent with the merged history
+        // (otherwise the next toggle would clobber restored items for today).
+        const todayStr = getDateString(new Date());
+        const todayEntry = updated.selfCareHistory.find((h) => h.date === todayStr);
+        if (todayEntry) {
+          updated.selfCareToday = { date: todayStr, done: todayEntry.done };
+          safeSetItem('hht_selfcare_today_v1', updated.selfCareToday);
+        }
+        safeSetItem('hht_completed_challenges', updated.completedChallenges);
+        safeSetItem('hht_streak_v1', streakRecord);
+        safeSetItem('hht_daily_progress_v1', updated.dailyProgress);
+        safeSetItem('hht_daily_stats_v1', updated.dailyStats);
+        safeSetItem('hht_seen_badges_v1', updated.seenBadgeIds);
+        safeSetItem('hht_selfcare_history_v1', updated.selfCareHistory);
+        safeSetItem('hht_trigger_log_v1', updated.triggerLog);
+        safeSetItem('hht_research_reactions_v1', updated.researchReactions);
+        safeSetItem('hht_research_saved_v1', updated.savedForAppt);
+        return updated;
+      });
+    },
+
+    // Debounced mirror-to-cloud, invoked by the store subscription below
+    // whenever a backed-up slice changes while the toggle is on.
+    queueCloudPush: () => {
+      if (!get().cloudSyncEnabled) return;
+      schedulePush(
+        () => buildSnapshot(get()),
+        (result) => {
+          if (!get().cloudSyncEnabled || result === 'skipped') return;
+          if (result === 'synced') {
+            const now = new Date().toISOString();
+            set({ cloudSyncStatus: 'synced', cloudSyncLastAt: now });
+            persistCloudSync(true, now);
+          } else {
+            set({ cloudSyncStatus: 'error' });
+          }
+        }
+      );
+    },
+
     // PWA Install Prompt State
     deferredPrompt: null,
     isInstallable: false,
@@ -609,3 +762,45 @@ export const useAppStore = create((set, get) => {
     }
   };
 });
+
+// ---------------------------------------------------------------------
+// Cloud backup subscription — while the opt-in toggle is on, any change
+// to a backed-up slice queues a debounced push (see services/progressSync).
+// Reference equality is enough: every action above replaces these values.
+// ---------------------------------------------------------------------
+const CLOUD_SYNCED_KEYS = [
+  'completedChallenges',
+  'currentStreak',
+  'longestStreak',
+  'lastActiveDate',
+  'dailyProgress',
+  'dailyStats',
+  'seenBadgeIds',
+  'selfCareHistory',
+  'triggerLog',
+  'researchReactions',
+  'savedForAppt'
+];
+
+useAppStore.subscribe((state, prevState) => {
+  if (!state.cloudSyncEnabled) return;
+  if (CLOUD_SYNCED_KEYS.some((key) => state[key] !== prevState[key])) {
+    state.queueCloudPush();
+  }
+});
+
+// Flush (not drop) any pending debounced push the moment the app is
+// backgrounded or the page is torn down — the Capacitor webview suspends
+// timers, so a change made inside the debounce window (e.g. un-checking a
+// challenge) would otherwise never reach the cloud and the next launch's
+// pull would resurrect the stale backup. Firestore's persistent cache keeps
+// the flushed write durable even if the network round-trip doesn't finish.
+// No-op when nothing is scheduled (cancelScheduledPush clears it on opt-out).
+if (typeof document !== 'undefined') {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') flushScheduledPush();
+  });
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('pagehide', () => flushScheduledPush());
+}
