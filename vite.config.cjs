@@ -19,7 +19,11 @@ const { defineConfig } = require('vite');
 const react = require('@vitejs/plugin-react');
 const { VitePWA } = require('vite-plugin-pwa');
 
+// GitHub Pages serves the app from /hht-aware/; Capacitor and local dev serve from /.
+const base = process.env.DEPLOY_TARGET === 'pages' ? '/hht-aware/' : '/';
+
 module.exports = defineConfig({
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -34,8 +38,8 @@ module.exports = defineConfig({
         display: "standalone",
         orientation: "portrait",
         categories: ["health", "medical", "education"],
-        start_url: "/",
-        scope: "/",
+        start_url: base,
+        scope: base,
         icons: [
           {
             src: "icons/icon-72.png",
