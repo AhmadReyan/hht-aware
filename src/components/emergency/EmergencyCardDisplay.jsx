@@ -87,7 +87,7 @@ export const EmergencyCardDisplay = ({ data = {}, cardRef }) => {
 
         <div className="mt-3 flex items-center justify-between">
           <span className="font-sans text-[10px] uppercase tracking-wider text-white/70">
-            curehht.org · HHT Foundation Int'l
+            curehht.org · HHT Foundation Int&apos;l
           </span>
           <span className="flex items-center gap-1 font-sans text-[11px] text-white/85">
             tap to flip <RotateCw size={12} />

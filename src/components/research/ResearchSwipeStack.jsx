@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Bookmark, X, Sparkles, Baby } from 'lucide-react';
-import { useAppStore } from '../../store/useAppStore';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
 import { deriveSimpleSummary } from './researchText';

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sunrise, Sun, Moon, Salad } from 'lucide-react';
+import { Salad } from 'lucide-react';
 import { Chip } from '../ui/Chip';
 import { SectionTitle } from '../ui/SectionTitle';
 
@@ -12,12 +12,6 @@ import { SectionTitle } from '../ui/SectionTitle';
  * and personalized around the products the user actually uses (Aquaphor,
  * Ponaris) — no new medical claims.
  */
-
-const TIME_META = {
-  Morning: { icon: Sunrise },
-  Day: { icon: Sun },
-  Night: { icon: Moon },
-};
 
 const TIPS = {
   Morning: [

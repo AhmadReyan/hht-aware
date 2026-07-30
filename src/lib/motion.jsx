@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- shared presets module, not a component file */
 import { motion } from 'framer-motion';
 
 /**
