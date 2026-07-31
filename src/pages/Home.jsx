@@ -5,6 +5,7 @@ import { HomeHero } from '../components/home/HomeHero';
 import { DailyCheckIn } from '../components/home/DailyCheckIn';
 import { MomentumStrip } from '../components/home/MomentumStrip';
 import { NoseCast } from '../components/home/NoseCast';
+import { AskHhtCard } from '../components/home/AskHhtCard';
 import { QuickAction } from '../components/home/QuickAction';
 import { FactSpotlight } from '../components/home/FactSpotlight';
 import { SectionTitle } from '../components/ui/SectionTitle';
@@ -95,6 +96,9 @@ export const Home = () => {
 
         {/* 2.5 NoseCast: dry-air bleed-risk forecast */}
         <NoseCast />
+
+        {/* 2.6 Ask HHT assistant entry */}
+        <AskHhtCard />
 
         {/* 3. Daily ritual front-and-center */}
         <DailyCheckIn

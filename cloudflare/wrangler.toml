@@ -1,0 +1,8 @@
+name = "hht-ai"
+main = "hht-ai-worker.js"
+compatibility_date = "2026-01-01"
+
+# Cloudflare Workers AI binding — runs the LLM on Cloudflare's edge.
+# No external API key needed. Free within the daily Neuron allowance.
+[ai]
+binding = "AI"

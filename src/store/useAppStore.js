@@ -158,6 +158,14 @@ export const useAppStore = create((set, get) => {
   const parsedPremium = safeParse('hht_premium_v1', {});
   const initialPremium = parsedPremium.premiumEnabled === true;
 
+  // Ask-HHT AI usage — a per-day question counter for the free-tier limit.
+  // Device-local only (never synced). Just { date, count }.
+  const parsedAiUsage = safeParse('hht_ai_usage_v1', {});
+  const initialAiUsage = {
+    date: typeof parsedAiUsage.date === 'string' ? parsedAiUsage.date : null,
+    count: typeof parsedAiUsage.count === 'number' ? parsedAiUsage.count : 0
+  };
+
   // Cloud backup toggle — opt-in, off by default. Only { enabled, lastSyncedAt }
   // persist; the live status is derived at runtime.
   const parsedCloudSync = safeParse('hht_cloud_sync_v1', {});
@@ -804,6 +812,29 @@ export const useAppStore = create((set, get) => {
     },
 
     isPremium: () => get().premiumEnabled,
+
+    // -------------------------------------------------------------
+    // Ask-HHT AI usage — free-tier daily question counter. Device-local
+    // only, never synced. The chat itself is not stored (privacy).
+    // -------------------------------------------------------------
+    aiUsage: initialAiUsage,
+
+    recordAiQuestion: () => {
+      set((state) => {
+        const today = getDateString(new Date());
+        const base = state.aiUsage && state.aiUsage.date === today ? state.aiUsage : { date: today, count: 0 };
+        const usage = { date: today, count: base.count + 1 };
+        safeSetItem('hht_ai_usage_v1', usage);
+        return { aiUsage: usage };
+      });
+    },
+
+    // Questions used today (primitive number) — safe to call inline.
+    getAiQuestionsUsedToday: () => {
+      const today = getDateString(new Date());
+      const u = get().aiUsage;
+      return u && u.date === today ? u.count : 0;
+    },
 
     // -------------------------------------------------------------
     // Cloud backup (opt-in, anonymous) — mirrors gamification progress
