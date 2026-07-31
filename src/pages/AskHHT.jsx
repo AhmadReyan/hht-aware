@@ -25,7 +25,7 @@ const SUGGESTIONS = [
 
 const DISCLAIMER = 'Educational information about HHT — not medical advice. For your own case, talk to your HHT specialist.';
 
-const Bubble = ({ role, content }) => {
+const Bubble = ({ role, content, streaming }) => {
   const isUser = role === 'user';
   return (
     <motion.div
@@ -42,6 +42,7 @@ const Bubble = ({ role, content }) => {
         }`}
       >
         {content}
+        {streaming && <span className="inline-block w-1.5 h-3.5 bg-garnet ml-1 animate-pulse" />}
       </div>
     </motion.div>
   );
@@ -85,16 +86,37 @@ export const AskHHT = () => {
     haptics.tap();
     setInput('');
     const history = messages.slice();
-    setMessages((m) => [...m, { role: 'user', content: q }]);
+
+    // Append user message + empty streaming assistant message
+    setMessages((m) => [
+      ...m,
+      { role: 'user', content: q },
+      { role: 'assistant', content: '', streaming: true },
+    ]);
     setPending(true);
 
-    const res = await askHHT(q, history);
+    const res = await askHHT(q, history, (partial) => {
+      setMessages((m) => {
+        const next = [...m];
+        if (next.length > 0 && next[next.length - 1].role === 'assistant') {
+          next[next.length - 1] = { role: 'assistant', content: partial, streaming: true };
+        }
+        return next;
+      });
+    });
+
     setPending(false);
 
     if (res.ok) {
       haptics.success();
       recordAiQuestion();
-      setMessages((m) => [...m, { role: 'assistant', content: res.answer }]);
+      setMessages((m) => {
+        const next = [...m];
+        if (next.length > 0 && next[next.length - 1].role === 'assistant') {
+          next[next.length - 1] = { role: 'assistant', content: res.answer, streaming: false };
+        }
+        return next;
+      });
     } else {
       haptics.error();
       const msg =
@@ -103,7 +125,15 @@ export const AskHHT = () => {
           : res.error === 'network'
             ? "I couldn't reach the assistant. Check your connection and try again."
             : 'Something went wrong answering that. Please try again.';
-      setMessages((m) => [...m, { role: 'assistant', content: msg }]);
+      setMessages((m) => {
+        const next = [...m];
+        if (next.length > 0 && next[next.length - 1].role === 'assistant') {
+          next[next.length - 1] = { role: 'assistant', content: msg, streaming: false };
+        } else {
+          next.push({ role: 'assistant', content: msg, streaming: false });
+        }
+        return next;
+      });
     }
   };
 
@@ -132,7 +162,7 @@ export const AskHHT = () => {
           )}
 
           {messages.map((m, i) => (
-            <Bubble key={i} role={m.role} content={m.content} />
+            <Bubble key={i} role={m.role} content={m.content} streaming={m.streaming} />
           ))}
 
           <AnimatePresence>

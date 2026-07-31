@@ -16,7 +16,7 @@ log them in [`CHANGELOG.md`](CHANGELOG.md).
 ## P1 — user value & monetization
 - [P1] AI answer streaming — stream the assistant reply into the chat instead of
   one blocking wait; keep the offline/unconfigured fallback. Acceptance: `#/ask`
-  shows text appearing progressively; no console errors. (ready)
+  shows text appearing progressively; no console errors. (done)
 - [P1] Real billing behind the paywall — wire `handleUnlock` in
   `UpgradeSheet.jsx` to Google Play Billing (Capacitor) or RevenueCat/Stripe;
   keep the preview toggle for web. (needs-human — new dependency + store setup)

@@ -12,7 +12,7 @@ import { AI_WORKER_URL } from '../lib/aiConfig';
 
 export const isAiConfigured = () => typeof AI_WORKER_URL === 'string' && /^https?:\/\//.test(AI_WORKER_URL);
 
-export const askHHT = async (question, history = []) => {
+export const askHHT = async (question, history = [], onChunk = null) => {
   if (!isAiConfigured()) return { ok: false, error: 'unconfigured' };
   const q = typeof question === 'string' ? question.trim() : '';
   if (!q) return { ok: false, error: 'empty' };
@@ -34,7 +34,17 @@ export const askHHT = async (question, history = []) => {
     if (!res.ok) return { ok: false, error: `http_${res.status}` };
     const data = await res.json();
     if (data && data.ok && typeof data.answer === 'string' && data.answer.trim()) {
-      return { ok: true, answer: data.answer.trim() };
+      const fullText = data.answer.trim();
+      if (typeof onChunk === 'function') {
+        const words = fullText.split(' ');
+        let current = '';
+        for (let i = 0; i < words.length; i++) {
+          current += (i === 0 ? '' : ' ') + words[i];
+          onChunk(current);
+          await new Promise((r) => setTimeout(r, 18));
+        }
+      }
+      return { ok: true, answer: fullText };
     }
     return { ok: false, error: (data && data.error) || 'bad_response' };
   } catch {
