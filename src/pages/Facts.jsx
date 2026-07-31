@@ -9,7 +9,7 @@ import { Toast } from '../components/ui/Toast';
 import { facts } from '../data/facts';
 import { useShare } from '../hooks/useShare';
 import { useAppStore } from '../store/useAppStore';
-import { staggerContainer, staggerItem } from '../lib/motion';
+import { spring } from '../lib/motion';
 import { haptics } from '../hooks/useHaptics';
 
 const CATEGORIES = [
@@ -38,7 +38,9 @@ const FactCard = ({ fact, onShare }) => {
   return (
     <motion.button
       type="button"
-      variants={staggerItem}
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={spring.soft}
       whileTap={{ scale: 0.98 }}
       onClick={() => onShare(fact)}
       className="group relative overflow-hidden text-left bg-app-surface border border-line rounded-custom-lg p-5 flex flex-col gap-3 shadow-card cursor-pointer"
@@ -135,12 +137,9 @@ export const Facts = () => {
         </div>
 
         {/* Fact cards */}
-        <motion.section
+        <section
           key={activeCategory}
           className="flex flex-col gap-4 mb-4"
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
         >
           {filteredFacts.map((fact) => (
             <FactCard key={fact.id} fact={fact} onShare={handleShareFact} />
@@ -150,7 +149,7 @@ export const Facts = () => {
               No facts found in this category.
             </div>
           )}
-        </motion.section>
+        </section>
       </div>
 
       <Toast message={toastText} isOpen={showToast} onClose={() => setShowToast(false)} />

@@ -43,7 +43,7 @@ export const AgePersonaSelector = ({ groups = [] }) => {
   return (
     <div className="flex flex-col gap-4">
       {/* Persona row */}
-      <div className="flex justify-between gap-1 px-1">
+      <div className="flex justify-between gap-1.5 px-1">
         {groups.map((g) => {
           const Figure = FIGURES[g.id] || AdultFigure;
           const isActive = g.id === active.id;
@@ -55,20 +55,20 @@ export const AgePersonaSelector = ({ groups = [] }) => {
               whileTap={{ scale: 0.95 }}
               animate={{ y: isActive ? -2 : 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="flex flex-col items-center gap-1.5 flex-1"
+              className="flex flex-col items-center gap-1 flex-1 select-none"
             >
               <span
-                className={`relative flex items-center justify-center w-11 h-14 rounded-custom-sm border transition-colors
+                className={`relative flex items-center justify-center w-12 h-14 rounded-custom-lg border transition-all shadow-xs
                   ${isActive
-                    ? 'bg-brand-red/10 border-brand-red text-brand-red-light'
-                    : 'bg-app-surface border-app-border/40 text-app-muted'}
+                    ? 'bg-garnet text-white border-garnet shadow-md'
+                    : 'bg-app-surface border-line text-app-muted hover:border-garnet/30'}
                 `}
               >
                 <Figure size={26} />
               </span>
               <span
-                className={`text-[9.5px] font-bold text-center leading-tight ${
-                  isActive ? 'text-app-ink' : 'text-app-muted'
+                className={`text-[10px] font-bold text-center leading-tight mt-0.5 ${
+                  isActive ? 'text-garnet font-extrabold' : 'text-app-muted'
                 }`}
               >
                 {g.label.split(' ')[0]}

@@ -24,6 +24,15 @@ const base = process.env.DEPLOY_TARGET === 'pages' ? '/hht-aware/' : '/';
 
 module.exports = defineConfig({
   base,
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-vendor': ['three'],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
