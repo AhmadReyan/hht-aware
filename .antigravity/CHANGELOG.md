@@ -1,5 +1,6 @@
 # Changelog — autonomous cycles
 
+2026-07-31 · cycle 16 · Modernize Prevention screen hero with interactive Three.js 3D WebGL Shield · 69a3cba
 2026-07-31 · cycle 15 · Prevention Redesign Step 12 — Final audit, verification & mission completion · 7348afc
 2026-07-31 · cycle 14 · Prevention Redesign Step 11 — Emergency First Aid bridge banner · bb54202
 2026-07-31 · cycle 13 · Prevention Redesign Step 10 — HHT Prevention Library collapsible drawer · cf60509
