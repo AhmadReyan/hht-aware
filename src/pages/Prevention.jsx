@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProtectionRing } from '../components/prevention/ProtectionRing';
 import { ActionTiles } from '../components/prevention/ActionTiles';
+import { ActionWhyModal } from '../components/prevention/ActionWhyModal';
 import { CompletionCelebration } from '../components/prevention/CompletionCelebration';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
@@ -25,6 +26,7 @@ import {
 
 export const Prevention = () => {
   const [showLibrary, setShowLibrary] = useState(false);
+  const [selectedWhyItem, setSelectedWhyItem] = useState(null);
 
   return (
     <PageWrapper>
@@ -41,7 +43,7 @@ export const Prevention = () => {
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-garnet">Daily Protection Shield</span>
             <span className="text-[10px] text-app-muted font-medium">Tap tile to log</span>
           </div>
-          <ActionTiles />
+          <ActionTiles onOpenWhy={(item) => setSelectedWhyItem(item)} />
           <CompletionCelebration />
         </section>
 
@@ -120,6 +122,12 @@ export const Prevention = () => {
           <p className="text-[10.5px] text-app-muted leading-relaxed italic">{preventionDisclaimer}</p>
         </div>
       </div>
+
+      <ActionWhyModal
+        item={selectedWhyItem}
+        isOpen={Boolean(selectedWhyItem)}
+        onClose={() => setSelectedWhyItem(null)}
+      />
     </PageWrapper>
   );
 };
