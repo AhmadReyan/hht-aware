@@ -37,7 +37,7 @@ log them in [`CHANGELOG.md`](CHANGELOG.md).
   `riskFromHumidity`, date helpers. Acceptance: `npm test` green. (ready)
 - [P2] Accessibility pass — focus trap + `aria-modal` in `Modal`, labelled
   controls across tracker/ask/poster, audit `prefers-reduced-motion`.
-  One component group per cycle. (ready)
+  One component group per cycle. (done)
 - [P2] Bump GitHub Actions — move `actions/*@v4` → `@v5` in the workflows to
   clear the Node-20 deprecation annotation. (needs-human — touches
   `.github/workflows/`)

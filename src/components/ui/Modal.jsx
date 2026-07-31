@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
@@ -10,6 +10,9 @@ export const Modal = ({
   children,
   type = 'bottom-sheet' // 'bottom-sheet' or 'dialog'
 }) => {
+  const containerRef = useRef(null);
+  const titleId = useId();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -21,14 +24,47 @@ export const Modal = ({
     };
   }, [isOpen]);
 
-  // Escape key closes the modal (keyboard a11y — no trap hook existed yet)
+  // Focus management & keyboard navigation (Escape & Tab trap)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
+
+    // Focus the container when opened
+    const timer = setTimeout(() => {
+      if (containerRef.current) {
+        containerRef.current.focus();
+      }
+    }, 50);
+
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape') onClose?.();
+      if (e.key === 'Escape') {
+        onClose?.();
+        return;
+      }
+
+      if (e.key === 'Tab' && containerRef.current) {
+        const focusables = containerRef.current.querySelectorAll(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusables.length === 0) return;
+
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
+
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   const overlayVariants = {
@@ -55,10 +91,6 @@ export const Modal = ({
     exit: { scale: 0.9, opacity: 0, transition: { ease: 'easeIn', duration: 0.15 } }
   };
 
-  // Render into a portal on document.body so the fixed overlay is positioned
-  // against the viewport, not a transformed ancestor (PageWrapper is a
-  // motion.main whose transform would otherwise become the containing block
-  // and push the sheet off-screen).
   return createPortal(
     <AnimatePresence>
       {isOpen && (
@@ -76,17 +108,22 @@ export const Modal = ({
           {/* Modal Container */}
           {type === 'bottom-sheet' ? (
             <motion.div
+              ref={containerRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={title ? titleId : undefined}
               initial="hidden"
               animate="visible"
               exit="exit"
               variants={sheetVariants}
-              className="relative w-full max-w-md bg-app-surface text-app-ink rounded-t-custom-lg p-6 shadow-raised border-t border-line flex flex-col max-h-[85vh] z-10"
+              className="relative w-full max-w-md bg-app-surface text-app-ink rounded-t-custom-lg p-6 shadow-raised border-t border-line flex flex-col max-h-[85vh] z-10 focus:outline-none"
             >
               {/* Drag Handle indicator */}
               <div className="mx-auto w-12 h-1.5 bg-app-muted/30 rounded-full mb-4" />
 
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-serif font-bold text-app-ink leading-tight">{title}</h2>
+                {title && <h2 id={titleId} className="text-xl font-serif font-bold text-app-ink leading-tight">{title}</h2>}
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
@@ -102,14 +139,19 @@ export const Modal = ({
             </motion.div>
           ) : (
             <motion.div
+              ref={containerRef}
+              tabIndex={-1}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby={title ? titleId : undefined}
               initial="hidden"
               animate="visible"
               exit="exit"
               variants={dialogVariants}
-              className="relative w-full max-w-sm mx-4 bg-app-surface text-app-ink rounded-custom p-6 shadow-raised border border-line flex flex-col z-10"
+              className="relative w-full max-w-sm mx-4 bg-app-surface text-app-ink rounded-custom p-6 shadow-raised border border-line flex flex-col z-10 focus:outline-none"
             >
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-bold font-serif text-app-ink">{title}</h2>
+                {title && <h2 id={titleId} className="text-lg font-bold font-serif text-app-ink">{title}</h2>}
                 <button
                   onClick={onClose}
                   aria-label="Close modal"
