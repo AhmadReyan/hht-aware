@@ -6,6 +6,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { triggerOptions } from '../../data/selfCare';
 import { haptics } from '../../hooks/useHaptics';
 import { spring } from '../../lib/motion';
+import { BarChart } from '../ui/MiniChart';
 
 /**
  * Compact "What set off a bleed today?" trigger logger. Tapping a chip calls
@@ -34,7 +35,8 @@ export const TriggerLogger = () => {
   })();
 
   const counts = getTriggerCounts();
-  const topEntry = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  const sortedEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  const topEntry = sortedEntries[0];
   const topTrigger = topEntry ? triggerOptions.find((t) => t.key === topEntry[0]) : null;
   const TopIcon = topTrigger ? LucideIcons[topTrigger.icon] || HelpCircle : null;
 
@@ -44,18 +46,26 @@ export const TriggerLogger = () => {
     setConfirmed(label);
   };
 
+  const chartData = sortedEntries.slice(0, 5).map(([k, v]) => {
+    const opt = triggerOptions.find((t) => t.key === k);
+    return {
+      label: opt ? opt.label.slice(0, 4) : k.slice(0, 4),
+      value: v,
+    };
+  });
+
   return (
     <div className="flex flex-col gap-3 bg-app-surface/90 border border-line rounded-custom-lg p-4 shadow-card">
       <div className="flex items-center justify-between">
         <div className="flex flex-col gap-0.5">
           <h3 className="font-serif text-base font-bold text-app-ink">What set off a bleed today?</h3>
           <p className="text-[11px] text-app-muted leading-relaxed">
-            Tap a trigger to log it — selected items stay highlighted.
+            Tap a trigger chip to log — patterns build automatically.
           </p>
         </div>
-        {triggerLog.filter(e => e.date === todayStr).length > 0 && (
+        {triggerLog.filter((e) => e.date === todayStr).length > 0 && (
           <span className="text-[10px] font-bold uppercase tracking-wider text-garnet bg-rose border border-garnet/20 px-2 py-0.5 rounded-custom-pill shrink-0">
-            {triggerLog.filter(e => e.date === todayStr).length} Logged Today
+            {triggerLog.filter((e) => e.date === todayStr).length} Logged
           </span>
         )}
       </div>
@@ -113,13 +123,18 @@ export const TriggerLogger = () => {
         )}
       </AnimatePresence>
 
-      {topTrigger && (
-        <div className="flex items-center gap-2 bg-app-surface2 border border-line rounded-custom-sm px-3 py-2 mt-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted">Your top trigger</span>
-          <span className="flex items-center gap-1 text-xs font-bold text-garnet ml-auto">
-            {TopIcon && <TopIcon size={13} />}
-            {topTrigger.label} ({counts[topTrigger.key] || 1}x)
-          </span>
+      {topTrigger && chartData.length > 0 && (
+        <div className="flex flex-col gap-2 bg-app-surface2 border border-line rounded-custom p-3 mt-1">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted">Top Triggers Pattern</span>
+            <span className="flex items-center gap-1 text-xs font-bold text-garnet">
+              {TopIcon && <TopIcon size={13} />}
+              {topTrigger.label} ({counts[topTrigger.key]}x)
+            </span>
+          </div>
+          <div className="pt-1">
+            <BarChart data={chartData} height={45} color="#8E2D3B" showLabels={true} />
+          </div>
         </div>
       )}
 
