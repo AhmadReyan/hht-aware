@@ -25,7 +25,7 @@ log them in [`CHANGELOG.md`](CHANGELOG.md).
   `PremiumGate`. (ready, but confirm no new dep beyond a fetch)
 - [P1] Emergency Card polish — verify the passport view + PDF export render
   correctly on all themes; ensure the "stored only on this device" trust cue is
-  present. Acceptance: screenshot `#/emergency` in both modes. (ready)
+  present. Acceptance: screenshot `#/emergency` in both modes. (done)
 
 ## P2 — quality, performance, tests
 - [P2] Code-split the ~1.9 MB main bundle — dynamic-import the poster drawers,

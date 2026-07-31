@@ -25,9 +25,12 @@ const PHYSICIAN_WARNINGS = [
 
 const fmtDate = (dob) => {
   if (!dob) return '—';
-  const d = new Date(dob);
-  if (Number.isNaN(d.getTime())) return dob;
-  return d.toLocaleDateString('en-US', { timeZone: 'UTC' });
+  if (/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+    const [y, m, d] = dob.split('-');
+    const dateObj = new Date(Number(y), Number(m) - 1, Number(d));
+    return dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+  return dob;
 };
 
 const labelFor = (m) => MANIFESTATION_LABELS[m] || m;
@@ -176,8 +179,11 @@ export const EmergencyCardDisplay = ({ data = {}, cardRef }) => {
   );
 
   return (
-    <div className="w-full">
+    <div className="w-full flex flex-col gap-2">
       <FlipCard front={front} back={back} height={300} />
+      <div className="flex items-center justify-center gap-1.5 text-[11px] font-medium text-app-muted bg-app-surface2/60 border border-line rounded-custom-pill py-1 px-3 mx-auto w-fit">
+        <span>🔒 Stored only on this device · 100% private</span>
+      </div>
 
       {/* Hidden, print-clean sheet captured for the PDF export. */}
       <div
