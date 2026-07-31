@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 
@@ -54,7 +55,11 @@ export const Modal = ({
     exit: { scale: 0.9, opacity: 0, transition: { ease: 'easeIn', duration: 0.15 } }
   };
 
-  return (
+  // Render into a portal on document.body so the fixed overlay is positioned
+  // against the viewport, not a transformed ancestor (PageWrapper is a
+  // motion.main whose transform would otherwise become the containing block
+  // and push the sheet off-screen).
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
@@ -121,7 +126,8 @@ export const Modal = ({
           )}
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 export default Modal;

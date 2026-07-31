@@ -132,7 +132,7 @@ export const AboutModal = ({ isOpen, onClose }) => {
             className="relative w-full max-w-md bg-app-surface text-app-ink rounded-t-custom-lg shadow-raised border-t border-line flex flex-col max-h-[88vh] z-10"
           >
             {/* Header (ember hero) */}
-            <div className="relative overflow-hidden rounded-t-custom-lg bg-ember text-white px-6 pt-4 pb-5">
+            <div className="relative shrink-0 overflow-hidden rounded-t-custom-lg bg-ember text-white px-6 pt-4 pb-5">
               <Vessels color="#fff" opacity={0.16} />
               <div className="mx-auto w-10 h-1.5 bg-white/40 rounded-full mb-4" />
               <div className="flex items-start justify-between gap-3">
@@ -153,7 +153,7 @@ export const AboutModal = ({ isOpen, onClose }) => {
             </div>
 
             {/* Body */}
-            <div className="overflow-y-auto px-6 py-5 flex flex-col gap-6 text-sm text-app-soft leading-relaxed font-sans">
+            <div className="flex-1 min-h-0 overflow-y-auto px-6 py-5 flex flex-col gap-6 text-sm text-app-soft leading-relaxed font-sans">
 
               {/* Intro */}
               <section className="flex flex-col gap-2">
