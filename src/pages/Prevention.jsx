@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProtectionRing } from '../components/prevention/ProtectionRing';
 import { ActionTiles } from '../components/prevention/ActionTiles';
+import { CompletionCelebration } from '../components/prevention/CompletionCelebration';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
@@ -41,6 +42,7 @@ export const Prevention = () => {
             <span className="text-[10px] text-app-muted font-medium">Tap tile to log</span>
           </div>
           <ActionTiles />
+          <CompletionCelebration />
         </section>
 
         {/* 3. STREAK FLAME */}
