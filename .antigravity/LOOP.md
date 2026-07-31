@@ -63,9 +63,12 @@ file:line defects, then the Builder fixes confirmed ones before VERIFY.
 
 ### 5. VERIFIER  *(model: Flash to run, Pro to judge a failure)*  — **the gate**
 - `npm run lint` → must be clean. `npm run build` → must succeed. Fix or revert.
-- For any UI change: `npm run preview`, headless-screenshot the affected
-  route(s), **look at the image**, and grep the console for errors (see AGENTS.md
-  §2). The acceptance check from PLANNER must be visibly satisfied.
+- For any UI change this step is **mandatory, not optional**: `npm run preview`,
+  headless-screenshot the affected route(s), **actually look at the image**, and
+  grep the console for errors (see AGENTS.md §2). Lint+build alone is NOT
+  sufficient sign-off for a visible change — a green build can still render
+  broken. The acceptance check from PLANNER must be visibly satisfied, and your
+  cycle report must state that the screenshot was inspected.
 - If verification fails, hand back to BUILDER (max 2 repair attempts). Two failed
   cycles in a row on the same task → **PAUSE the loop and flag a human.**
 
@@ -76,7 +79,9 @@ file:line defects, then the Builder fixes confirmed ones before VERIFY.
 
 ### 7. LOGGER  *(model: Flash)*
 - Move the backlog item to **Done**; append a one-line entry to
-  [`CHANGELOG.md`](CHANGELOG.md) (cycle id, what shipped, commit sha).
+  [`CHANGELOG.md`](CHANGELOG.md) (cycle id, what shipped, commit sha). Read the
+  sha from `git rev-parse HEAD` **after** the commit lands — never before, or you
+  log the previous commit's sha.
 - If the work surfaced follow-ups, add them to the backlog. **Loop to step 0.**
 
 ### Groomer (on demand, when backlog is thin)  *(model: Pro)*

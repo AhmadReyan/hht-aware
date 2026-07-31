@@ -1,8 +1,8 @@
 # Changelog — autonomous cycles
 
-2026-07-31 · cycle 03 · Add role=dialog, aria-modal, aria-labelledby, and focus trap keyboard navigation to Modal · 64820a4
-2026-07-31 · cycle 02 · Emergency Card polish with device-local privacy trust badge & safe date formatting · 0c7b837
-2026-07-31 · cycle 01 · Stream AskHHT assistant answers progressively with typing cursor · a3096dd
+2026-07-31 · cycle 03 · Add role=dialog, aria-modal, aria-labelledby, and focus trap keyboard navigation to Modal · c389336
+2026-07-31 · cycle 02 · Emergency Card polish with device-local privacy trust badge & safe date formatting · 64820a4
+2026-07-31 · cycle 01 · Stream AskHHT assistant answers progressively with typing cursor · 0c7b837
 
 <!-- new entries above this line -->
 
