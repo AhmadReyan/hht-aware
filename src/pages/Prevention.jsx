@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
-import { SelfCareChecklist } from '../components/prevention/SelfCareChecklist';
+import { ProtectionRing } from '../components/prevention/ProtectionRing';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
@@ -30,7 +30,7 @@ export const Prevention = () => {
 
         {/* 1. PROTECTION RING HERO */}
         <section id="protection-hero">
-          <SelfCareChecklist />
+          <ProtectionRing />
         </section>
 
         {/* 2. ACTION TILES */}

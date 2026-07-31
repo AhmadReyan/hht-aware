@@ -1,5 +1,6 @@
 # Changelog — autonomous cycles
 
+2026-07-31 · cycle 05 · Prevention Redesign Step 2 — ProtectionRing hero component · e623109
 2026-07-31 · cycle 04 · Prevention Redesign Step 1 — Restructure page into 7 target sections · 815ac9a
 2026-07-31 · cycle 03 · Add role=dialog, aria-modal, aria-labelledby, and focus trap keyboard navigation to Modal · c389336
 2026-07-31 · cycle 02 · Emergency Card polish with device-local privacy trust badge & safe date formatting · 64820a4
