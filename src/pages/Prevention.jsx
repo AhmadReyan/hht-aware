@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProtectionRing } from '../components/prevention/ProtectionRing';
@@ -12,6 +13,7 @@ import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { TriggerHelperSorter } from '../components/prevention/TriggerHelperSorter';
 import { AgePersonaSelector } from '../components/prevention/AgePersonaSelector';
 import { PreventionCategory } from '../components/prevention/PreventionCategory';
+import { haptics } from '../hooks/useHaptics';
 import {
   preventionDisclaimer,
   preventionCategories,
@@ -23,6 +25,8 @@ import {
   ChevronDown,
   ShieldPlus,
   Sparkles,
+  AlertTriangle,
+  ChevronRight,
 } from 'lucide-react';
 
 export const Prevention = () => {
@@ -37,6 +41,29 @@ export const Prevention = () => {
         <section id="protection-hero">
           <ProtectionRing />
         </section>
+
+        {/* EMERGENCY FIRST AID BRIDGE */}
+        <Link
+          to="/emergency"
+          onClick={() => haptics.impact()}
+          className="no-underline"
+        >
+          <motion.div
+            whileTap={{ scale: 0.98 }}
+            className="bg-garnet/5 border border-garnet/20 hover:border-garnet/40 rounded-custom-lg p-3 flex items-center justify-between shadow-xs transition-colors"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-garnet text-white flex items-center justify-center shrink-0">
+                <AlertTriangle size={14} />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-garnet">Active Nosebleed Right Now?</span>
+                <span className="text-[10.5px] text-app-muted font-medium">Open Emergency First Aid &amp; Passport</span>
+              </div>
+            </div>
+            <ChevronRight size={16} className="text-garnet shrink-0" />
+          </motion.div>
+        </Link>
 
         {/* 2. ACTION TILES */}
         <section id="action-tiles" className="flex flex-col gap-3">
