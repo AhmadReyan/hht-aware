@@ -121,6 +121,19 @@ don't share files, split it:
 - [ ] Diff is small and single-concern; only intended files staged.
 - [ ] Committed with a clear message; backlog + changelog updated.
 
+## Keeping the loop running (it does NOT self-continue)
+An agent runs one turn and exits — it will not loop forever by itself. To keep
+cycles firing, a **driver** re-invokes the CLI each cycle:
+- Set `$Launcher` in [`run-loop.ps1`](run-loop.ps1) to your Antigravity CLI's
+  non-interactive command, then run
+  `powershell -ExecutionPolicy Bypass -File .antigravity\run-loop.ps1`.
+- It runs one cycle, sleeps `IntervalSeconds`, repeats. Stop it by creating
+  `.antigravity/STOP`. Per-cycle logs land in `.antigravity/logs/`.
+- To survive reboots, register it as a Windows Task Scheduler task (run at logon).
+- Safety net: `.githooks/pre-push` blocks any push whose lint/build fails, so an
+  unattended cycle can never land a red build on `main`
+  (enable once: `git config core.hooksPath .githooks`).
+
 ## Stop / pause conditions (hand to a human)
 - Two consecutive failed cycles, or the same task failing twice.
 - A task that needs a new dependency, a data-shape migration, a secret, or an

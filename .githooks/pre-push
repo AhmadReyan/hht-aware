@@ -1,0 +1,10 @@
+#!/bin/sh
+# pre-push safety net for the autonomous loop: never let a red build reach main.
+# An unattended agent can skip its own verify step — this hook can't be skipped.
+# Enable once with:  git config core.hooksPath .githooks
+# Bypass in an emergency with:  git push --no-verify
+echo "pre-push: running lint + build before allowing push…"
+npm run lint || { echo "pre-push: LINT failed — push blocked. Fix, then push again."; exit 1; }
+npm run build >/dev/null 2>&1 || { echo "pre-push: BUILD failed — push blocked. Fix, then push again."; exit 1; }
+echo "pre-push: green — push allowed."
+exit 0
