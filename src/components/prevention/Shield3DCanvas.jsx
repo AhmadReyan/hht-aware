@@ -60,24 +60,38 @@ export const Shield3DCanvas = ({ percent = 0 }) => {
       shieldGroup = new THREE.Group();
       scene.add(shieldGroup);
 
-      // 3A. Central Shield Gem (Octahedron)
-      const shieldGeo = new THREE.OctahedronGeometry(1.1, 1);
+      // 3A. Central Shield Gem (Luminous Octahedron + Outer Wireframe Cage)
+      const shieldGeo = new THREE.OctahedronGeometry(0.9, 1);
       const shieldMat = new THREE.MeshStandardMaterial({
-        color: 0x8e2d3b,
-        roughness: 0.25,
-        metalness: 0.75,
+        color: 0xc0392b,
+        roughness: 0.15,
+        metalness: 0.4,
+        transparent: true,
+        opacity: 0.45,
         flatShading: true,
       });
       shieldMesh = new THREE.Mesh(shieldGeo, shieldMat);
       shieldGroup.add(shieldMesh);
 
+      // Outer wireframe cage for crisp 3D structure
+      const cageGeo = new THREE.OctahedronGeometry(1.05, 1);
+      const cageMat = new THREE.MeshBasicMaterial({
+        color: 0xd9a13b,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.6,
+      });
+      const cageMesh = new THREE.Mesh(cageGeo, cageMat);
+      shieldGroup.add(cageMesh);
+
       // 3B. Orbiting Energy Ring (Torus)
-      const ringGeo = new THREE.TorusGeometry(1.6, 0.05, 16, 64);
+      const ringGeo = new THREE.TorusGeometry(1.5, 0.04, 16, 64);
       const ringMat = new THREE.MeshStandardMaterial({
         color: 0x15756c,
-        roughness: 0.3,
-        metalness: 0.8,
-        wireframe: false,
+        roughness: 0.2,
+        metalness: 0.7,
+        transparent: true,
+        opacity: 0.85,
       });
       ringMesh = new THREE.Mesh(ringGeo, ringMat);
       ringMesh.rotation.x = Math.PI / 3;

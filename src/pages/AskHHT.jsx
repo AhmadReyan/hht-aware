@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, ShieldAlert, Bot, Loader2 } from 'lucide-react';
+import { Send, Sparkles, ShieldAlert, Bot, Loader2, Cpu } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { UpgradeSheet } from '../components/premium/UpgradeSheet';
@@ -9,6 +9,8 @@ import { askHHT, isAiConfigured } from '../services/askHht';
 import { AI_FREE_DAILY_LIMIT } from '../lib/aiConfig';
 import { haptics } from '../hooks/useHaptics';
 import { spring } from '../lib/motion';
+
+const AiAvatar3DCanvas = lazy(() => import('../components/ask/AiAvatar3DCanvas'));
 
 /**
  * AskHHT — the "/ask" screen. A plain-language HHT Q&A assistant backed by a
@@ -140,7 +142,19 @@ export const AskHHT = () => {
   return (
     <PageWrapper>
       <div className="flex flex-col gap-4 pb-8 rise" style={{ minHeight: '70vh' }}>
-        <SectionTitle kicker="Ask HHT" title="Your HHT assistant" />
+        <SectionTitle kicker="Interactive AI Expert" title="AURA — HHT AI Specialist" />
+
+        {/* 3D Interactive AI Avatar Hero */}
+        <div className="relative overflow-hidden rounded-custom-lg bg-app-surface border border-line p-4 shadow-card flex flex-col items-center text-center">
+          <Suspense fallback={<div className="w-[150px] h-[150px] mx-auto bg-garnet/10 rounded-full animate-pulse" />}>
+            <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} />
+          </Suspense>
+
+          <div className="flex items-center gap-1.5 bg-garnet/10 border border-garnet/20 text-garnet rounded-custom-pill px-3 py-1 text-[11px] font-bold mt-1">
+            <Cpu size={13} className={pending ? 'animate-spin' : ''} />
+            <span>{pending ? 'AURA is analyzing your question…' : 'AURA 3D AI Active · Interactive Expert'}</span>
+          </div>
+        </div>
 
         {/* Disclaimer */}
         <div className="flex items-start gap-2 bg-rose/60 border border-garnet/10 rounded-custom p-3">
@@ -151,12 +165,12 @@ export const AskHHT = () => {
         {/* Conversation */}
         <div ref={scrollRef} className="flex-1 flex flex-col gap-3 overflow-y-auto">
           {messages.length === 0 && (
-            <div className="flex flex-col items-center text-center gap-3 py-8">
-              <div className="w-14 h-14 rounded-full bg-ember flex items-center justify-center text-white shadow-glow">
-                <Bot size={26} />
+            <div className="flex flex-col items-center text-center gap-2 py-4">
+              <div className="w-10 h-10 rounded-full bg-ember flex items-center justify-center text-white shadow-glow">
+                <Bot size={22} />
               </div>
-              <p className="text-sm text-app-muted max-w-[240px]">
-                Ask me anything about HHT — symptoms, iron, genetics, screening, or daily care.
+              <p className="text-xs text-app-muted max-w-[260px]">
+                Hi, I&apos;m AURA! Ask me anything about HHT — symptoms, iron, genetics, screening, or daily care.
               </p>
             </div>
           )}

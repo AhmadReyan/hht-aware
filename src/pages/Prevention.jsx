@@ -20,6 +20,8 @@ import {
   triggerHelperItems,
   preventionByAge,
 } from '../data/prevention';
+import { PreventionBook3DModal } from '../components/prevention/PreventionBook3DModal';
+import { GUIDE_BOOKS } from '../data/preventionBooks';
 import {
   Library,
   ChevronDown,
@@ -27,11 +29,13 @@ import {
   Sparkles,
   AlertTriangle,
   ChevronRight,
+  BookOpen,
 } from 'lucide-react';
 
 export const Prevention = () => {
   const [showLibrary, setShowLibrary] = useState(false);
   const [selectedWhyItem, setSelectedWhyItem] = useState(null);
+  const [activeBookId, setActiveBookId] = useState(null);
 
   return (
     <PageWrapper>
@@ -99,6 +103,44 @@ export const Prevention = () => {
           <TriggerLogger />
         </section>
 
+        {/* 3D INTERACTIVE HANDBOOKS */}
+        <section id="interactive-handbooks" className="flex flex-col gap-3">
+          <div className="px-1 flex items-center justify-between">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Animated 3D Guides</span>
+              <h2 className="font-serif text-lg font-extrabold text-ink leading-tight">Interactive Care Books</h2>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2.5">
+            {GUIDE_BOOKS.map((b) => (
+              <motion.button
+                key={b.id}
+                type="button"
+                whileTap={{ scale: 0.96 }}
+                onClick={() => {
+                  haptics.impact();
+                  setActiveBookId(b.id);
+                }}
+                className="flex flex-col text-left p-3.5 rounded-custom-lg bg-app-surface border border-line shadow-card hover:border-garnet/30 transition-all select-none"
+              >
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-white mb-2 shadow-xs"
+                  style={{ backgroundColor: b.iconColor }}
+                >
+                  <BookOpen size={16} />
+                </div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-garnet">
+                  {b.badge}
+                </span>
+                <span className="font-serif text-xs font-extrabold text-app-ink leading-snug mt-0.5 line-clamp-2">
+                  {b.title}
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        </section>
+
         {/* 7. LEARN (MINIMIZED COLLAPSIBLE) */}
         <section id="learn-minimized" className="flex flex-col gap-3">
           <button
@@ -164,6 +206,12 @@ export const Prevention = () => {
         item={selectedWhyItem}
         isOpen={Boolean(selectedWhyItem)}
         onClose={() => setSelectedWhyItem(null)}
+      />
+
+      <PreventionBook3DModal
+        bookId={activeBookId}
+        isOpen={Boolean(activeBookId)}
+        onClose={() => setActiveBookId(null)}
       />
     </PageWrapper>
   );

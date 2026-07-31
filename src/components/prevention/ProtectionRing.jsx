@@ -103,22 +103,22 @@ export const ProtectionRing = () => {
             />
           </svg>
 
-          <div className="relative z-10 flex flex-col items-center justify-center bg-app-surface/80 backdrop-blur-xs p-2 rounded-full border border-line/40 shadow-sm">
+          <div className="relative z-10 flex flex-col items-center justify-center bg-app-surface/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-line/80 shadow-card">
             <motion.div
               animate={{ scale: isComplete ? [1, 1.15, 1] : 1 }}
               transition={spring.bouncy}
-              className="flex items-center justify-center"
+              className="flex items-center justify-center mb-0.5"
             >
               <ShieldCheck
-                size={26}
+                size={24}
                 style={{ color: ringColor }}
                 className={`transition-colors ${isComplete ? 'drop-shadow-md' : ''}`}
               />
             </motion.div>
-            <span className="font-serif text-xl font-black leading-none text-app-ink mt-0.5">
+            <span className="font-serif text-2xl font-black leading-none text-app-ink">
               {percent}%
             </span>
-            <span className="text-[9px] font-bold uppercase tracking-wider text-app-muted mt-0.5">
+            <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-garnet mt-1">
               {count}/{total} Shielded
             </span>
           </div>
