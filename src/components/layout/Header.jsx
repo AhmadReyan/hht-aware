@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { Download, Info, ShieldAlert } from 'lucide-react';
+import { HHTLogo } from '../ui/HHTLogo';
 
 export const Header = ({ onOpenAbout }) => {
   const { isInstallable, installPWA } = usePWAInstall();
@@ -10,12 +11,9 @@ export const Header = ({ onOpenAbout }) => {
     <header className="sticky top-0 z-40 w-full bg-app-bg/85 backdrop-blur-md border-b border-line safe-padding-top">
       <div className="mx-auto max-w-md w-full h-14 flex items-center justify-between px-4">
         {/* Brand/Logo */}
-        <div className="flex items-center gap-2">
-          <span className="text-xl">🎗️</span>
-          <span className="font-serif text-lg font-extrabold tracking-tight text-garnet">
-            HHT<span className="text-app-ink">Aware</span>
-          </span>
-        </div>
+        <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+          <HHTLogo size="md" />
+        </Link>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1.5">

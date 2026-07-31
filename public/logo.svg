@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="hhtGarnet" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#C0392B" />
+      <stop offset="50%" stop-color="#96281B" />
+      <stop offset="100%" stop-color="#6B1110" />
+    </linearGradient>
+    <linearGradient id="hhtGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F1C40F" />
+      <stop offset="100%" stop-color="#D4AC0D" />
+    </linearGradient>
+    <linearGradient id="hhtShield" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E74C3C" stop-opacity="0.15" />
+      <stop offset="100%" stop-color="#96281B" stop-opacity="0.03" />
+    </linearGradient>
+  </defs>
+  <path
+    d="M50 8 C68 8, 86 16, 86 38 C86 64, 50 88, 50 88 C50 88, 14 64, 14 38 C14 16, 32 8, 50 8 Z"
+    fill="url(#hhtShield)"
+    stroke="url(#hhtGarnet)"
+    stroke-width="2.5"
+    stroke-dasharray="4 2"
+    opacity="0.6"
+  />
+  <path
+    d="M34 82 C 22 55, 26 28, 48 20 C 62 15, 70 28, 58 48 L 26 84"
+    stroke="url(#hhtGarnet)"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M66 82 C 78 55, 74 28, 52 20 C 38 15, 30 28, 42 48 L 74 84"
+    stroke="url(#hhtGarnet)"
+    stroke-width="10"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <path
+    d="M44 22 C 54 18, 62 26, 54 38"
+    stroke="url(#hhtGold)"
+    stroke-width="3.5"
+    stroke-linecap="round"
+  />
+  <circle cx="50" cy="30" r="5" fill="url(#hhtGold)" />
+  <circle cx="50" cy="30" r="2.5" fill="#FFFFFF" />
+  <path
+    d="M50 64 C53 68, 56 71, 56 74 C56 77.3, 53.3 80, 50 80 C46.7 80, 44 77.3, 44 74 C44 71, 47 68, 50 64 Z"
+    fill="url(#hhtGarnet)"
+  />
+</svg>

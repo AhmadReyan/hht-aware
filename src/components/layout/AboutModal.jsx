@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ExternalLink, AlertOctagon, CloudUpload } from 'lucide-react';
 import { Vessels } from '../ui/Vessels';
+import { HHTLogo } from '../ui/HHTLogo';
 import { haptics } from '../../hooks/useHaptics';
 import { useAppStore } from '../../store/useAppStore';
 
@@ -136,7 +137,8 @@ export const AboutModal = ({ isOpen, onClose }) => {
               <Vessels color="#fff" opacity={0.16} />
               <div className="mx-auto w-10 h-1.5 bg-white/40 rounded-full mb-4" />
               <div className="flex items-start justify-between gap-3">
-                <div className="relative z-10">
+                <div className="relative z-10 flex flex-col gap-1">
+                  <HHTLogo size="sm" showText={false} />
                   <div className="font-sans text-[11px] uppercase tracking-wider text-white/80 font-semibold">About the condition</div>
                   <h2 className="font-serif font-extrabold text-2xl leading-tight mt-0.5">
                     HHT — Hereditary Hemorrhagic Telangiectasia

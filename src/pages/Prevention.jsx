@@ -5,6 +5,9 @@ import { SelfCareChecklist } from '../components/prevention/SelfCareChecklist';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { QuickRoutine } from '../components/prevention/QuickRoutine';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
+import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
+import { TriggerHelperSorter } from '../components/prevention/TriggerHelperSorter';
+import { AgePersonaSelector } from '../components/prevention/AgePersonaSelector';
 import { PreventionCategory } from '../components/prevention/PreventionCategory';
 import { Card } from '../components/ui/Card';
 import { Vessels } from '../components/ui/Vessels';
@@ -12,6 +15,9 @@ import {
   preventionDisclaimer,
   preventionCategories,
   everydayRoutine,
+  noseCareSteps,
+  triggerHelperItems,
+  preventionByAge,
 } from '../data/prevention';
 import {
   Library,
@@ -19,6 +25,8 @@ import {
   ShieldPlus,
   ArrowRight,
   Sparkles,
+  Zap,
+  UserCheck,
 } from 'lucide-react';
 
 export const Prevention = () => {
@@ -30,32 +38,68 @@ export const Prevention = () => {
 
         {/* Header */}
         <section className="px-1">
-          <SectionTitle kicker="Self-Care" title="Protect your iron" />
-          <p className="text-[13px] text-app-soft leading-relaxed pr-8">
-            Daily habits are your strongest defense. Moisturizing and gentle care can reduce nosebleed frequency by up to 50%.
+          <SectionTitle kicker="Self-Care & Prevention" title="Protect your nose & iron" />
+          <p className="text-[13px] text-app-soft leading-relaxed pr-6">
+            Daily moisture and gentle care lower nosebleed frequency by up to 50%. Follow our visual step-by-step guide below.
           </p>
         </section>
 
-        {/* 1. Daily Checklist — Main Action */}
+        {/* 1. Animated Visual Nose Care Walkthrough */}
+        <section className="flex flex-col gap-3">
+          <div className="px-1 flex justify-between items-center">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest text-garnet flex items-center gap-1">
+              <Zap size={12} className="text-garnet animate-bounce" />
+              Step-by-Step Prevention Protocol
+            </span>
+            <span className="text-[10px] font-bold text-app-muted">Auto-advancing</span>
+          </div>
+          <NoseCareSteps steps={noseCareSteps} />
+        </section>
+
+        {/* 2. Daily Checklist — Main Action */}
         <section>
           <SelfCareChecklist />
         </section>
 
-        {/* 2. Consistency Heatmap */}
+        {/* 3. Consistency Heatmap */}
         <section>
           <SelfCareConsistency />
         </section>
 
-        {/* 3. Trigger Logger */}
+        {/* 4. Trigger Logger */}
         <section>
           <div className="px-1 mb-3">
-             <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Analytics</span>
+             <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Pattern Tracker</span>
              <h2 className="font-serif text-xl font-extrabold text-ink leading-tight">Trigger Log</h2>
           </div>
           <TriggerLogger />
         </section>
 
-        {/* 4. Simple Daily Routine */}
+        {/* 5. Interactive Sorter Mini-Game */}
+        <section className="flex flex-col gap-3">
+          <div className="px-1 flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-garnet">Interactive Practice</span>
+            <h2 className="font-serif text-xl font-extrabold text-ink leading-tight">Trigger or Helper?</h2>
+            <p className="text-[11px] text-app-muted mt-0.5">Tap an item below, then choose Triggers or Helpers to sort it.</p>
+          </div>
+          <div className="bg-app-surface border border-line rounded-custom-lg p-4 shadow-card">
+            <TriggerHelperSorter items={triggerHelperItems} />
+          </div>
+        </section>
+
+        {/* 6. Prevention by Age & Life Stage */}
+        <section className="flex flex-col gap-3">
+          <div className="px-1 flex flex-col">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-garnet flex items-center gap-1">
+              <UserCheck size={12} className="text-garnet" />
+              Personalized Guidance
+            </span>
+            <h2 className="font-serif text-xl font-extrabold text-ink leading-tight">Age &amp; Life Stage Focus</h2>
+          </div>
+          <AgePersonaSelector groups={preventionByAge} />
+        </section>
+
+        {/* 7. Simple Daily Routine */}
         <section className="flex flex-col gap-4">
           <div className="px-1 flex justify-between items-end">
             <div className="flex flex-col">
@@ -73,7 +117,7 @@ export const Prevention = () => {
           </Card>
         </section>
 
-        {/* 5. Knowledge Library */}
+        {/* 8. Knowledge Library */}
         <section className="flex flex-col gap-3">
           <button
             type="button"
@@ -101,7 +145,7 @@ export const Prevention = () => {
           )}
         </section>
 
-        {/* 6. Pro-Tip Callout */}
+        {/* 9. Pro-Tip Callout */}
         <section className="bg-rose border border-garnet/10 rounded-custom-lg p-5 flex gap-4 items-center">
             <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm flex-shrink-0">
                <Sparkles className="text-garnet" size={24} />

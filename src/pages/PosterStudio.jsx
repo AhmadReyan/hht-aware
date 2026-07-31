@@ -12,12 +12,13 @@ import { GenericPosterControls } from '../components/poster/GenericPosterControl
 import { CaptionBlock } from '../components/poster/CaptionBlock';
 import { SavedCreationsShelf } from '../components/poster/SavedCreationsShelf';
 import { SavePosterSheet } from '../components/poster/SavePosterSheet';
+import { PresetQuotes } from '../components/poster/PresetQuotes';
 import { getTemplate, buildDefaultData } from '../components/poster/posterTemplates';
 import { getTheme } from '../components/poster/posterThemes';
 import { getFormat } from '../components/poster/posterFormats';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { Toast } from '../components/ui/Toast';
-import { Download, Share2, Save } from 'lucide-react';
+import { Download, Share2, Save, Wand2 } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { haptics } from '../hooks/useHaptics';
 import { TapScale } from '../lib/motion';
@@ -114,6 +115,18 @@ export const PosterStudio = () => {
 
   const updateTemplateData = (next) => {
     setTemplateData((prev) => ({ ...prev, [posterType]: next }));
+  };
+
+  const handleApplyPreset = (preset) => {
+    setPosterType(preset.type);
+    if (preset.type === 'awareness') {
+      setAwarenessData({ headline: preset.headline, body: preset.body });
+    } else if (preset.type === 'fact') {
+      setFactData({ stat: preset.stat, body: preset.body });
+    } else if (preset.type === 'story') {
+      setStoryData({ quote: preset.quote, name: preset.name, role: preset.role });
+    }
+    showCustomToast(`Loaded "${preset.label}" prompt ✨`);
   };
 
   const triggerChallengeOne = () => {
@@ -289,6 +302,10 @@ export const PosterStudio = () => {
               Download
             </TapScale>
           </div>
+        </section>
+
+        <section>
+          <PresetQuotes onApplyPreset={handleApplyPreset} />
         </section>
 
         <section>
