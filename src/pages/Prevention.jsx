@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProtectionRing } from '../components/prevention/ProtectionRing';
 import { ActionTiles } from '../components/prevention/ActionTiles';
@@ -69,17 +70,14 @@ export const Prevention = () => {
             <h2 className="font-serif text-lg font-extrabold text-ink leading-tight">Trigger Log</h2>
           </div>
           <TriggerLogger />
-          <div className="mt-3 bg-app-surface border border-line rounded-custom-lg p-4 shadow-card">
-            <TriggerHelperSorter items={triggerHelperItems} />
-          </div>
         </section>
 
-        {/* 7. LEARN (MINIMIZED) */}
+        {/* 7. LEARN (MINIMIZED COLLAPSIBLE) */}
         <section id="learn-minimized" className="flex flex-col gap-3">
           <button
             type="button"
             onClick={() => setShowLibrary((s) => !s)}
-            className="flex items-center justify-between w-full bg-app-surface border border-line rounded-custom-lg p-4 text-left shadow-card group hover:border-garnet/30 transition-all"
+            className="flex items-center justify-between w-full bg-app-surface border border-line rounded-custom-lg p-4 text-left shadow-card group hover:border-garnet/30 transition-all select-none"
           >
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-garnet text-white flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
@@ -87,22 +85,33 @@ export const Prevention = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-app-ink">HHT Prevention Library</span>
-                <span className="text-[10px] text-app-muted">Age guidance, diet, meds &amp; clinical tips</span>
+                <span className="text-[10px] text-app-muted">Age guidance, diet, meds &amp; trigger helpers</span>
               </div>
             </div>
             <ChevronDown size={18} className={`text-app-muted transition-transform duration-300 ${showLibrary ? 'rotate-180' : ''}`} />
           </button>
 
-          {showLibrary && (
-            <div className="flex flex-col gap-4 rise pt-2">
-              <AgePersonaSelector groups={preventionByAge} />
-              <div className="flex flex-col gap-3">
-                {preventionCategories.map((cat) => (
-                  <PreventionCategory key={cat.id} category={cat} defaultOpen={false} />
-                ))}
-              </div>
-            </div>
-          )}
+          <AnimatePresence>
+            {showLibrary && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden flex flex-col gap-4 pt-1"
+              >
+                <div className="bg-app-surface border border-line rounded-custom-lg p-4 shadow-card">
+                  <TriggerHelperSorter items={triggerHelperItems} />
+                </div>
+                <AgePersonaSelector groups={preventionByAge} />
+                <div className="flex flex-col gap-3">
+                  {preventionCategories.map((cat) => (
+                    <PreventionCategory key={cat.id} category={cat} defaultOpen={false} />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </section>
 
         {/* Pro-Tip Callout & Disclaimer */}
