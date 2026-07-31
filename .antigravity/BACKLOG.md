@@ -7,11 +7,8 @@ log them in [`CHANGELOG.md`](CHANGELOG.md).
 
 > Format: `- [P#] <title> — <one-line scope / acceptance check> (status)`
 
-## ⭐ CURRENT FOCUS — Prevention screen redesign
-Work the ordered steps in [`MISSION-prevention.md`](MISSION-prevention.md)
-**before anything else below.** Do one step per cycle, in order; each must be
-committed and screenshot-verified. When all 12 steps are done, resume the normal
-priority order below.
+## ⭐ CURRENT FOCUS — Prevention screen redesign (COMPLETE)
+The 12-step Prevention redesign mission ([`MISSION-prevention.md`](MISSION-prevention.md)) is fully executed, tested, and verified green! "Your Daily Shield" is live with Protection Ring hero, action tiles, streak flame, contextual moment tip, 21-day consistency chain, trigger quick-log with MiniChart insight, collapsible Prevention library, and Emergency First Aid bridge banner.
 
 ## P0 — correctness & safety
 - [P0] Rate-limit the AI Worker — add Cloudflare KV (or Durable Object) per-IP

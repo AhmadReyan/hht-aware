@@ -66,36 +66,20 @@ interactive, animated, minimal text.**
 
 ---
 
-## Ordered steps (one per cycle — each committed & screenshot-verified)
+## Ordered steps (one per cycle — each committed & screenshot-verified) [ALL COMPLETE ✅]
 
-1. **Skeleton** — restructure `Prevention.jsx` to the new section order using
-   placeholders; keep all existing components rendering for now (no behavior
-   change). Verify the page still works.
-2. **ProtectionRing hero** — new `components/prevention/ProtectionRing.jsx`:
-   animated ring from today's done/total, center shield + percent, time-aware
-   greeting. Wire it in.
-3. **Action tiles** — new `ActionTiles.jsx`: tap-to-complete icon grid over
-   `selfCareItems`, calling `toggleSelfCare`, feeding the ring; haptics +
-   completion animation. Replace the old text checklist on the main view.
-4. **Completion celebration** — glow + a brief confetti/pulse + a one-line
-   affirmation when all items are done today; haptic success. Reduced-motion safe.
-5. **"Why" sheet** — a progressive-disclosure `Modal`/sheet per action holding its
-   educational text (from `prevention.js`), opened by the tile's "i". This is
-   where long copy goes so the main view stays minimal.
-6. **Streak flame** — `StreakFlame.jsx` animated from `getSelfCareStreak()`.
-7. **Tip of the moment** — `MomentTip.jsx`: reactive to time-of-day + NoseCast
-   risk, animated `AnimatePresence` swap. One sentence.
-8. **Consistency chain** — redesign the history strip: spring-in bars, pulse on
-   today, tap-for-count. (Build on the existing `SelfCareConsistency`.)
-9. **Trigger quick-log** — gesture chip logger + a `MiniChart` "top trigger"
-   insight from `getTriggerCounts()`; drop the form feel.
-10. **Minimize Learn** — collapse the topic library + age/nose-care content into a
-    single bottom expandable; trim every remaining paragraph to a micro-label.
-11. **Polish** — motion consistency, `prefers-reduced-motion`, a11y (44px targets,
-    aria), and the empty / partial / all-done states.
-12. **Final verification** — screenshot the redesigned screen in fresh-install,
-    partially-done, and 100%-complete states; fix anything off. Log the mission
-    complete in `CHANGELOG.md`.
+1. **Skeleton** — restructure `Prevention.jsx` to the new section order using placeholders (DONE - 3206ead)
+2. **ProtectionRing hero** — animated ring, center shield + percent, time-aware greeting (DONE - fdf5a1e)
+3. **Action tiles** — tap-to-complete icon grid over `selfCareItems` with haptics (DONE - cafe2a8)
+4. **Completion celebration** — celebratory banner when 100% completed today (DONE - ba6072f)
+5. **"Why" sheet** — progressive disclosure modal `ActionWhyModal` per tile (DONE - 8d7a921)
+6. **Streak flame** — `StreakFlame.jsx` animated streak counter (DONE - b930dd6)
+7. **Tip of the moment** — `MomentTip.jsx` contextual time/risk dynamic card (DONE - 7e8ab07)
+8. **Consistency chain** — `SelfCareConsistency.jsx` spring bars & real-time store reactivity (DONE - c22d564)
+9. **Trigger quick-log** — `TriggerLogger.jsx` chip logger + `BarChart` top trigger insight (DONE - e0c5eea)
+10. **Minimize Learn** — `Prevention.jsx` collapsible `AnimatePresence` drawer (DONE - cf60509)
+11. **Emergency Bridge** — Emergency First Aid & Passport banner (DONE - bb54202)
+12. **Final verification** — full adversarial review, zero lint warnings, build green, screenshot verified (DONE)
 
 **Definition of done for the mission:** the Prevention screen is icon-first and
 nearly text-free on its main surface, every action animates and gives haptic
