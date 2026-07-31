@@ -5,7 +5,8 @@ import { Flame, Sparkles } from 'lucide-react';
 import { haptics } from '../../hooks/useHaptics';
 
 export const SelfCareConsistency = () => {
-  const history = useAppStore(s => s.selfCareHistory);
+  const history = useAppStore((s) => s.selfCareHistory);
+  const selfCareToday = useAppStore((s) => s.selfCareToday);
   const [activeDay, setActiveDay] = useState(null);
 
   // Local "YYYY-MM-DD" — matches how the store writes selfCareHistory dates
@@ -21,8 +22,11 @@ export const SelfCareConsistency = () => {
     const d = new Date();
     d.setDate(d.getDate() - (20 - i));
     const dateStr = toLocalDateStr(d);
-    const entry = history.find(h => h.date === dateStr);
-    const count = entry ? entry.done.length : 0;
+    const entry = history.find((h) => h.date === dateStr);
+    const isToday = i === 20;
+    const count = isToday
+      ? (selfCareToday?.done?.length || 0)
+      : (entry ? entry.done.length : 0);
     
     // Formatting date label (e.g. "Jul 30")
     const formattedDate = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
@@ -31,7 +35,7 @@ export const SelfCareConsistency = () => {
       date: dateStr,
       formattedDate,
       count,
-      isToday: i === 20,
+      isToday,
       dayName: d.toLocaleDateString(undefined, { weekday: 'narrow' }),
     };
   });
