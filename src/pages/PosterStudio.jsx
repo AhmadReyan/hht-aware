@@ -18,7 +18,7 @@ import { getTheme } from '../components/poster/posterThemes';
 import { getFormat } from '../components/poster/posterFormats';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { Toast } from '../components/ui/Toast';
-import { Download, Share2, Save, Wand2 } from 'lucide-react';
+import { Download, Share2, Save } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 import { haptics } from '../hooks/useHaptics';
 import { TapScale } from '../lib/motion';
