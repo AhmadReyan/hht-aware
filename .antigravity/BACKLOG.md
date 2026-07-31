@@ -7,6 +7,12 @@ log them in [`CHANGELOG.md`](CHANGELOG.md).
 
 > Format: `- [P#] <title> — <one-line scope / acceptance check> (status)`
 
+## ⭐ CURRENT FOCUS — Prevention screen redesign
+Work the ordered steps in [`MISSION-prevention.md`](MISSION-prevention.md)
+**before anything else below.** Do one step per cycle, in order; each must be
+committed and screenshot-verified. When all 12 steps are done, resume the normal
+priority order below.
+
 ## P0 — correctness & safety
 - [P0] Rate-limit the AI Worker — add Cloudflare KV (or Durable Object) per-IP
   daily cap in `cloudflare/hht-ai-worker.js` so a direct caller can't burn the
