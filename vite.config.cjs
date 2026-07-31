@@ -100,6 +100,7 @@ module.exports = defineConfig({
         ]
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         globPatterns: ['**/*.{js,css,html,png,svg,ico}'],
         runtimeCaching: [
           {

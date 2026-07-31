@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Sparkles, Flame } from 'lucide-react';
+import { ShieldCheck, Sparkles, Flame, Box } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { selfCareItems } from '../../data/selfCare';
 import { spring } from '../../lib/motion';
+
+const Shield3DCanvas = lazy(() => import('./Shield3DCanvas'));
 
 export const ProtectionRing = () => {
   const selfCareToday = useAppStore((s) => s.selfCareToday);
@@ -60,53 +62,66 @@ export const ProtectionRing = () => {
         )}
       </div>
 
-      {/* Protection Ring */}
-      <div className="relative my-2 flex items-center justify-center" style={{ width: size, height: size }}>
-        <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="transparent"
-            stroke="var(--line)"
-            strokeWidth={strokeWidth}
-            opacity={0.3}
-          />
-          <motion.circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="transparent"
-            stroke={ringColor}
-            strokeWidth={strokeWidth}
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={spring.soft}
-            strokeLinecap="round"
-            style={{ rotate: -90, originX: '50%', originY: '50%' }}
-          />
-        </svg>
+      {/* 3D WebGL Interactive Shield Hero */}
+      <div className="relative my-1 flex flex-col items-center justify-center">
+        {/* 3D Canvas Layer */}
+        <Suspense fallback={<div className="w-[220px] h-[220px] mx-auto" />}>
+          <Shield3DCanvas percent={percent} />
+        </Suspense>
 
-        {/* Center Shield & Metrics */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-2">
-          <motion.div
-            animate={{ scale: isComplete ? [1, 1.15, 1] : 1 }}
-            transition={spring.bouncy}
-            className="flex items-center justify-center mb-0.5"
-          >
-            <ShieldCheck
-              size={32}
-              style={{ color: ringColor }}
-              className={`transition-colors ${isComplete ? 'drop-shadow-md' : ''}`}
+        {/* Floating 3D Badge */}
+        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-app-surface/90 border border-line px-2 py-0.5 rounded-custom-pill flex items-center gap-1 text-[9.5px] font-bold text-app-muted shadow-xs pointer-events-none">
+          <Box size={11} className="text-garnet animate-spin-slow" />
+          <span>Interactive 3D Shield</span>
+        </div>
+
+        {/* Ring Metrics Overlay */}
+        <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-2">
+          <svg className="absolute inset-0 w-full h-full" viewBox={`0 0 ${size} ${size}`}>
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="transparent"
+              stroke="var(--line)"
+              strokeWidth={4}
+              opacity={0.25}
             />
-          </motion.div>
-          <span className="font-serif text-2xl font-black leading-none text-app-ink">
-            {percent}%
-          </span>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted mt-0.5">
-            {count}/{total} Shielded
-          </span>
+            <motion.circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              fill="transparent"
+              stroke={ringColor}
+              strokeWidth={5}
+              strokeDasharray={circumference}
+              initial={{ strokeDashoffset: circumference }}
+              animate={{ strokeDashoffset: offset }}
+              transition={spring.soft}
+              strokeLinecap="round"
+              style={{ rotate: -90, originX: '50%', originY: '50%' }}
+            />
+          </svg>
+
+          <div className="relative z-10 flex flex-col items-center justify-center bg-app-surface/80 backdrop-blur-xs p-2 rounded-full border border-line/40 shadow-sm">
+            <motion.div
+              animate={{ scale: isComplete ? [1, 1.15, 1] : 1 }}
+              transition={spring.bouncy}
+              className="flex items-center justify-center"
+            >
+              <ShieldCheck
+                size={26}
+                style={{ color: ringColor }}
+                className={`transition-colors ${isComplete ? 'drop-shadow-md' : ''}`}
+              />
+            </motion.div>
+            <span className="font-serif text-xl font-black leading-none text-app-ink mt-0.5">
+              {percent}%
+            </span>
+            <span className="text-[9px] font-bold uppercase tracking-wider text-app-muted mt-0.5">
+              {count}/{total} Shielded
+            </span>
+          </div>
         </div>
       </div>
 
