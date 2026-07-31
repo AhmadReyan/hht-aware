@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProtectionRing } from '../components/prevention/ProtectionRing';
+import { ActionTiles } from '../components/prevention/ActionTiles';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
@@ -34,11 +35,12 @@ export const Prevention = () => {
         </section>
 
         {/* 2. ACTION TILES */}
-        <section id="action-tiles">
+        <section id="action-tiles" className="flex flex-col gap-3">
           <div className="px-1 flex items-center justify-between">
             <span className="text-[10px] font-extrabold uppercase tracking-widest text-garnet">Daily Protection Shield</span>
-            <span className="text-[10px] text-app-muted font-medium">Tap to complete</span>
+            <span className="text-[10px] text-app-muted font-medium">Tap tile to log</span>
           </div>
+          <ActionTiles />
         </section>
 
         {/* 3. STREAK FLAME */}
