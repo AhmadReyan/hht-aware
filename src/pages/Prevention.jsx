@@ -5,16 +5,15 @@ import { ActionTiles } from '../components/prevention/ActionTiles';
 import { ActionWhyModal } from '../components/prevention/ActionWhyModal';
 import { CompletionCelebration } from '../components/prevention/CompletionCelebration';
 import { StreakFlame } from '../components/prevention/StreakFlame';
+import { MomentTip } from '../components/prevention/MomentTip';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
-import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
 import { TriggerHelperSorter } from '../components/prevention/TriggerHelperSorter';
 import { AgePersonaSelector } from '../components/prevention/AgePersonaSelector';
 import { PreventionCategory } from '../components/prevention/PreventionCategory';
 import {
   preventionDisclaimer,
   preventionCategories,
-  noseCareSteps,
   triggerHelperItems,
   preventionByAge,
 } from '../data/prevention';
@@ -55,7 +54,7 @@ export const Prevention = () => {
 
         {/* 4. TIP OF THE MOMENT */}
         <section id="tip-of-moment">
-          <NoseCareSteps steps={noseCareSteps} />
+          <MomentTip />
         </section>
 
         {/* 5. CONSISTENCY CHAIN */}
