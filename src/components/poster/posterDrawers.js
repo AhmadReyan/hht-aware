@@ -20,6 +20,7 @@ import {
   drawFooter,
   drawEmoji,
   hexToRgba,
+  roundRectPath,
 } from './canvasHelpers';
 
 // Fills the canvas with the theme's vertical gradient background.
@@ -522,6 +523,160 @@ const drawFamily = (ctx, data, theme, W, H, options) => {
   maybeRibbon(ctx, W, H, theme, options, s);
 };
 
+// ---------------------------------------------------------------------------
+// 14. WARNING SIGNS CHECKLIST
+// ---------------------------------------------------------------------------
+const drawChecklist = (ctx, data, theme, W, H, options) => {
+  const s = W / 1080;
+  const M = 100 * s;
+  const { headline = 'Know the signs of HHT', items = '' } = data;
+
+  ctx.fillStyle = theme.dark ? theme.surface : theme.bgFrom;
+  ctx.fillRect(0, 0, W, H);
+  applyPattern(ctx, W, H, theme, options.pattern);
+  maybeRibbon(ctx, W, H, theme, options, s);
+
+  drawPill(ctx, M, H * 0.08, '📋 WARNING SIGNS', theme.primary, theme.onPrimary, 20 * s);
+
+  ctx.fillStyle = theme.text;
+  ctx.font = `italic bold ${58 * s}px ${FONT_SERIF}`;
+  const hLines = wrapText(ctx, headline, M, H * 0.19, 68 * s, W - M * 2);
+
+  const list = String(items)
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  let y = H * 0.19 + hLines * 68 * s + 46 * s;
+  list.forEach((item) => {
+    const cy = y + 22 * s;
+    // Bullet with a check mark.
+    drawSoftCircle(ctx, M + 22 * s, cy, 22 * s, theme.primary);
+    ctx.strokeStyle = theme.onPrimary;
+    ctx.lineWidth = 5 * s;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(M + 12 * s, cy);
+    ctx.lineTo(M + 19 * s, cy + 9 * s);
+    ctx.lineTo(M + 34 * s, cy - 10 * s);
+    ctx.stroke();
+    ctx.lineCap = 'butt';
+    // Item text.
+    ctx.fillStyle = theme.textSoft;
+    ctx.font = `500 ${36 * s}px ${FONT_SANS}`;
+    const lines = wrapText(ctx, item, M + 70 * s, y, 44 * s, W - M * 2 - 70 * s);
+    y += Math.max(64 * s, lines * 44 * s + 24 * s);
+  });
+
+  drawFooter(ctx, W, H, 'curehht.org  ·  #KnowHHT', theme.muted, 24 * s);
+};
+
+// ---------------------------------------------------------------------------
+// 15. EVENT / FUNDRAISER
+// ---------------------------------------------------------------------------
+const drawEvent = (ctx, data, theme, W, H, options) => {
+  const s = W / 1080;
+  const M = 100 * s;
+  const {
+    title = 'HHT Awareness Walk',
+    date = '',
+    location = '',
+    cta = 'Register at curehht.org',
+  } = data;
+
+  paintBackground(ctx, W, H, theme);
+  applyPattern(ctx, W, H, theme, options.pattern);
+  maybeRibbon(ctx, W, H, theme, options, s);
+
+  drawPill(ctx, M, H * 0.1, '📣 JOIN US', theme.secondary, theme.onSecondary, 20 * s);
+
+  ctx.fillStyle = theme.text;
+  ctx.font = `italic bold ${74 * s}px ${FONT_SERIF}`;
+  const hLines = wrapText(ctx, title, M, H * 0.24, 84 * s, W - M * 2);
+
+  let y = H * 0.24 + hLines * 84 * s + 46 * s;
+  const drawRow = (value) => {
+    if (!value) return;
+    drawSoftCircle(ctx, M + 10 * s, y + 18 * s, 10 * s, theme.primary);
+    ctx.fillStyle = theme.textSoft;
+    ctx.font = `600 ${36 * s}px ${FONT_SANS}`;
+    ctx.fillText(value, M + 44 * s, y);
+    y += 66 * s;
+  };
+  drawRow(date);
+  drawRow(location);
+
+  // Prominent CTA button.
+  const btnY = H * 0.82;
+  ctx.font = `bold ${30 * s}px ${FONT_SANS}`;
+  const label = cta.toUpperCase();
+  const btnW = ctx.measureText(label).width + 90 * s;
+  const btnH = 84 * s;
+  ctx.fillStyle = theme.primary;
+  ctx.beginPath();
+  roundRectPath(ctx, M, btnY, btnW, btnH, btnH / 2);
+  ctx.fill();
+  ctx.fillStyle = theme.onPrimary;
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, M + 45 * s, btnY + btnH / 2);
+  ctx.textBaseline = 'top';
+};
+
+// ---------------------------------------------------------------------------
+// 16. STAT TRIO
+// ---------------------------------------------------------------------------
+const drawStatTrio = (ctx, data, theme, W, H, options) => {
+  const s = W / 1080;
+  const M = 100 * s;
+  const {
+    headline = 'HHT by the numbers',
+    stat1 = '',
+    label1 = '',
+    stat2 = '',
+    label2 = '',
+    stat3 = '',
+    label3 = '',
+  } = data;
+
+  ctx.fillStyle = theme.dark ? theme.surface : theme.bgFrom;
+  ctx.fillRect(0, 0, W, H);
+  applyPattern(ctx, W, H, theme, options.pattern);
+  maybeRibbon(ctx, W, H, theme, options, s);
+
+  ctx.fillStyle = theme.text;
+  ctx.font = `italic bold ${56 * s}px ${FONT_SERIF}`;
+  const hLines = wrapText(ctx, headline, M, H * 0.12, 66 * s, W - M * 2);
+
+  const rows = [
+    [stat1, label1],
+    [stat2, label2],
+    [stat3, label3],
+  ].filter(([st]) => String(st).trim());
+
+  const top = H * 0.12 + hLines * 66 * s + 54 * s;
+  const blockH = (H * 0.84 - top) / Math.max(1, rows.length);
+  rows.forEach(([st, lb], i) => {
+    const cy = top + blockH * i;
+    ctx.fillStyle = theme.accent;
+    ctx.font = `italic bold ${92 * s}px ${FONT_SERIF}`;
+    ctx.fillText(st, M, cy);
+    ctx.fillStyle = theme.textSoft;
+    ctx.font = `600 ${34 * s}px ${FONT_SANS}`;
+    wrapText(ctx, lb, M, cy + 104 * s, 44 * s, W - M * 2);
+    if (i < rows.length - 1) {
+      ctx.strokeStyle = hexToRgba(theme.primary, 0.3);
+      ctx.lineWidth = 2 * s;
+      ctx.beginPath();
+      ctx.moveTo(M, cy + blockH - 28 * s);
+      ctx.lineTo(W - M, cy + blockH - 28 * s);
+      ctx.stroke();
+    }
+  });
+
+  drawFooter(ctx, W, H, 'curehht.org  ·  #HHTAwareness', theme.muted, 24 * s);
+};
+
 export const DRAWERS = {
   awareness: drawAwareness,
   fact: drawFact,
@@ -536,6 +691,9 @@ export const DRAWERS = {
   support: drawSupport,
   mythbuster: drawMythBuster,
   family: drawFamily,
+  checklist: drawChecklist,
+  event: drawEvent,
+  stattrio: drawStatTrio,
 };
 
 export const drawPoster = (ctx, type, data, theme, W, H, options) => {

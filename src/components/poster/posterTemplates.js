@@ -169,6 +169,76 @@ export const TEMPLATES = [
     getCaption: (d) => `MYTH: ${d.myth}\nFACT: ${d.fact}\n\ncurehht.org\n\n${HASH} #MythBuster`,
   },
 
+  // ---- Warning Signs Checklist ----
+  {
+    id: 'checklist',
+    label: '📋 Warning Signs',
+    defaultData: {
+      headline: 'Know the signs of HHT',
+      items: 'Frequent, spontaneous nosebleeds\nRed spots on lips, face or fingertips\nA family history of HHT\nUnexplained iron-deficiency anemia\nShortness of breath or fatigue',
+    },
+    fields: [
+      { key: 'headline', label: 'Headline', type: 'text', maxLength: 40, placeholder: 'Know the signs of HHT' },
+      { key: 'items', label: 'Signs (one per line)', type: 'textarea', rows: 6, maxLength: 300, placeholder: 'One sign per line…' },
+    ],
+    presets: [
+      { chipLabel: 'Warning signs', headline: 'Know the signs of HHT', items: 'Frequent, spontaneous nosebleeds\nRed spots on lips, face or fingertips\nA family history of HHT\nUnexplained iron-deficiency anemia\nShortness of breath or fatigue' },
+      { chipLabel: 'When to screen', headline: 'When to ask about HHT', items: 'Nosebleeds since childhood\nA parent, sibling or child with HHT\nAnemia with no clear cause\nMigraines with unusual features\nSudden breathlessness' },
+    ],
+    getCaption: (d) =>
+      `${d.headline}:\n${String(d.items || '')
+        .split('\n')
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .map((l) => `• ${l}`)
+        .join('\n')}\n\nLearn more at curehht.org.\n\n${HASH}`,
+  },
+
+  // ---- Event / Fundraiser ----
+  {
+    id: 'event',
+    label: '📣 Event',
+    defaultData: {
+      title: 'HHT Awareness Walk',
+      date: 'Saturday, May 20',
+      location: 'Community Park · 10:00 AM',
+      cta: 'Register at curehht.org',
+    },
+    fields: [
+      { key: 'title', label: 'Event Name', type: 'text', maxLength: 40, placeholder: 'HHT Awareness Walk' },
+      { key: 'date', label: 'Date / Time', type: 'text', maxLength: 40, placeholder: 'Saturday, May 20' },
+      { key: 'location', label: 'Location', type: 'text', maxLength: 44, placeholder: 'Community Park · 10 AM' },
+      { key: 'cta', label: 'Call To Action', type: 'text', maxLength: 34, placeholder: 'Register at curehht.org' },
+    ],
+    getCaption: (d) => `${d.title}\n${d.date} · ${d.location}\n${d.cta}\n\n${HASH} #Event`,
+  },
+
+  // ---- Stat Trio ----
+  {
+    id: 'stattrio',
+    label: '📈 Stat Trio',
+    defaultData: {
+      headline: 'HHT by the numbers',
+      stat1: '1 in 5,000',
+      label1: 'people live with HHT',
+      stat2: '90%',
+      label2: 'remain undiagnosed',
+      stat3: '50%',
+      label3: 'chance a child inherits it',
+    },
+    fields: [
+      { key: 'headline', label: 'Headline', type: 'text', maxLength: 34, placeholder: 'HHT by the numbers' },
+      { key: 'stat1', label: 'Stat 1', type: 'text', maxLength: 14, placeholder: '1 in 5,000' },
+      { key: 'label1', label: 'Label 1', type: 'text', maxLength: 40, placeholder: 'people live with HHT' },
+      { key: 'stat2', label: 'Stat 2', type: 'text', maxLength: 14, placeholder: '90%' },
+      { key: 'label2', label: 'Label 2', type: 'text', maxLength: 40, placeholder: 'remain undiagnosed' },
+      { key: 'stat3', label: 'Stat 3', type: 'text', maxLength: 14, placeholder: '50%' },
+      { key: 'label3', label: 'Label 3', type: 'text', maxLength: 40, placeholder: 'inheritance risk' },
+    ],
+    getCaption: (d) =>
+      `${d.headline}:\n${d.stat1} — ${d.label1}\n${d.stat2} — ${d.label2}\n${d.stat3} — ${d.label3}\n\ncurehht.org\n\n${HASH}`,
+  },
+
   // ---- Family & Genetic Testing ----
   {
     id: 'family',

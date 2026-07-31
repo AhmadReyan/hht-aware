@@ -60,7 +60,7 @@ const defaultOptions = {
 
 export const PosterStudio = () => {
   const [posterType, setPosterType] = useState('awareness');
-  const [themeId, setThemeId] = useState('classic');
+  const [themeId, setThemeId] = useState('bleed');
   const [formatId, setFormatId] = useState('square');
   const [options, setOptions] = useState(defaultOptions);
 
