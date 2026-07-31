@@ -4,6 +4,7 @@ import { ProtectionRing } from '../components/prevention/ProtectionRing';
 import { ActionTiles } from '../components/prevention/ActionTiles';
 import { ActionWhyModal } from '../components/prevention/ActionWhyModal';
 import { CompletionCelebration } from '../components/prevention/CompletionCelebration';
+import { StreakFlame } from '../components/prevention/StreakFlame';
 import { SelfCareConsistency } from '../components/prevention/SelfCareConsistency';
 import { TriggerLogger } from '../components/prevention/TriggerLogger';
 import { NoseCareSteps } from '../components/prevention/NoseCareSteps';
@@ -49,6 +50,7 @@ export const Prevention = () => {
 
         {/* 3. STREAK FLAME */}
         <section id="streak-flame">
+          <StreakFlame />
         </section>
 
         {/* 4. TIP OF THE MOMENT */}
