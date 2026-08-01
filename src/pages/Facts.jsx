@@ -9,7 +9,6 @@ import { Toast } from '../components/ui/Toast';
 import { facts } from '../data/facts';
 import { useShare } from '../hooks/useShare';
 import { useAppStore } from '../store/useAppStore';
-import { spring } from '../lib/motion';
 import { haptics } from '../hooks/useHaptics';
 
 const CATEGORIES = [
@@ -38,12 +37,9 @@ const FactCard = ({ fact, onShare }) => {
   return (
     <motion.button
       type="button"
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={spring.soft}
       whileTap={{ scale: 0.98 }}
       onClick={() => onShare(fact)}
-      className="group relative overflow-hidden text-left bg-app-surface border border-line rounded-custom-lg p-5 flex flex-col gap-3 shadow-card cursor-pointer"
+      className="pop group relative overflow-hidden text-left bg-app-surface border border-line rounded-custom-lg p-5 flex flex-col gap-3 shadow-card cursor-pointer"
     >
       {/* Faint capillary motif in the corner */}
       <Vessels

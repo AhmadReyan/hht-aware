@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 /**
  * SplashPop — the branded launch animation. On app open, a garnet field fills
  * the screen and the HHT awareness-ribbon mark "pops" in (spring scale + a subtle
- * 3D rotate), then the whole thing fades to reveal the app. Plays once per launch
- * on both the web/PWA and inside the Capacitor webview. Portals to <body> so it
- * sits above everything; reduced-motion is softened globally by <MotionConfig>.
+ * 3D rotate), then it fades to reveal the app. Plays once per launch.
+ *
+ * Because it covers the whole app, removal is GUARANTEED by a hard timeout
+ * (phase → 'done' unmounts it) rather than relying on an exit animation to
+ * finish — so the splash can never get stuck covering the app.
  */
-const RibbonMark = ({ size = 128 }) => (
+const RibbonMark = ({ size = 132 }) => (
   <svg width={size} height={size} viewBox="0 0 512 512" style={{ filter: 'drop-shadow(0 14px 34px rgba(0,0,0,0.45))' }}>
     <defs>
       <linearGradient id="splashGold" x1="0" y1="0" x2="0.4" y2="1">
@@ -30,46 +32,51 @@ const RibbonMark = ({ size = 128 }) => (
 );
 
 export const SplashPop = () => {
-  const [show, setShow] = useState(true);
+  const [phase, setPhase] = useState('in'); // 'in' | 'out' | 'done'
 
   useEffect(() => {
-    const t = setTimeout(() => setShow(false), 1350);
-    return () => clearTimeout(t);
+    const t1 = setTimeout(() => setPhase('out'), 1100);
+    const t2 = setTimeout(() => setPhase('done'), 1600); // hard removal — animation-independent
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
   }, []);
 
+  if (phase === 'done') return null;
+
   return createPortal(
-    <AnimatePresence>
-      {show && (
-        <motion.div
-          initial={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.4, ease: 'easeInOut' }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
-          style={{ background: 'linear-gradient(140deg, #A23847 0%, #8E2D3B 45%, #4E1421 100%)', perspective: 700 }}
-        >
-          {/* soft radial highlight */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{ background: 'radial-gradient(circle at 34% 26%, rgba(255,255,255,0.18), transparent 55%)' }}
-          />
-          <motion.div
-            initial={{ scale: 0.3, opacity: 0, rotateY: -45 }}
-            animate={{ scale: 1, opacity: 1, rotateY: 0 }}
-            transition={{ type: 'spring', stiffness: 240, damping: 15, delay: 0.06 }}
-          >
-            <RibbonMark size={132} />
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.35, duration: 0.4 }}
-            className="mt-5 font-serif text-2xl font-extrabold tracking-tight text-white"
-          >
-            HHT<span className="text-white/70">Aware</span>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>,
+    <motion.div
+      initial={{ opacity: 1 }}
+      animate={{ opacity: phase === 'out' ? 0 : 1 }}
+      transition={{ duration: 0.45, ease: 'easeInOut' }}
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center"
+      style={{
+        background: 'linear-gradient(140deg, #A23847 0%, #8E2D3B 45%, #4E1421 100%)',
+        perspective: 700,
+        pointerEvents: phase === 'out' ? 'none' : 'auto',
+      }}
+    >
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(circle at 34% 26%, rgba(255,255,255,0.18), transparent 55%)' }}
+      />
+      <motion.div
+        initial={{ scale: 0.3, opacity: 0, rotateY: -45 }}
+        animate={{ scale: 1, opacity: 1, rotateY: 0 }}
+        transition={{ type: 'spring', stiffness: 240, damping: 15, delay: 0.06 }}
+      >
+        <RibbonMark size={132} />
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35, duration: 0.4 }}
+        className="mt-5 font-serif text-2xl font-extrabold tracking-tight text-white"
+      >
+        HHT<span className="text-white/70">Aware</span>
+      </motion.div>
+    </motion.div>,
     document.body
   );
 };

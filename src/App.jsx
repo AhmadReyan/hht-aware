@@ -5,6 +5,7 @@ import { App as KonstaApp } from 'konsta/react';
 import { Header } from './components/layout/Header';
 import { BottomNav } from './components/layout/BottomNav';
 import { AboutModal } from './components/layout/AboutModal';
+import { SplashPop } from './components/layout/SplashPop';
 import { Home } from './pages/Home';
 import { PosterStudio } from './pages/PosterStudio';
 import { EmergencyCard } from './pages/EmergencyCard';
@@ -68,7 +69,7 @@ function AppContent() {
       <AboutModal isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
 
       {/* Branded launch pop (plays once per app open) */}
-      {/* <SplashPop /> */}
+      <SplashPop />
     </div>
   );
 }
