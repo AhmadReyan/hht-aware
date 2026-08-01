@@ -76,9 +76,12 @@ export const AskHHT = () => {
   const limited = !premiumEnabled && AI_FREE_DAILY_LIMIT > 0;
   const remaining = limited ? Math.max(0, AI_FREE_DAILY_LIMIT - usedToday) : Infinity;
 
+  // Scroll to bottom when a new message is added or pending status changes
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-  }, [messages, pending]);
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages.length, pending]);
 
   const handleIntroduce = () => {
     haptics.success();
@@ -152,40 +155,50 @@ export const AskHHT = () => {
 
   return (
     <PageWrapper>
-      <div className="flex flex-col gap-4 pb-8 rise" style={{ minHeight: '70vh' }}>
+      <div className="flex flex-col gap-3 pb-4 h-[calc(100vh-140px)]">
         <SectionTitle kicker="Interactive AI Expert" title="AURA — HHT AI Specialist" />
 
-        {/* 3D Interactive AI Avatar Hero */}
-        <div className="relative overflow-hidden rounded-custom-lg bg-app-surface border border-line p-4 shadow-card flex flex-col items-center text-center">
-          <Suspense fallback={<div className="w-[160px] h-[160px] mx-auto bg-garnet/10 rounded-full animate-pulse" />}>
-            <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} onClick={handleIntroduce} />
-          </Suspense>
+        {/* Persistent Sticky 3D Bot Companion Bar */}
+        <div className="sticky top-14 z-30 bg-app-bg/95 backdrop-blur-md pt-1 pb-3 border-b border-line -mx-4 px-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2 cursor-pointer active:scale-95 transition-transform" onClick={handleIntroduce}>
+            <div className="w-[65px] h-[65px] shrink-0 flex items-center justify-center">
+              <Suspense fallback={<div className="w-[50px] h-[50px] bg-garnet/10 rounded-full animate-pulse" />}>
+                <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} onClick={handleIntroduce} />
+              </Suspense>
+            </div>
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-garnet">
+                <Cpu size={14} className={pending ? 'animate-spin text-gold' : ''} />
+                <span>{pending ? 'AURA is analyzing…' : 'AURA 3D AI Active'}</span>
+              </div>
+              <span className="text-[10.5px] text-app-muted font-medium">🤖 Tap 3D Bot to introduce</span>
+            </div>
+          </div>
 
           <button
             type="button"
             onClick={handleIntroduce}
-            className="flex items-center gap-1.5 bg-garnet/10 border border-garnet/20 text-garnet rounded-custom-pill px-3 py-1 text-[11px] font-bold mt-1 active:scale-95 transition-transform cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-bold bg-rose/70 border border-garnet/20 text-garnet px-2.5 py-1.5 rounded-custom-pill shadow-xs active:scale-95 transition-transform"
           >
-            <Cpu size={13} className={pending ? 'animate-spin' : ''} />
-            <span>{pending ? 'AURA is analyzing your question…' : '🤖 Tap AURA to Introduce!'}</span>
+            <span>Meet AURA ✨</span>
           </button>
         </div>
 
         {/* Disclaimer */}
-        <div className="flex items-start gap-2 bg-rose/60 border border-garnet/10 rounded-custom p-3">
-          <ShieldAlert size={15} className="text-garnet flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-app-soft leading-relaxed">{DISCLAIMER}</p>
+        <div className="flex items-start gap-2 bg-rose/60 border border-garnet/10 rounded-custom p-2.5 shrink-0">
+          <ShieldAlert size={14} className="text-garnet flex-shrink-0 mt-0.5" />
+          <p className="text-[10.5px] text-app-soft leading-relaxed">{DISCLAIMER}</p>
         </div>
 
-        {/* Conversation */}
-        <div ref={scrollRef} className="flex-1 flex flex-col gap-3 overflow-y-auto">
+        {/* Conversation Stream (Twitch-Free Auto-Scroll) */}
+        <div ref={scrollRef} className="flex-1 flex flex-col gap-3 overflow-y-auto pr-1 scrollbar-none">
           {messages.length === 0 && (
             <div className="flex flex-col items-center text-center gap-2 py-4">
               <div className="w-10 h-10 rounded-full bg-ember flex items-center justify-center text-white shadow-glow">
                 <Bot size={22} />
               </div>
-              <p className="text-xs text-app-muted max-w-[260px]">
-                Hi, I&apos;m AURA! Ask me anything about HHT — symptoms, iron, genetics, screening, or daily care.
+              <p className="text-xs text-app-muted max-w-[280px] leading-relaxed">
+                Hi, I&apos;m AURA! Ask me anything about HHT — symptoms, iron recovery, genetics, organ screening, or daily prevention.
               </p>
             </div>
           )}
@@ -200,34 +213,35 @@ export const AskHHT = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex items-center gap-2 text-app-muted text-sm px-1"
+                className="flex items-center gap-2 text-app-muted text-xs px-2 py-1"
               >
-                <Loader2 size={15} className="animate-spin text-garnet" /> Thinking…
+                <Loader2 size={14} className="animate-spin text-garnet" /> Thinking…
               </motion.div>
             )}
           </AnimatePresence>
         </div>
 
-        {/* Suggestions (only before the first message) */}
-        {messages.length === 0 && (
-          <div className="flex flex-wrap gap-2">
+        {/* Suggested Questions Chips */}
+        <div className="flex flex-col gap-1.5 shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-app-muted px-0.5">Suggested Topics</span>
+          <div className="w-full overflow-x-auto scrollbar-none flex gap-2 pb-1">
             {SUGGESTIONS.map((s) => (
               <button
                 key={s}
                 type="button"
                 onClick={() => send(s)}
                 disabled={pending}
-                className="text-xs font-semibold px-3 py-2 rounded-custom-pill bg-app-surface border border-line text-app-ink active:bg-rose"
+                className="text-xs font-semibold px-3 py-1.5 rounded-custom-pill bg-app-surface border border-line text-app-ink active:bg-rose whitespace-nowrap flex-shrink-0 shadow-xs hover:border-garnet/30 transition-colors"
               >
                 {s}
               </button>
             ))}
           </div>
-        )}
+        </div>
 
         {/* Free-tier hint */}
         {limited && (
-          <div className="text-[11px] text-app-muted text-center">
+          <div className="text-[10.5px] text-app-muted text-center shrink-0">
             {remaining > 0
               ? `${remaining} free question${remaining === 1 ? '' : 's'} left today`
               : 'Free questions used up for today'}
@@ -239,15 +253,15 @@ export const AskHHT = () => {
         )}
 
         {/* Composer */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-            placeholder={configured ? 'Ask about HHT…' : 'Assistant coming soon…'}
+            placeholder={configured ? 'Ask AURA about HHT…' : 'Assistant coming soon…'}
             disabled={pending}
-            className="flex-1 px-4 py-3 rounded-custom-pill bg-app-surface2 border border-line text-sm text-app-ink placeholder:text-app-muted focus:outline-none focus:border-garnet"
+            className="flex-1 px-4 py-3 rounded-custom-pill bg-app-surface2 border border-line text-sm text-app-ink placeholder:text-app-muted focus:outline-none focus:border-garnet shadow-inner"
           />
           <motion.button
             type="button"
@@ -256,7 +270,7 @@ export const AskHHT = () => {
             onClick={() => send()}
             disabled={pending || !input.trim()}
             aria-label="Send"
-            className="w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-40"
+            className="w-12 h-12 rounded-full flex items-center justify-center text-white shrink-0 disabled:opacity-40 shadow-sm"
             style={{ background: 'var(--garnet)' }}
           >
             <Send size={18} />

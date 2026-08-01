@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { Download, Info, ShieldAlert } from 'lucide-react';
-import { HHTLogo } from '../ui/HHTLogo';
+import markSrc from '../../assets/hht-mark.png';
 
 export const Header = ({ onOpenAbout }) => {
   const { isInstallable, installPWA } = usePWAInstall();
@@ -10,9 +10,12 @@ export const Header = ({ onOpenAbout }) => {
   return (
     <header className="sticky top-0 z-40 w-full bg-app-bg/85 backdrop-blur-md border-b border-line safe-padding-top">
       <div className="mx-auto max-w-md w-full h-14 flex items-center justify-between px-4">
-        {/* Brand/Logo */}
+        {/* Brand/Logo — same 3D shield mark used for the app icon */}
         <Link to="/" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
-          <HHTLogo size="md" />
+          <img src={markSrc} alt="" className="w-8 h-8 shrink-0 drop-shadow-sm" />
+          <span className="font-serif text-lg font-extrabold tracking-tight text-garnet">
+            HHT<span className="text-app-ink">Aware</span>
+          </span>
         </Link>
 
         {/* Action Buttons */}
