@@ -535,6 +535,25 @@ export const useAppStore = create((set, get) => {
       get().recordActivity();
     },
 
+    toggleTriggerLog: (trigger) => {
+      set((state) => {
+        const today = getDateString(new Date());
+        const existingIndex = state.triggerLog.findIndex(
+          (e) => e.date === today && e.trigger === trigger
+        );
+        let log;
+        if (existingIndex >= 0) {
+          log = state.triggerLog.filter((_, idx) => idx !== existingIndex);
+        } else {
+          log = [...state.triggerLog, { date: today, trigger }];
+          if (log.length > 200) log = log.slice(log.length - 200);
+        }
+        safeSetItem('hht_trigger_log_v1', log);
+        return { triggerLog: log };
+      });
+      get().recordActivity();
+    },
+
     getTriggerCounts: () => {
       const log = get().triggerLog;
       return log.reduce((acc, e) => {

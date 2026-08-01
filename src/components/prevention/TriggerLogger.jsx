@@ -15,7 +15,7 @@ import { BarChart } from '../ui/MiniChart';
  */
 export const TriggerLogger = () => {
   const triggerLog = useAppStore((s) => s.triggerLog);
-  const logTrigger = useAppStore((s) => s.logTrigger);
+  const toggleTriggerLog = useAppStore((s) => s.toggleTriggerLog);
   const getTriggerCounts = useAppStore((s) => s.getTriggerCounts);
 
   const [confirmed, setConfirmed] = useState(null);
@@ -40,10 +40,10 @@ export const TriggerLogger = () => {
   const topTrigger = topEntry ? triggerOptions.find((t) => t.key === topEntry[0]) : null;
   const TopIcon = topTrigger ? LucideIcons[topTrigger.icon] || HelpCircle : null;
 
-  const handleLog = (key, label) => {
-    logTrigger(key);
+  const handleLog = (key, label, isCurrentlySelected) => {
+    toggleTriggerLog(key);
     haptics.impact();
-    setConfirmed(label);
+    setConfirmed({ label, isRemoved: isCurrentlySelected });
   };
 
   const chartData = sortedEntries.slice(0, 5).map(([k, v]) => {
@@ -60,7 +60,7 @@ export const TriggerLogger = () => {
         <div className="flex flex-col gap-0.5">
           <h3 className="font-serif text-base font-bold text-app-ink">What set off a bleed today?</h3>
           <p className="text-[11px] text-app-muted leading-relaxed">
-            Tap a trigger chip to log — patterns build automatically.
+            Tap a trigger chip to select — patterns build automatically.
           </p>
         </div>
         {triggerLog.filter((e) => e.date === todayStr).length > 0 && (
@@ -75,7 +75,6 @@ export const TriggerLogger = () => {
           const Icon = LucideIcons[opt.icon] || HelpCircle;
           const todayLogs = triggerLog.filter((entry) => entry.date === todayStr && entry.trigger === opt.key);
           const isSelected = todayLogs.length > 0;
-          const countToday = todayLogs.length;
 
           return (
             <motion.button
@@ -83,7 +82,7 @@ export const TriggerLogger = () => {
               type="button"
               whileTap={{ scale: 0.93 }}
               transition={spring.snappy}
-              onClick={() => handleLog(opt.key, opt.label)}
+              onClick={() => handleLog(opt.key, opt.label, isSelected)}
               className={`
                 flex items-center gap-1.5 px-3.5 py-2 min-h-[44px] rounded-custom-pill text-xs font-semibold select-none transition-all duration-200
                 ${
@@ -99,11 +98,6 @@ export const TriggerLogger = () => {
                 <Icon size={14} className="text-garnet shrink-0" />
               )}
               <span>{opt.label}</span>
-              {countToday > 1 && (
-                <span className="ml-1 px-1.5 py-0.2 text-[9.5px] font-extrabold rounded-full bg-white/20 text-white">
-                  x{countToday}
-                </span>
-              )}
             </motion.button>
           );
         })}
@@ -115,10 +109,16 @@ export const TriggerLogger = () => {
             initial={{ opacity: 0, y: -4 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -4 }}
-            className="flex items-center gap-1.5 text-[11px] text-brand-teal font-semibold bg-brand-teal/10 p-2 rounded-custom"
+            className={`flex items-center gap-1.5 text-[11px] font-semibold p-2 rounded-custom ${
+              confirmed.isRemoved
+                ? 'text-app-muted bg-app-surface2 border border-line'
+                : 'text-brand-teal bg-brand-teal/10'
+            }`}
           >
-            <Check size={13} className="text-brand-teal" />
-            Logged &quot;{confirmed}&quot; — pattern updated!
+            <Check size={13} className={confirmed.isRemoved ? 'text-app-muted' : 'text-brand-teal'} />
+            {confirmed.isRemoved
+              ? `Removed "${confirmed.label}" from today's triggers.`
+              : `Logged "${confirmed.label}" — pattern updated!`}
           </motion.div>
         )}
       </AnimatePresence>
