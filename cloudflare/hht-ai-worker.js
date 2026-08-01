@@ -22,7 +22,7 @@ const SYSTEM_PROMPT = `You are "HHT Assistant", a warm, plain-language education
 Answer general questions about HHT clearly and supportively: nosebleeds (epistaxis), telangiectasias, iron deficiency and anemia, arteriovenous malformations (lungs, liver, brain, GI), genetics and inheritance, screening and diagnosis (Curaçao criteria), everyday self-care, and what to raise with a doctor.
 
 Rules:
-- Keep answers concise: a short paragraph or a few bullets.
+- Keep answers brief and conversational — usually 2 to 4 short sentences. They may be read aloud, so avoid long bullet lists and headers; speak naturally.
 - You are NOT a doctor. Never diagnose, prescribe, or give personalized medical advice. For anything about the user's own case, or anything urgent, tell them to contact their HHT specialist or emergency services.
 - You do not have access to the user's personal data — never imply you do.
 - If asked about something unrelated to HHT, gently steer back to HHT.`;
@@ -176,8 +176,20 @@ export default {
       { role: 'user', content: question },
     ];
 
+    // Streaming (SSE) — tokens flow as they generate, so the app can show text
+    // and speak the first sentence within ~1s instead of waiting for the whole
+    // answer. max_tokens kept modest so voice replies stay snappy.
+    if (body && body.stream) {
+      try {
+        const stream = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages, max_tokens: 320, stream: true });
+        return new Response(stream, { headers: { ...cors, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' } });
+      } catch {
+        return Response.json({ ok: false, error: 'ai_failed' }, { status: 502, headers: cors });
+      }
+    }
+
     try {
-      const result = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages, max_tokens: 600 });
+      const result = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages, max_tokens: 320 });
       const answer = (result && (result.response || (result.result && result.result.response))) || '';
       if (!answer) return Response.json({ ok: false, error: 'empty_answer' }, { status: 502, headers: cors });
       return Response.json({ ok: true, answer: String(answer).trim() }, { headers: cors });

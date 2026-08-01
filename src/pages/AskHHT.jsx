@@ -149,15 +149,24 @@ export const AskHHT = () => {
     ]);
     setPending(true);
 
-    const res = await askHHT(q, history, (partial) => {
-      setMessages((m) => {
-        const next = [...m];
-        if (next.length > 0 && next[next.length - 1].role === 'assistant') {
-          next[next.length - 1] = { role: 'assistant', content: partial, streaming: true };
-        }
-        return next;
-      });
-    });
+    const res = await askHHT(
+      q,
+      history,
+      (partial) => {
+        setMessages((m) => {
+          const next = [...m];
+          if (next.length > 0 && next[next.length - 1].role === 'assistant') {
+            next[next.length - 1] = { role: 'assistant', content: partial, streaming: true };
+          }
+          return next;
+        });
+      },
+      (sentence) => {
+        // Speak each sentence the moment it's ready (snappy voice) — queued so
+        // they play in order. Only when the user opted in and is still here.
+        if (mountedRef.current && auraSpeaksRef.current && ttsSupported) speak(sentence);
+      },
+    );
 
     setPending(false);
 
@@ -171,11 +180,8 @@ export const AskHHT = () => {
         }
         return next;
       });
-      // Read the final answer aloud only if the user opted in AND is still on
-      // this page (mountedRef). The unmount cleanup already ran synth.cancel(),
-      // so without this guard a late-resolving answer would speak on another
-      // screen with no way to stop it.
-      if (mountedRef.current && auraSpeaksRef.current && ttsSupported) speak(res.answer);
+      // AURA already spoke each sentence as it streamed (onSentence above),
+      // so there's nothing to read here — the voice keeps pace with the text.
     } else {
       haptics.error();
       const msg =

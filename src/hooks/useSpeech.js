@@ -128,71 +128,90 @@ export const useSpeech = () => {
     };
   }, []);
 
+  // ---- TTS: a queue so streamed sentences play back-to-back in order ------
+  const queueRef = useRef([]);
+  const playingRef = useRef(false);
+  const stoppedRef = useRef(false);
+
   const stopSpeaking = useCallback(() => {
-    try {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    } catch { /* no-op */ }
+    stoppedRef.current = true;
+    queueRef.current = [];
+    try { if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; } } catch { /* no-op */ }
     try { if (synth) synth.cancel(); } catch { /* no-op */ }
     setSpeaking(false);
   }, []);
 
-  // Browser TTS fallback.
-  const speakBrowser = useCallback((clean) => {
-    if (!synth) return;
+  // Speak one chunk with the browser voice; resolves when it finishes.
+  const speakBrowserAwait = useCallback((clean) => new Promise((resolve) => {
+    if (!synth) { resolve(); return; }
     try {
-      synth.cancel();
       const u = new SpeechSynthesisUtterance(clean);
       u.rate = 1; u.pitch = 1; u.lang = 'en-US';
-      u.onstart = () => setSpeaking(true);
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
+      u.onend = () => resolve();
+      u.onerror = () => resolve();
       synth.speak(u);
-    } catch { setSpeaking(false); }
+    } catch { resolve(); }
+  }), []);
+
+  // Fetch neural audio (Worker) for one chunk; retry once for cold-start 502.
+  const fetchNeuralAudio = useCallback(async (clean) => {
+    if (!TTS_URL) return null;
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const res = await fetch(TTS_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: clean.slice(0, 1200) }),
+        });
+        const ct = (res.headers.get('content-type') || '').toLowerCase();
+        if (res.ok && ct.includes('audio')) {
+          const blob = await res.blob();
+          const url = URL.createObjectURL(blob);
+          const audio = new Audio(url);
+          audio.dataset.blobUrl = url;
+          return audio;
+        }
+      } catch { /* retry / give up */ }
+    }
+    return null;
   }, []);
 
-  // ---- TTS: neural (Worker) first, browser fallback -----------------------
-  const speak = useCallback(async (text) => {
-    const clean = cleanForSpeech(text);
-    if (!clean) return;
-    stopSpeaking();
-    if (TTS_URL) {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
-        try {
-          const res = await fetch(TTS_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: clean.slice(0, 1200) }),
-          });
-          const ct = (res.headers.get('content-type') || '').toLowerCase();
-          if (res.ok && ct.includes('audio')) {
-            const blob = await res.blob();
-            if (!mountedRef.current) return;
-            const url = URL.createObjectURL(blob);
-            const audio = new Audio(url);
-            audioRef.current = audio;
-            audio.onplay = () => setSpeaking(true);
-            audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-            audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
-            try {
-              await audio.play();
-              return; // neural voice playing
-            } catch {
-              // Autoplay blocked -> fall back to browser TTS.
-              URL.revokeObjectURL(url);
-              break;
-            }
-          }
-          // non-audio (e.g. 502 cold start) -> retry once, then fall back.
-        } catch {
-          /* network -> retry / fall back */
-        }
+  // Play an <audio>; resolves true if it played, false if it was blocked/failed.
+  const playAudio = useCallback((audio) => new Promise((resolve) => {
+    audioRef.current = audio;
+    const cleanup = () => { try { if (audio.dataset.blobUrl) URL.revokeObjectURL(audio.dataset.blobUrl); } catch { /* no-op */ } };
+    audio.onended = () => { cleanup(); resolve(true); };
+    audio.onerror = () => { cleanup(); resolve(false); };
+    audio.play().catch(() => { cleanup(); resolve(false); });
+  }), []);
+
+  const processQueue = useCallback(async () => {
+    if (playingRef.current) return;
+    playingRef.current = true;
+    setSpeaking(true);
+    while (queueRef.current.length && !stoppedRef.current) {
+      const clean = queueRef.current.shift();
+      const audio = await fetchNeuralAudio(clean);
+      if (stoppedRef.current) break;
+      if (audio) {
+        const played = await playAudio(audio);
+        if (!played && !stoppedRef.current) await speakBrowserAwait(clean);
+      } else if (!stoppedRef.current) {
+        await speakBrowserAwait(clean);
       }
     }
-    if (mountedRef.current) speakBrowser(clean);
-  }, [stopSpeaking, speakBrowser]);
+    playingRef.current = false;
+    if (!queueRef.current.length) setSpeaking(false);
+  }, [fetchNeuralAudio, playAudio, speakBrowserAwait]);
+
+  // Enqueue a sentence/answer. Call repeatedly for streamed sentences.
+  const speak = useCallback((text) => {
+    const clean = cleanForSpeech(text);
+    if (!clean) return;
+    stoppedRef.current = false;
+    queueRef.current.push(clean);
+    processQueue();
+  }, [processQueue]);
 
   // ---- STT via MediaRecorder -> Worker (Whisper) --------------------------
   const startBrowserListening = useCallback((onFinalText) => {
@@ -282,6 +301,8 @@ export const useSpeech = () => {
 
   // ---- Cleanup on unmount -------------------------------------------------
   useEffect(() => () => {
+    stoppedRef.current = true;
+    queueRef.current = [];
     try { if (recognitionRef.current) recognitionRef.current.abort(); } catch { /* no-op */ }
     try { if (synth) synth.cancel(); } catch { /* no-op */ }
     try { if (audioRef.current) audioRef.current.pause(); } catch { /* no-op */ }
