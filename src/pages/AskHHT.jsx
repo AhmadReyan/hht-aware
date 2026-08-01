@@ -34,17 +34,22 @@ const Bubble = ({ role, content, streaming }) => {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={spring.soft}
-      className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
+      className={`flex items-end gap-2 ${isUser ? 'justify-end' : 'justify-start'}`}
     >
+      {!isUser && (
+        <div className="w-8 h-8 rounded-full bg-garnet text-white flex items-center justify-center shrink-0 shadow-sm mb-0.5 select-none">
+          <Bot size={16} />
+        </div>
+      )}
       <div
-        className={`max-w-[85%] rounded-custom-lg px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+        className={`max-w-[82%] rounded-custom-lg px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
           isUser
-            ? 'bg-garnet text-white rounded-br-sm'
-            : 'bg-app-surface2 border border-line text-app-ink rounded-bl-sm'
+            ? 'bg-garnet text-white rounded-br-xs shadow-sm'
+            : 'bg-app-surface border border-line text-app-ink rounded-bl-xs shadow-sm'
         }`}
       >
         {content}
-        {streaming && <span className="inline-block w-1.5 h-3.5 bg-garnet ml-1 animate-pulse" />}
+        {streaming && <span className="inline-block w-2 h-3.5 bg-garnet/80 ml-1 rounded-xs animate-pulse align-baseline" />}
       </div>
     </motion.div>
   );
@@ -74,6 +79,12 @@ export const AskHHT = () => {
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [messages, pending]);
+
+  const handleIntroduce = () => {
+    haptics.success();
+    const introText = "Hi! I'm AURA, your 3D HHT AI Specialist 🤖✨. I'm trained on international clinical guidelines to answer your questions about nosebleed prevention, iron & anemia management, genetics, organ screening (lungs, brain, liver), and daily care routines. Ask me anything!";
+    setMessages((m) => [...m, { role: 'assistant', content: introText, streaming: false }]);
+  };
 
   const send = async (text) => {
     const q = (text ?? input).trim();
@@ -146,14 +157,18 @@ export const AskHHT = () => {
 
         {/* 3D Interactive AI Avatar Hero */}
         <div className="relative overflow-hidden rounded-custom-lg bg-app-surface border border-line p-4 shadow-card flex flex-col items-center text-center">
-          <Suspense fallback={<div className="w-[150px] h-[150px] mx-auto bg-garnet/10 rounded-full animate-pulse" />}>
-            <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} />
+          <Suspense fallback={<div className="w-[160px] h-[160px] mx-auto bg-garnet/10 rounded-full animate-pulse" />}>
+            <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} onClick={handleIntroduce} />
           </Suspense>
 
-          <div className="flex items-center gap-1.5 bg-garnet/10 border border-garnet/20 text-garnet rounded-custom-pill px-3 py-1 text-[11px] font-bold mt-1">
+          <button
+            type="button"
+            onClick={handleIntroduce}
+            className="flex items-center gap-1.5 bg-garnet/10 border border-garnet/20 text-garnet rounded-custom-pill px-3 py-1 text-[11px] font-bold mt-1 active:scale-95 transition-transform cursor-pointer"
+          >
             <Cpu size={13} className={pending ? 'animate-spin' : ''} />
-            <span>{pending ? 'AURA is analyzing your question…' : 'AURA 3D AI Active · Interactive Expert'}</span>
-          </div>
+            <span>{pending ? 'AURA is analyzing your question…' : '🤖 Tap AURA to Introduce!'}</span>
+          </button>
         </div>
 
         {/* Disclaimer */}

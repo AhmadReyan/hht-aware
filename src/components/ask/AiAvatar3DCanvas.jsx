@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
+export const AiAvatar3DCanvas = ({ pending = false, streaming = false, onClick }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -10,7 +10,7 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
 
     let animId = null;
     let scene, camera, renderer;
-    let orbGroup, orbMesh, coreMesh, ringMesh, particlesMesh;
+    let botGroup, headMesh, visorMesh, leftEyeMesh, rightEyeMesh, antennaTip, ringMesh, particlesMesh;
     let targetRotX = 0;
     let targetRotY = 0;
 
@@ -18,7 +18,7 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
       const width = container.clientWidth || 160;
       const height = container.clientHeight || 160;
 
-      // 1. Scene & Camera Setup
+      // 1. Scene & Camera
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
       camera.position.z = 4.2;
@@ -31,63 +31,110 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
       container.appendChild(renderer.domElement);
 
       // 2. Lighting
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.95);
       scene.add(ambientLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffe082, 1.5);
-      dirLight.position.set(4, 4, 4);
+      const dirLight = new THREE.DirectionalLight(0xffe082, 1.6);
+      dirLight.position.set(4, 5, 4);
       scene.add(dirLight);
 
-      const pointLight = new THREE.PointLight(0xc0392b, 2.5, 8);
-      pointLight.position.set(0, 0, 2);
-      scene.add(pointLight);
+      const rimLight = new THREE.PointLight(0x8e2d3b, 3, 10);
+      rimLight.position.set(-3, -2, 2);
+      scene.add(rimLight);
 
-      // 3. AI Orb Group
-      orbGroup = new THREE.Group();
-      scene.add(orbGroup);
+      // 3. Bot Group
+      botGroup = new THREE.Group();
+      scene.add(botGroup);
 
-      // 3A. Outer Wireframe AI Neural Shell
-      const orbGeo = new THREE.IcosahedronGeometry(1.0, 2);
-      const orbMat = new THREE.MeshStandardMaterial({
-        color: 0xc0392b,
-        wireframe: true,
-        roughness: 0.2,
-        metalness: 0.8,
+      // 3A. Metallic Rounded Robot Head
+      const headGeo = new THREE.SphereGeometry(0.95, 32, 32);
+      headGeo.scale(1, 0.92, 0.95);
+      const headMat = new THREE.MeshStandardMaterial({
+        color: 0x8e2d3b,
+        roughness: 0.25,
+        metalness: 0.75,
       });
-      orbMesh = new THREE.Mesh(orbGeo, orbMat);
-      orbGroup.add(orbMesh);
+      headMesh = new THREE.Mesh(headGeo, headMat);
+      botGroup.add(headMesh);
 
-      // 3B. Luminous Glowing Core
-      const coreGeo = new THREE.IcosahedronGeometry(0.65, 2);
-      const coreMat = new THREE.MeshStandardMaterial({
-        color: 0xd9a13b,
+      // 3B. Obsidian Curved Visor Screen
+      const visorGeo = new THREE.SphereGeometry(0.86, 32, 16, 0, Math.PI * 2, 0.45, 0.7);
+      visorGeo.scale(1.02, 0.7, 0.5);
+      const visorMat = new THREE.MeshStandardMaterial({
+        color: 0x111827,
         roughness: 0.1,
-        metalness: 0.3,
-        transparent: true,
-        opacity: 0.85,
-        flatShading: true,
+        metalness: 0.9,
       });
-      coreMesh = new THREE.Mesh(coreGeo, coreMat);
-      orbGroup.add(coreMesh);
+      visorMesh = new THREE.Mesh(visorGeo, visorMat);
+      visorMesh.position.set(0, 0.05, 0.52);
+      botGroup.add(visorMesh);
 
-      // 3C. Orbiting Halo Ring
-      const ringGeo = new THREE.TorusGeometry(1.4, 0.03, 16, 64);
-      const ringMat = new THREE.MeshStandardMaterial({
+      // 3C. Twin LED Visor Eyes
+      const eyeGeo = new THREE.SphereGeometry(0.12, 16, 16);
+      const eyeMat = new THREE.MeshStandardMaterial({
+        color: 0xd9a13b,
+        emissive: 0xd9a13b,
+        emissiveIntensity: 0.9,
+        roughness: 0.1,
+      });
+      leftEyeMesh = new THREE.Mesh(eyeGeo, eyeMat);
+      leftEyeMesh.position.set(-0.32, 0.08, 0.88);
+
+      rightEyeMesh = new THREE.Mesh(eyeGeo, eyeMat);
+      rightEyeMesh.position.set(0.32, 0.08, 0.88);
+
+      botGroup.add(leftEyeMesh);
+      botGroup.add(rightEyeMesh);
+
+      // 3D. Antenna & Signal Orb
+      const antennaStemGeo = new THREE.CylinderGeometry(0.025, 0.035, 0.4, 16);
+      const antennaStemMat = new THREE.MeshStandardMaterial({ color: 0x4a5568, metalness: 0.8, roughness: 0.2 });
+      const stemMesh = new THREE.Mesh(antennaStemGeo, antennaStemMat);
+      stemMesh.position.set(0, 1.05, 0);
+      botGroup.add(stemMesh);
+
+      const tipGeo = new THREE.SphereGeometry(0.11, 16, 16);
+      const tipMat = new THREE.MeshStandardMaterial({
         color: 0x15756c,
-        roughness: 0.3,
-        metalness: 0.7,
+        emissive: 0x15756c,
+        emissiveIntensity: 0.8,
+      });
+      antennaTip = new THREE.Mesh(tipGeo, tipMat);
+      antennaTip.position.set(0, 1.25, 0);
+      botGroup.add(antennaTip);
+
+      // 3E. Left & Right Ear Pods
+      const earGeo = new THREE.CylinderGeometry(0.18, 0.18, 0.15, 16);
+      const earMat = new THREE.MeshStandardMaterial({ color: 0xd9a13b, metalness: 0.7, roughness: 0.3 });
+      const leftEar = new THREE.Mesh(earGeo, earMat);
+      leftEar.rotation.z = Math.PI / 2;
+      leftEar.position.set(-0.95, 0, 0);
+
+      const rightEar = new THREE.Mesh(earGeo, earMat);
+      rightEar.rotation.z = Math.PI / 2;
+      rightEar.position.set(0.95, 0, 0);
+
+      botGroup.add(leftEar);
+      botGroup.add(rightEar);
+
+      // 3F. Orbiting Halo Ring
+      const ringGeo = new THREE.TorusGeometry(1.4, 0.025, 16, 64);
+      const ringMat = new THREE.MeshStandardMaterial({
+        color: 0xd9a13b,
+        metalness: 0.8,
+        roughness: 0.2,
       });
       ringMesh = new THREE.Mesh(ringGeo, ringMat);
-      ringMesh.rotation.x = Math.PI / 2.5;
-      orbGroup.add(ringMesh);
+      ringMesh.rotation.x = Math.PI / 2.3;
+      botGroup.add(ringMesh);
 
-      // 3D. Ambient Particles Wave
-      const particleCount = 45;
+      // 3G. Ambient Particles
+      const particleCount = 35;
       const particleGeo = new THREE.BufferGeometry();
       const posArray = new Float32Array(particleCount * 3);
 
       for (let i = 0; i < particleCount * 3; i += 3) {
-        const rad = 1.5 + Math.random() * 0.7;
+        const rad = 1.5 + Math.random() * 0.6;
         const theta = Math.random() * Math.PI * 2;
         const phi = Math.acos(Math.random() * 2 - 1);
         posArray[i] = rad * Math.sin(phi) * Math.cos(theta);
@@ -98,14 +145,14 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
       particleGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
       const particleMat = new THREE.PointsMaterial({
-        size: 0.04,
+        size: 0.035,
         color: 0xffe082,
         transparent: true,
         opacity: 0.75,
       });
 
       particlesMesh = new THREE.Points(particleGeo, particleMat);
-      orbGroup.add(particlesMesh);
+      botGroup.add(particlesMesh);
 
       // 4. Pointer Interaction
       const handlePointerMove = (e) => {
@@ -114,8 +161,8 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
         const clientY = e.clientY ?? e.touches?.[0]?.clientY ?? (rect.top + rect.height / 2);
         const x = (clientX - rect.left) / rect.width - 0.5;
         const y = (clientY - rect.top) / rect.height - 0.5;
-        targetRotY = x * 0.9;
-        targetRotX = y * 0.9;
+        targetRotY = x * 0.8;
+        targetRotX = y * 0.8;
       };
 
       window.addEventListener('pointermove', handlePointerMove);
@@ -129,20 +176,20 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
 
         const speedMultiplier = pending || streaming ? 2.5 : 1.0;
 
-        // Rotations
-        orbMesh.rotation.y += 0.012 * speedMultiplier;
-        orbMesh.rotation.x += 0.006 * speedMultiplier;
-        coreMesh.rotation.y -= 0.015 * speedMultiplier;
-        ringMesh.rotation.z = elapsedTime * 0.6 * speedMultiplier;
-        particlesMesh.rotation.y = -elapsedTime * 0.4 * speedMultiplier;
+        // Bobbing & Rotations
+        botGroup.position.y = Math.sin(elapsedTime * 2.2) * 0.07;
+        ringMesh.rotation.z = elapsedTime * 0.5 * speedMultiplier;
+        particlesMesh.rotation.y = -elapsedTime * 0.3 * speedMultiplier;
 
-        // Pulse scale when thinking
-        const pulse = Math.sin(elapsedTime * 4 * speedMultiplier) * 0.08;
-        coreMesh.scale.set(1 + pulse, 1 + pulse, 1 + pulse);
+        // Eye & Antenna pulse
+        const pulse = Math.sin(elapsedTime * 5 * speedMultiplier) * 0.3 + 0.9;
+        antennaTip.material.emissiveIntensity = pulse * 1.2;
+        leftEyeMesh.material.emissiveIntensity = pulse;
+        rightEyeMesh.material.emissiveIntensity = pulse;
 
-        // Smooth Mouse/Touch tilt
-        orbGroup.rotation.x += (targetRotX - orbGroup.rotation.x) * 0.08;
-        orbGroup.rotation.y += (targetRotY - orbGroup.rotation.y) * 0.08;
+        // Smooth Pointer Tilt
+        botGroup.rotation.x += (targetRotX - botGroup.rotation.x) * 0.08;
+        botGroup.rotation.y += (targetRotY - botGroup.rotation.y) * 0.08;
 
         renderer.render(scene, camera);
       };
@@ -156,17 +203,24 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
           renderer.domElement.remove();
           renderer.dispose();
         }
-        orbGeo.dispose();
-        orbMat.dispose();
-        coreGeo.dispose();
-        coreMat.dispose();
+        headGeo.dispose();
+        headMat.dispose();
+        visorGeo.dispose();
+        visorMat.dispose();
+        eyeGeo.dispose();
+        eyeMat.dispose();
+        antennaStemGeo.dispose();
+        antennaStemMat.dispose();
+        tipGeo.dispose();
+        tipMat.dispose();
+        earGeo.dispose();
+        earMat.dispose();
         ringGeo.dispose();
         ringMat.dispose();
         particleGeo.dispose();
         particleMat.dispose();
       };
     } catch {
-      // Graceful fallback if WebGL fails
       return undefined;
     }
   }, [pending, streaming]);
@@ -174,8 +228,9 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false }) => {
   return (
     <div
       ref={containerRef}
-      className="relative w-[150px] h-[150px] mx-auto cursor-grab active:cursor-grabbing flex items-center justify-center"
-      title="AURA 3D Interactive AI Specialist — Hover to rotate"
+      onClick={onClick}
+      className="relative w-[160px] h-[160px] mx-auto cursor-pointer active:scale-95 transition-transform flex items-center justify-center select-none"
+      title="AURA 3D Animated Bot — Tap to meet AURA!"
     />
   );
 };
