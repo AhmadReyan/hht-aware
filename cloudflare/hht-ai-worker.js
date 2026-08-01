@@ -7,10 +7,11 @@
  *   POST /tts         → TEXT-TO-SPEECH:   { text } -> audio/mpeg (MeloTTS neural voice)
  *   POST /stt         → SPEECH-TO-TEXT:   raw audio body -> { ok, text }  (Whisper)
  *
- * Voice models: @cf/myshell-ai/melotts (TTS) and @cf/openai/whisper-large-v3-turbo
- * (STT) — both free core models. To upgrade to the more natural (paid, partner)
- * Deepgram voices later, swap the model ids for @cf/deepgram/aura-2-en and
- * @cf/deepgram/nova-3 (needs Cloudflare billing enabled).
+ * Voice: if the DEEPGRAM_API_KEY secret is set, /tts and /stt call the Deepgram
+ * REST API directly (Aura-2 TTS + Nova-3 STT) — the most lifelike voice, billed
+ * to the owner's own Deepgram account/credit. If the key is absent or Deepgram
+ * errors, it falls back to the FREE Workers AI models (MeloTTS + Whisper), so
+ * voice always works. Set the key with: npx wrangler@3 secret put DEEPGRAM_API_KEY
  *
  * PRIVACY: receives only the user's question / spoken audio for GENERAL HHT
  * questions. No personal health data is sent by the app. Nothing is stored here.
@@ -34,6 +35,10 @@ const ALLOWED_ORIGINS = [
   'http://localhost:4173',
   'http://localhost:5173',
 ];
+
+// Deepgram Aura-2 voice (warm, natural, healthcare-tuned). Swap the name to any
+// other Aura-2 voice, e.g. aura-2-andromeda-en, aura-2-apollo-en, aura-2-luna-en.
+const AURA_VOICE = 'aura-2-thalia-en';
 
 function corsHeaders(origin) {
   const allow = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
@@ -77,6 +82,24 @@ export default {
       try { body = await request.json(); } catch { body = {}; }
       const text = body && typeof body.text === 'string' ? body.text.slice(0, 1200).trim() : '';
       if (!text) return Response.json({ ok: false, error: 'empty' }, { status: 400, headers: cors });
+
+      // 1) Deepgram Aura-2 (lifelike; uses the owner's Deepgram credit).
+      if (env.DEEPGRAM_API_KEY) {
+        try {
+          const dg = await fetch(`https://api.deepgram.com/v1/speak?model=${AURA_VOICE}&encoding=mp3`, {
+            method: 'POST',
+            headers: { Authorization: `Token ${env.DEEPGRAM_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+          });
+          if (dg.ok && dg.body) {
+            return new Response(dg.body, { headers: { ...cors, 'Content-Type': 'audio/mpeg' } });
+          }
+        } catch {
+          /* fall back to the free voice below */
+        }
+      }
+
+      // 2) Free MeloTTS fallback.
       try {
         const out = await env.AI.run('@cf/myshell-ai/melotts', { prompt: text, lang: 'en' });
         // MeloTTS returns raw WAV audio bytes (RIFF/WAVE); some variants wrap it
@@ -95,12 +118,35 @@ export default {
       try {
         const ab = await request.arrayBuffer();
         if (!ab || ab.byteLength < 200) return Response.json({ ok: false, error: 'no_audio' }, { status: 400, headers: cors });
+
+        // 1) Deepgram Nova-3 (most accurate; uses the owner's Deepgram credit).
+        if (env.DEEPGRAM_API_KEY) {
+          try {
+            const ct = request.headers.get('Content-Type') || 'audio/webm';
+            const dg = await fetch('https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true&punctuate=true', {
+              method: 'POST',
+              headers: { Authorization: `Token ${env.DEEPGRAM_API_KEY}`, 'Content-Type': ct },
+              body: ab,
+            });
+            if (dg.ok) {
+              const j = await dg.json();
+              const t =
+                (j && j.results && j.results.channels && j.results.channels[0]
+                  && j.results.channels[0].alternatives && j.results.channels[0].alternatives[0]
+                  && j.results.channels[0].alternatives[0].transcript) || '';
+              return Response.json({ ok: true, text: String(t).trim() }, { headers: cors });
+            }
+          } catch {
+            /* fall back to free Whisper below */
+          }
+        }
+
+        // 2) Free Whisper fallback.
         const b64 = abToBase64(ab);
         let res;
         try {
           res = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: b64 });
         } catch {
-          // Fallback: some Whisper variants expect an array of bytes.
           res = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: [...new Uint8Array(ab)] });
         }
         const text = (res && (res.text || res.transcription)) || '';
