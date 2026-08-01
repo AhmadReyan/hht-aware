@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Send, Sparkles, ShieldAlert, Bot, Loader2, Cpu } from 'lucide-react';
+import { Send, Sparkles, ShieldAlert, Bot, Loader2, Cpu, Mic, Square, Volume2, VolumeX } from 'lucide-react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SectionTitle } from '../components/ui/SectionTitle';
 import { UpgradeSheet } from '../components/premium/UpgradeSheet';
@@ -9,6 +9,7 @@ import { askHHT, isAiConfigured } from '../services/askHht';
 import { AI_FREE_DAILY_LIMIT } from '../lib/aiConfig';
 import { haptics } from '../hooks/useHaptics';
 import { spring } from '../lib/motion';
+import { useSpeech, readVoicePref, writeVoicePref } from '../hooks/useSpeech';
 
 const AiAvatar3DCanvas = lazy(() => import('../components/ask/AiAvatar3DCanvas'));
 
@@ -66,6 +67,39 @@ export const AskHHT = () => {
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const scrollRef = useRef(null);
 
+  // ---- Voice: guarded Web Speech layer (STT mic + TTS "AURA speaks") ------
+  const {
+    sttSupported,
+    listening,
+    interimText,
+    permissionDenied,
+    startListening,
+    stopListening,
+    ttsSupported,
+    speaking,
+    speak,
+    stopSpeaking,
+  } = useSpeech();
+
+  // Persisted "AURA speaks" toggle (default OFF — user opts in on a health app).
+  const [auraSpeaks, setAuraSpeaks] = useState(readVoicePref);
+  // send() closes over state; read the latest pref through a ref inside it.
+  const auraSpeaksRef = useRef(auraSpeaks);
+  useEffect(() => {
+    auraSpeaksRef.current = auraSpeaks;
+  }, [auraSpeaks]);
+
+  // Guard against TTS firing after the user leaves /ask: send() awaits askHHT,
+  // and its promise can resolve after unmount. Without this, speak(res.answer)
+  // would start a fresh utterance on another screen with no UI left to stop it.
+  const mountedRef = useRef(true);
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
+
   const configured = isAiConfigured();
   const localToday = (() => {
     const d = new Date();
@@ -92,6 +126,9 @@ export const AskHHT = () => {
   const send = async (text) => {
     const q = (text ?? input).trim();
     if (!q || pending) return;
+
+    // Cut off any in-flight AURA speech the moment a new question is asked.
+    stopSpeaking();
 
     if (limited && remaining <= 0) {
       haptics.warning();
@@ -133,6 +170,11 @@ export const AskHHT = () => {
         }
         return next;
       });
+      // Read the final answer aloud only if the user opted in AND is still on
+      // this page (mountedRef). The unmount cleanup already ran synth.cancel(),
+      // so without this guard a late-resolving answer would speak on another
+      // screen with no way to stop it.
+      if (mountedRef.current && auraSpeaksRef.current && ttsSupported) speak(res.answer);
     } else {
       haptics.error();
       const msg =
@@ -153,6 +195,31 @@ export const AskHHT = () => {
     }
   };
 
+  // Mic tap: toggle listening. On a final transcript, show it in the input and
+  // auto-send down the exact same path as a typed question (obeys free limit).
+  const handleMicTap = () => {
+    if (listening) {
+      stopListening();
+      return;
+    }
+    if (pending) return;
+    stopSpeaking();
+    startListening((transcript) => {
+      setInput(transcript);
+      send(transcript);
+    });
+  };
+
+  const handleToggleSpeak = () => {
+    haptics.tap();
+    setAuraSpeaks((v) => {
+      const next = !v;
+      writeVoicePref(next);
+      if (!next) stopSpeaking();
+      return next;
+    });
+  };
+
   return (
     <PageWrapper>
       <div className="flex flex-col gap-3 pb-4 h-[calc(100vh-140px)]">
@@ -163,7 +230,7 @@ export const AskHHT = () => {
           <div className="flex items-center gap-2 cursor-pointer active:scale-95 transition-transform" onClick={handleIntroduce}>
             <div className="w-[65px] h-[65px] shrink-0 flex items-center justify-center">
               <Suspense fallback={<div className="w-[50px] h-[50px] bg-garnet/10 rounded-full animate-pulse" />}>
-                <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} onClick={handleIntroduce} />
+                <AiAvatar3DCanvas pending={pending} streaming={messages.some((m) => m.streaming)} speaking={speaking} onClick={handleIntroduce} />
               </Suspense>
             </div>
             <div className="flex flex-col">
@@ -184,10 +251,30 @@ export const AskHHT = () => {
           </button>
         </div>
 
-        {/* Disclaimer */}
-        <div className="flex items-start gap-2 bg-rose/60 border border-garnet/10 rounded-custom p-2.5 shrink-0">
-          <ShieldAlert size={14} className="text-garnet flex-shrink-0 mt-0.5" />
-          <p className="text-[10.5px] text-app-soft leading-relaxed">{DISCLAIMER}</p>
+        {/* Disclaimer + "AURA speaks" TTS toggle */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-start gap-2 bg-rose/60 border border-garnet/10 rounded-custom p-2.5 flex-1">
+            <ShieldAlert size={14} className="text-garnet flex-shrink-0 mt-0.5" />
+            <p className="text-[10.5px] text-app-soft leading-relaxed">{DISCLAIMER}</p>
+          </div>
+          {ttsSupported && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.94 }}
+              transition={spring.snappy}
+              onClick={handleToggleSpeak}
+              aria-pressed={auraSpeaks}
+              aria-label={auraSpeaks ? 'AURA speaks: on' : 'AURA speaks: off'}
+              className={`flex items-center gap-1 text-[10.5px] font-bold px-2.5 py-2 rounded-custom-pill border shadow-xs shrink-0 transition-colors ${
+                auraSpeaks
+                  ? 'bg-brand-teal/15 border-brand-teal/30 text-brand-teal'
+                  : 'bg-app-surface border-line text-app-muted'
+              }`}
+            >
+              {auraSpeaks ? <Volume2 size={13} className={speaking ? 'animate-pulse' : ''} /> : <VolumeX size={13} />}
+              <span>AURA speaks</span>
+            </motion.button>
+          )}
         </div>
 
         {/* Conversation Stream (Twitch-Free Auto-Scroll) */}
@@ -256,13 +343,49 @@ export const AskHHT = () => {
         <div className="flex items-center gap-2 shrink-0">
           <input
             type="text"
-            value={input}
+            value={listening && interimText ? interimText : input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-            placeholder={configured ? 'Ask AURA about HHT…' : 'Assistant coming soon…'}
+            placeholder={listening ? 'Listening…' : configured ? 'Ask AURA about HHT…' : 'Assistant coming soon…'}
             disabled={pending}
-            className="flex-1 px-4 py-3 rounded-custom-pill bg-app-surface2 border border-line text-sm text-app-ink placeholder:text-app-muted focus:outline-none focus:border-garnet shadow-inner"
+            className={`flex-1 px-4 py-3 rounded-custom-pill bg-app-surface2 border text-sm text-app-ink placeholder:text-app-muted focus:outline-none shadow-inner transition-colors ${
+              listening ? 'border-garnet' : 'border-line focus:border-garnet'
+            }`}
           />
+
+          {/* Mic button — only when the browser exposes SpeechRecognition and
+              the user hasn't hard-denied mic permission. Absent (not disabled)
+              otherwise, so text chat is always fully usable with no error UI. */}
+          {sttSupported && !permissionDenied && (
+            <motion.button
+              type="button"
+              whileTap={{ scale: 0.92 }}
+              transition={spring.snappy}
+              onClick={handleMicTap}
+              disabled={pending}
+              aria-label={listening ? 'Stop listening' : 'Ask by voice'}
+              aria-pressed={listening}
+              className={`relative w-12 h-12 rounded-full flex items-center justify-center shrink-0 disabled:opacity-40 shadow-sm border ${
+                listening
+                  ? 'text-white border-transparent'
+                  : 'text-garnet bg-app-surface border-garnet/30'
+              }`}
+              style={listening ? { background: 'var(--garnet)' } : undefined}
+            >
+              {listening && (
+                <motion.span
+                  aria-hidden="true"
+                  className="absolute inset-0 rounded-full"
+                  style={{ background: 'var(--garnet)' }}
+                  initial={{ opacity: 0.5, scale: 1 }}
+                  animate={{ opacity: 0, scale: 1.6 }}
+                  transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
+                />
+              )}
+              <span className="relative">{listening ? <Square size={16} /> : <Mic size={18} />}</span>
+            </motion.button>
+          )}
+
           <motion.button
             type="button"
             whileTap={{ scale: 0.92 }}

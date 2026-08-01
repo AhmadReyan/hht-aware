@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 
-export const AiAvatar3DCanvas = ({ pending = false, streaming = false, onClick }) => {
+export const AiAvatar3DCanvas = ({ pending = false, streaming = false, speaking = false, onClick }) => {
   const containerRef = useRef(null);
 
   useEffect(() => {
@@ -21,7 +21,11 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false, onClick }
       // 1. Scene & Camera
       scene = new THREE.Scene();
       camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-      camera.position.z = 4.2;
+      // Pull the camera back so the full bot + halo ring (r≈1.4) + orbiting
+      // particles (r≤2.1) stay inside the frustum even under max pointer tilt.
+      // At FOV 45°, z=5.4 -> visible half-extent ≈ tan(22.5°)*5.4 ≈ 2.24 > 2.1,
+      // so nothing clips against the cream card. (Was 4.2, which cut the sides.)
+      camera.position.z = 5.4;
 
       renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
       renderer.setSize(width, height);
@@ -174,7 +178,7 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false, onClick }
         animId = requestAnimationFrame(animate);
         const elapsedTime = (performance.now() - startTime) * 0.001;
 
-        const speedMultiplier = pending || streaming ? 2.5 : 1.0;
+        const speedMultiplier = pending || streaming || speaking ? 2.5 : 1.0;
 
         // Bobbing & Rotations
         botGroup.position.y = Math.sin(elapsedTime * 2.2) * 0.07;
@@ -223,13 +227,17 @@ export const AiAvatar3DCanvas = ({ pending = false, streaming = false, onClick }
     } catch {
       return undefined;
     }
-  }, [pending, streaming]);
+  }, [pending, streaming, speaking]);
 
   return (
     <div
       ref={containerRef}
       onClick={onClick}
-      className="relative w-[160px] h-[160px] mx-auto cursor-pointer active:scale-95 transition-transform flex items-center justify-center select-none"
+      // Fill the parent slot instead of forcing 160px. The old fixed 160×160
+      // canvas overflowed its 65px flex slot by ~47px/side and got cut by
+      // neighbouring content / the bar's page edge — that was the real clip.
+      // With w-full h-full the canvas matches the slot (square) and stays in-bounds.
+      className="relative w-full h-full cursor-pointer active:scale-95 transition-transform flex items-center justify-center select-none"
       title="AURA 3D Animated Bot — Tap to meet AURA!"
     />
   );
