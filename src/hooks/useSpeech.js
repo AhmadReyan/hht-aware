@@ -1,57 +1,53 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { haptics } from './useHaptics';
+import { AI_WORKER_URL } from '../lib/aiConfig';
 
 /**
- * useSpeech — guarded Web Speech API layer for AURA (no npm deps).
+ * useSpeech — AURA's voice layer (no npm deps).
  *
- * PRIVACY: STT produces TEXT only; that text goes to the same Cloudflare
- * Worker as a typed question. We NEVER store or upload raw audio. Note that
- * browser STT (e.g. Chrome) may transcribe via the browser vendor's own cloud
- * speech service — that is the platform's behaviour, outside this app. AURA is
- * educational only and already labelled "not medical advice".
+ * NEURAL-FIRST via the app's Cloudflare Worker:
+ *  - speak(text): POST /tts -> MeloTTS neural voice (WAV), played via <audio>.
+ *    Retries once (MeloTTS cold-starts can 502) and falls back to the browser's
+ *    speechSynthesis so AURA always speaks.
+ *  - startListening(): records the mic (MediaRecorder) -> POST /stt -> Whisper
+ *    transcript. This works where the browser SpeechRecognition API doesn't
+ *    (e.g. Android WebView). Falls back to browser SpeechRecognition when
+ *    MediaRecorder/getUserMedia or the Worker isn't available.
  *
- * Everything here is feature-detected and cleaned up on unmount; every method
- * early-returns when the underlying API is missing, so callers never need to
- * branch defensively. On unsupported platforms (e.g. most Android System
- * WebViews for STT) the hook is a safe no-op and the mic UI simply won't render.
+ * PRIVACY: only the spoken audio for a GENERAL HHT question is sent to the same
+ * Worker; the transcript is treated exactly like a typed question. No audio is
+ * stored. AURA is educational only ("not medical advice").
+ *
+ * Everything is feature-detected, guarded, and cleaned up on unmount.
  */
 
-// STT: standard + webkit-prefixed (Chrome/Edge/Safari). Undefined in most
-// Android System WebViews and some desktop browsers -> STT_SUPPORTED = false.
-const SpeechRecognitionCtor =
-  typeof window !== 'undefined'
-    ? window.SpeechRecognition || window.webkitSpeechRecognition
-    : null;
+const hasWindow = typeof window !== 'undefined';
+const SpeechRecognitionCtor = hasWindow ? window.SpeechRecognition || window.webkitSpeechRecognition : null;
+const synth = hasWindow && 'speechSynthesis' in window ? window.speechSynthesis : null;
+const mediaSupported = hasWindow
+  && typeof navigator !== 'undefined'
+  && !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)
+  && typeof window.MediaRecorder !== 'undefined';
 
-// TTS: widely available incl. Android WebView. Guard for absence anyway.
-const synth =
-  typeof window !== 'undefined' && 'speechSynthesis' in window
-    ? window.speechSynthesis
-    : null;
+const workerConfigured = typeof AI_WORKER_URL === 'string' && /^https?:\/\//.test(AI_WORKER_URL);
+const TTS_URL = workerConfigured ? `${AI_WORKER_URL.replace(/\/$/, '')}/tts` : '';
+const STT_URL = workerConfigured ? `${AI_WORKER_URL.replace(/\/$/, '')}/stt` : '';
 
-const STT_SUPPORTED = !!SpeechRecognitionCtor;
-const TTS_SUPPORTED = !!synth;
+// Mic works if we can record + reach the Worker (Whisper) OR the browser has STT.
+const STT_SUPPORTED = (mediaSupported && workerConfigured) || !!SpeechRecognitionCtor;
+// AURA can speak if the Worker (neural) OR the browser synth is available.
+const TTS_SUPPORTED = workerConfigured || !!synth;
 
 // ---- Persisted "AURA speaks" preference (guarded localStorage) ------------
 const VOICE_KEY = 'hht_aura_voice_v1';
-
 export const readVoicePref = () => {
-  try {
-    return localStorage.getItem(VOICE_KEY) === '1';
-  } catch {
-    return false;
-  }
+  try { return localStorage.getItem(VOICE_KEY) === '1'; } catch { return false; }
 };
-
 export const writeVoicePref = (on) => {
-  try {
-    localStorage.setItem(VOICE_KEY, on ? '1' : '0');
-  } catch {
-    /* private mode / quota — ignore */
-  }
+  try { localStorage.setItem(VOICE_KEY, on ? '1' : '0'); } catch { /* ignore */ }
 };
 
-// Lightly strip markdown/emoji so the spoken audio is cleaner.
+// Strip markdown/emoji so the spoken audio is clean.
 const cleanForSpeech = (text) =>
   String(text || '')
     .replace(/[*_`#>~]/g, '')
@@ -62,19 +58,26 @@ const cleanForSpeech = (text) =>
 
 export const useSpeech = () => {
   const [listening, setListening] = useState(false);
+  const [transcribing, setTranscribing] = useState(false);
   const [interimText, setInterimText] = useState('');
   const [permissionDenied, setPermissionDenied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
-  const recognitionRef = useRef(null);
+  const recognitionRef = useRef(null); // browser STT (fallback)
   const listeningRef = useRef(false);
   const onFinalRef = useRef(null);
-  const utteranceRef = useRef(null);
+  const audioRef = useRef(null); // neural TTS <audio>
+  const mediaRef = useRef(null); // { recorder, stream, chunks, timer }
+  const mountedRef = useRef(true);
 
-  // ---- STT: build the recognition instance once (if supported) ------------
   useEffect(() => {
-    if (!STT_SUPPORTED) return undefined;
+    mountedRef.current = true;
+    return () => { mountedRef.current = false; };
+  }, []);
 
+  // ---- Browser STT recognizer (fallback path) -----------------------------
+  useEffect(() => {
+    if (!SpeechRecognitionCtor) return undefined;
     let recognition;
     try {
       recognition = new SpeechRecognitionCtor();
@@ -82,16 +85,14 @@ export const useSpeech = () => {
       recognition.continuous = false;
       recognition.interimResults = true;
       recognition.maxAlternatives = 1;
-
       recognition.onresult = (event) => {
         try {
           let interim = '';
           let final = '';
           for (let i = event.resultIndex; i < event.results.length; i += 1) {
-            const result = event.results[i];
-            const transcript = result[0]?.transcript || '';
-            if (result.isFinal) final += transcript;
-            else interim += transcript;
+            const r = event.results[i];
+            const t = (r[0] && r[0].transcript) || '';
+            if (r.isFinal) final += t; else interim += t;
           }
           if (interim) setInterimText(interim);
           if (final) {
@@ -99,132 +100,204 @@ export const useSpeech = () => {
             setInterimText(text);
             const cb = onFinalRef.current;
             if (cb && text) cb(text);
-            try {
-              recognition.stop();
-            } catch {
-              /* no-op */
-            }
+            try { recognition.stop(); } catch { /* no-op */ }
           }
-        } catch {
-          /* never throw from a handler */
-        }
+        } catch { /* never throw */ }
       };
-
       recognition.onerror = (event) => {
-        const err = event?.error;
+        const err = event && event.error;
         if (err === 'not-allowed' || err === 'service-not-allowed') {
           setPermissionDenied(true);
           haptics.warning();
         }
-        // 'no-speech' | 'aborted' | 'network' | others -> reset silently.
         listeningRef.current = false;
         setListening(false);
       };
-
       recognition.onend = () => {
         listeningRef.current = false;
         setListening(false);
         setInterimText('');
       };
-
       recognitionRef.current = recognition;
     } catch {
       recognitionRef.current = null;
     }
-
     return () => {
-      try {
-        recognition?.abort();
-      } catch {
-        /* no-op */
-      }
+      try { recognition && recognition.abort(); } catch { /* no-op */ }
       recognitionRef.current = null;
     };
   }, []);
 
-  // ---- TTS + STT cleanup on unmount ---------------------------------------
-  useEffect(
-    () => () => {
-      try {
-        recognitionRef.current?.abort();
-      } catch {
-        /* no-op */
+  const stopSpeaking = useCallback(() => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
-      try {
-        synth?.cancel();
-      } catch {
-        /* no-op */
-      }
-    },
-    [],
-  );
+    } catch { /* no-op */ }
+    try { if (synth) synth.cancel(); } catch { /* no-op */ }
+    setSpeaking(false);
+  }, []);
 
-  const startListening = useCallback((onFinalText) => {
-    if (!STT_SUPPORTED || listeningRef.current) return;
+  // Browser TTS fallback.
+  const speakBrowser = useCallback((clean) => {
+    if (!synth) return;
+    try {
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(clean);
+      u.rate = 1; u.pitch = 1; u.lang = 'en-US';
+      u.onstart = () => setSpeaking(true);
+      u.onend = () => setSpeaking(false);
+      u.onerror = () => setSpeaking(false);
+      synth.speak(u);
+    } catch { setSpeaking(false); }
+  }, []);
+
+  // ---- TTS: neural (Worker) first, browser fallback -----------------------
+  const speak = useCallback(async (text) => {
+    const clean = cleanForSpeech(text);
+    if (!clean) return;
+    stopSpeaking();
+    if (TTS_URL) {
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        try {
+          const res = await fetch(TTS_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: clean.slice(0, 1200) }),
+          });
+          const ct = (res.headers.get('content-type') || '').toLowerCase();
+          if (res.ok && ct.includes('audio')) {
+            const blob = await res.blob();
+            if (!mountedRef.current) return;
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audioRef.current = audio;
+            audio.onplay = () => setSpeaking(true);
+            audio.onended = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+            audio.onerror = () => { setSpeaking(false); URL.revokeObjectURL(url); };
+            try {
+              await audio.play();
+              return; // neural voice playing
+            } catch {
+              // Autoplay blocked -> fall back to browser TTS.
+              URL.revokeObjectURL(url);
+              break;
+            }
+          }
+          // non-audio (e.g. 502 cold start) -> retry once, then fall back.
+        } catch {
+          /* network -> retry / fall back */
+        }
+      }
+    }
+    if (mountedRef.current) speakBrowser(clean);
+  }, [stopSpeaking, speakBrowser]);
+
+  // ---- STT via MediaRecorder -> Worker (Whisper) --------------------------
+  const startBrowserListening = useCallback((onFinalText) => {
     const recognition = recognitionRef.current;
-    if (!recognition) return;
-
+    if (!recognition || listeningRef.current) return;
     onFinalRef.current = typeof onFinalText === 'function' ? onFinalText : null;
     setPermissionDenied(false);
     setInterimText('');
     listeningRef.current = true;
     setListening(true);
     haptics.tap();
-
-    try {
-      recognition.start();
-    } catch {
-      // InvalidStateError if start() is called while already active — swallow.
-      listeningRef.current = false;
-      setListening(false);
-    }
+    try { recognition.start(); } catch { listeningRef.current = false; setListening(false); }
   }, []);
+
+  const startListening = useCallback(async (onFinalText) => {
+    if (listeningRef.current || transcribing) return;
+    onFinalRef.current = typeof onFinalText === 'function' ? onFinalText : null;
+
+    if (mediaSupported && STT_URL) {
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        setPermissionDenied(true);
+        haptics.warning();
+        return;
+      }
+      try {
+        const recorder = new MediaRecorder(stream);
+        const chunks = [];
+        recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+        recorder.onstop = async () => {
+          try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
+          listeningRef.current = false;
+          setListening(false);
+          const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
+          if (blob.size < 800) return; // nothing captured
+          setTranscribing(true);
+          try {
+            const res = await fetch(STT_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': blob.type || 'audio/webm' },
+              body: blob,
+            });
+            const data = await res.json();
+            if (mountedRef.current && data && data.ok && data.text) {
+              const cb = onFinalRef.current;
+              if (cb) cb(String(data.text).trim());
+            }
+          } catch { /* transcription failed -> silent */ }
+          if (mountedRef.current) setTranscribing(false);
+        };
+        mediaRef.current = { recorder, stream };
+        recorder.start();
+        listeningRef.current = true;
+        setListening(true);
+        setPermissionDenied(false);
+        haptics.tap();
+        // Safety auto-stop after 12s.
+        mediaRef.current.timer = setTimeout(() => {
+          try { if (recorder.state === 'recording') recorder.stop(); } catch { /* no-op */ }
+        }, 12000);
+      } catch {
+        try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
+        // Fall back to browser recognizer if we have one.
+        if (SpeechRecognitionCtor) startBrowserListening(onFinalText);
+      }
+      return;
+    }
+
+    // No MediaRecorder/Worker -> browser recognizer.
+    startBrowserListening(onFinalText);
+  }, [transcribing, startBrowserListening]);
 
   const stopListening = useCallback(() => {
+    const m = mediaRef.current;
+    if (m && m.recorder) {
+      try { if (m.timer) clearTimeout(m.timer); } catch { /* no-op */ }
+      try { if (m.recorder.state === 'recording') m.recorder.stop(); } catch { /* no-op */ }
+      return;
+    }
     const recognition = recognitionRef.current;
-    if (!recognition) return;
-    try {
-      recognition.stop();
-    } catch {
-      /* no-op */
+    if (recognition) {
+      try { recognition.stop(); } catch { /* no-op */ }
     }
   }, []);
 
-  // ---- TTS ----------------------------------------------------------------
-  const speak = useCallback((text) => {
-    if (!TTS_SUPPORTED) return;
-    const clean = cleanForSpeech(text);
-    if (!clean) return;
-    try {
-      synth.cancel(); // kill any in-flight utterance first
-      const u = new SpeechSynthesisUtterance(clean);
-      u.rate = 1;
-      u.pitch = 1;
-      u.lang = 'en-US';
-      u.onstart = () => setSpeaking(true);
-      u.onend = () => setSpeaking(false);
-      u.onerror = () => setSpeaking(false);
-      utteranceRef.current = u;
-      synth.speak(u);
-    } catch {
-      setSpeaking(false);
+  // ---- Cleanup on unmount -------------------------------------------------
+  useEffect(() => () => {
+    try { if (recognitionRef.current) recognitionRef.current.abort(); } catch { /* no-op */ }
+    try { if (synth) synth.cancel(); } catch { /* no-op */ }
+    try { if (audioRef.current) audioRef.current.pause(); } catch { /* no-op */ }
+    const m = mediaRef.current;
+    if (m) {
+      try { if (m.timer) clearTimeout(m.timer); } catch { /* no-op */ }
+      try { if (m.recorder && m.recorder.state === 'recording') m.recorder.stop(); } catch { /* no-op */ }
+      try { if (m.stream) m.stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
     }
-  }, []);
-
-  const stopSpeaking = useCallback(() => {
-    if (!TTS_SUPPORTED) return;
-    try {
-      synth.cancel();
-    } catch {
-      /* no-op */
-    }
-    setSpeaking(false);
   }, []);
 
   return {
     // STT
     sttSupported: STT_SUPPORTED,
     listening,
+    transcribing,
     interimText,
     permissionDenied,
     startListening,

@@ -1,16 +1,19 @@
 /**
- * hht-ai-worker.js — Cloudflare Worker backend for the "Ask HHT" assistant.
+ * hht-ai-worker.js — Cloudflare Worker backend for the "Ask HHT" assistant (AURA).
  *
- * Runs a chat model on Cloudflare Workers AI (Llama) at the edge — there is NO
- * external API key to hold or leak, and it's free within the daily Neuron
- * allowance. The app calls this Worker; the Worker injects the HHT system
- * prompt and returns the answer. No user login required.
+ * All on Cloudflare Workers AI at the edge — no external API key to leak, free
+ * within the daily Neuron allowance. Three POST endpoints (routed by path):
+ *   POST /            (or anything else) → CHAT: { question, history } -> { ok, answer }  (Llama)
+ *   POST /tts         → TEXT-TO-SPEECH:   { text } -> audio/mpeg (MeloTTS neural voice)
+ *   POST /stt         → SPEECH-TO-TEXT:   raw audio body -> { ok, text }  (Whisper)
  *
- * Deploy: see CLOUDFLARE_AI_SETUP.md (npx wrangler deploy). Needs the [ai]
- * binding named "AI" (configured in wrangler.toml).
+ * Voice models: @cf/myshell-ai/melotts (TTS) and @cf/openai/whisper-large-v3-turbo
+ * (STT) — both free core models. To upgrade to the more natural (paid, partner)
+ * Deepgram voices later, swap the model ids for @cf/deepgram/aura-2-en and
+ * @cf/deepgram/nova-3 (needs Cloudflare billing enabled).
  *
- * PRIVACY: this backend receives only the user's typed question + recent chat
- * turns. The app never sends personal health data. Nothing is stored here.
+ * PRIVACY: receives only the user's question / spoken audio for GENERAL HHT
+ * questions. No personal health data is sent by the app. Nothing is stored here.
  */
 
 const SYSTEM_PROMPT = `You are "HHT Assistant", a warm, plain-language educational guide about Hereditary Hemorrhagic Telangiectasia (HHT, also called Osler-Weber-Rendu syndrome).
@@ -23,7 +26,6 @@ Rules:
 - You do not have access to the user's personal data — never imply you do.
 - If asked about something unrelated to HHT, gently steer back to HHT.`;
 
-// Origins allowed to call this Worker. Add your production domain(s).
 const ALLOWED_ORIGINS = [
   'https://ahmadreyan.github.io',
   'capacitor://localhost',
@@ -43,29 +45,77 @@ function corsHeaders(origin) {
   };
 }
 
+// Base64 helpers (chunked so large audio buffers don't overflow the call stack).
+function abToBase64(ab) {
+  const bytes = new Uint8Array(ab);
+  let bin = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
+  }
+  return btoa(bin);
+}
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i += 1) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
 export default {
   async fetch(request, env) {
     const origin = request.headers.get('Origin') || '';
     const cors = corsHeaders(origin);
+    const path = new URL(request.url).pathname;
 
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: cors });
-    }
-    if (request.method !== 'POST') {
-      return new Response('Method Not Allowed', { status: 405, headers: cors });
+    if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+    if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: cors });
+
+    // ---------- TEXT-TO-SPEECH ----------
+    if (path.endsWith('/tts')) {
+      let body;
+      try { body = await request.json(); } catch { body = {}; }
+      const text = body && typeof body.text === 'string' ? body.text.slice(0, 1200).trim() : '';
+      if (!text) return Response.json({ ok: false, error: 'empty' }, { status: 400, headers: cors });
+      try {
+        const out = await env.AI.run('@cf/myshell-ai/melotts', { prompt: text, lang: 'en' });
+        // MeloTTS returns raw WAV audio bytes (RIFF/WAVE); some variants wrap it
+        // as { audio: <base64> }. Handle both, label as audio/wav.
+        if (out && typeof out === 'object' && typeof out.audio === 'string') {
+          return new Response(base64ToBytes(out.audio), { headers: { ...cors, 'Content-Type': 'audio/wav' } });
+        }
+        return new Response(out, { headers: { ...cors, 'Content-Type': 'audio/wav' } });
+      } catch (e) {
+        return Response.json({ ok: false, error: 'tts_failed', detail: String((e && e.message) || e) }, { status: 502, headers: cors });
+      }
     }
 
+    // ---------- SPEECH-TO-TEXT ----------
+    if (path.endsWith('/stt')) {
+      try {
+        const ab = await request.arrayBuffer();
+        if (!ab || ab.byteLength < 200) return Response.json({ ok: false, error: 'no_audio' }, { status: 400, headers: cors });
+        const b64 = abToBase64(ab);
+        let res;
+        try {
+          res = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: b64 });
+        } catch {
+          // Fallback: some Whisper variants expect an array of bytes.
+          res = await env.AI.run('@cf/openai/whisper-large-v3-turbo', { audio: [...new Uint8Array(ab)] });
+        }
+        const text = (res && (res.text || res.transcription)) || '';
+        return Response.json({ ok: true, text: String(text).trim() }, { headers: cors });
+      } catch (e) {
+        return Response.json({ ok: false, error: 'stt_failed', detail: String((e && e.message) || e) }, { status: 502, headers: cors });
+      }
+    }
+
+    // ---------- CHAT (default) ----------
     let body;
-    try {
-      body = await request.json();
-    } catch {
-      body = {};
-    }
+    try { body = await request.json(); } catch { body = {}; }
 
     const question = body && typeof body.question === 'string' ? body.question.slice(0, 1000).trim() : '';
-    if (!question) {
-      return Response.json({ ok: false, error: 'empty' }, { status: 400, headers: cors });
-    }
+    if (!question) return Response.json({ ok: false, error: 'empty' }, { status: 400, headers: cors });
 
     const history = Array.isArray(body.history)
       ? body.history
@@ -81,14 +131,9 @@ export default {
     ];
 
     try {
-      const result = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', {
-        messages,
-        max_tokens: 600,
-      });
+      const result = await env.AI.run('@cf/meta/llama-3.3-70b-instruct-fp8-fast', { messages, max_tokens: 600 });
       const answer = (result && (result.response || (result.result && result.result.response))) || '';
-      if (!answer) {
-        return Response.json({ ok: false, error: 'empty_answer' }, { status: 502, headers: cors });
-      }
+      if (!answer) return Response.json({ ok: false, error: 'empty_answer' }, { status: 502, headers: cors });
       return Response.json({ ok: true, answer: String(answer).trim() }, { headers: cors });
     } catch {
       return Response.json({ ok: false, error: 'ai_failed' }, { status: 502, headers: cors });

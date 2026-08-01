@@ -71,6 +71,7 @@ export const AskHHT = () => {
   const {
     sttSupported,
     listening,
+    transcribing,
     interimText,
     permissionDenied,
     startListening,
@@ -346,7 +347,7 @@ export const AskHHT = () => {
             value={listening && interimText ? interimText : input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === 'Enter') send(); }}
-            placeholder={listening ? 'Listening…' : configured ? 'Ask AURA about HHT…' : 'Assistant coming soon…'}
+            placeholder={listening ? 'Listening…' : transcribing ? 'Transcribing…' : configured ? 'Ask AURA about HHT…' : 'Assistant coming soon…'}
             disabled={pending}
             className={`flex-1 px-4 py-3 rounded-custom-pill bg-app-surface2 border text-sm text-app-ink placeholder:text-app-muted focus:outline-none shadow-inner transition-colors ${
               listening ? 'border-garnet' : 'border-line focus:border-garnet'
@@ -362,7 +363,7 @@ export const AskHHT = () => {
               whileTap={{ scale: 0.92 }}
               transition={spring.snappy}
               onClick={handleMicTap}
-              disabled={pending}
+              disabled={pending || transcribing}
               aria-label={listening ? 'Stop listening' : 'Ask by voice'}
               aria-pressed={listening}
               className={`relative w-12 h-12 rounded-full flex items-center justify-center shrink-0 disabled:opacity-40 shadow-sm border ${
@@ -382,7 +383,7 @@ export const AskHHT = () => {
                   transition={{ duration: 1.2, repeat: Infinity, ease: 'easeOut' }}
                 />
               )}
-              <span className="relative">{listening ? <Square size={16} /> : <Mic size={18} />}</span>
+              <span className="relative">{transcribing ? <Loader2 size={18} className="animate-spin" /> : listening ? <Square size={16} /> : <Mic size={18} />}</span>
             </motion.button>
           )}
 
