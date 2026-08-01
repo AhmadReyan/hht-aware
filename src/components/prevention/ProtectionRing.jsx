@@ -1,6 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { motion } from 'framer-motion';
-import { ShieldCheck, Sparkles, Flame, Box } from 'lucide-react';
+import { Sparkles, Flame } from 'lucide-react';
 import { useAppStore } from '../../store/useAppStore';
 import { selfCareItems } from '../../data/selfCare';
 import { spring } from '../../lib/motion';
@@ -14,7 +14,7 @@ export const ProtectionRing = () => {
   const doneKeys = selfCareToday?.done || [];
   const count = doneKeys.length;
   const total = selfCareItems.length;
-  const percent = Math.round((count / total) * 100);
+  const percent = total > 0 ? Math.round((count / total) * 100) : 0;
   const isComplete = count >= total && total > 0;
 
   const hr = new Date().getHours();
@@ -25,17 +25,18 @@ export const ProtectionRing = () => {
     day: 'numeric',
   });
 
-  const size = 150;
-  const strokeWidth = 10;
-  const radius = (size - strokeWidth) / 2;
+  // Slim progress ring that FRAMES the 3D shield (sits at the outer edge, so it
+  // never covers the 3D object — the shield stays fully visible).
+  const box = 220;
+  const strokeWidth = 6;
+  const radius = (box - strokeWidth) / 2 - 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (percent / 100) * circumference;
-
   const ringColor = isComplete ? '#D9A13B' : percent > 50 ? '#15756C' : '#8E2D3B';
 
   return (
     <div className="relative overflow-hidden rounded-custom-lg bg-app-surface border border-line p-5 shadow-card flex flex-col items-center text-center">
-      {/* Background glow when complete */}
+      {/* Soft glow when the day is fully shielded */}
       {isComplete && (
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
@@ -44,15 +45,13 @@ export const ProtectionRing = () => {
         />
       )}
 
-      {/* Micro Greeting */}
-      <div className="flex items-center justify-between w-full mb-3 px-1">
+      {/* Greeting + streak */}
+      <div className="relative z-10 flex items-center justify-between w-full mb-1 px-1">
         <div className="flex flex-col text-left">
           <span className="text-[10px] font-extrabold uppercase tracking-widest text-garnet">
             {todayFormatted}
           </span>
-          <span className="font-serif text-base font-extrabold text-app-ink">
-            {greeting}
-          </span>
+          <span className="font-serif text-base font-extrabold text-app-ink">{greeting}</span>
         </div>
         {streak > 0 && (
           <div className="flex items-center gap-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 rounded-custom-pill px-2.5 py-1 text-[11px] font-bold">
@@ -62,71 +61,57 @@ export const ProtectionRing = () => {
         )}
       </div>
 
-      {/* 3D WebGL Interactive Shield Hero */}
-      <div className="relative my-1 flex flex-col items-center justify-center">
-        {/* 3D Canvas Layer */}
-        <Suspense fallback={<div className="w-[220px] h-[220px] mx-auto" />}>
+      {/* 3D shield hero, framed by a slim progress ring — nothing on top of it */}
+      <div
+        className="relative flex items-center justify-center"
+        style={{ width: box, height: box, maxWidth: '100%' }}
+      >
+        <svg
+          className="absolute inset-0 h-full w-full pointer-events-none"
+          viewBox={`0 0 ${box} ${box}`}
+        >
+          <circle
+            cx={box / 2}
+            cy={box / 2}
+            r={radius}
+            fill="none"
+            stroke="var(--line)"
+            strokeWidth={strokeWidth}
+            opacity={0.35}
+          />
+          <motion.circle
+            cx={box / 2}
+            cy={box / 2}
+            r={radius}
+            fill="none"
+            stroke={ringColor}
+            strokeWidth={strokeWidth}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={spring.soft}
+            style={{ rotate: -90, originX: '50%', originY: '50%' }}
+          />
+        </svg>
+
+        <Suspense fallback={<div style={{ width: box, height: box }} />}>
           <Shield3DCanvas percent={percent} />
         </Suspense>
-
-        {/* Floating 3D Badge */}
-        <div className="absolute top-1 left-1/2 -translate-x-1/2 bg-app-surface/90 border border-line px-2 py-0.5 rounded-custom-pill flex items-center gap-1 text-[9.5px] font-bold text-app-muted shadow-xs pointer-events-none">
-          <Box size={11} className="text-garnet animate-spin-slow" />
-          <span>Interactive 3D Shield</span>
-        </div>
-
-        {/* Ring Metrics Overlay */}
-        <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-2">
-          <svg className="absolute inset-0 w-full h-full" viewBox={`0 0 ${size} ${size}`}>
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="transparent"
-              stroke="var(--line)"
-              strokeWidth={4}
-              opacity={0.25}
-            />
-            <motion.circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              fill="transparent"
-              stroke={ringColor}
-              strokeWidth={5}
-              strokeDasharray={circumference}
-              initial={{ strokeDashoffset: circumference }}
-              animate={{ strokeDashoffset: offset }}
-              transition={spring.soft}
-              strokeLinecap="round"
-              style={{ rotate: -90, originX: '50%', originY: '50%' }}
-            />
-          </svg>
-
-          <div className="relative z-10 flex flex-col items-center justify-center bg-app-surface/95 backdrop-blur-md px-3.5 py-2.5 rounded-2xl border border-line/80 shadow-card">
-            <motion.div
-              animate={{ scale: isComplete ? [1, 1.15, 1] : 1 }}
-              transition={spring.bouncy}
-              className="flex items-center justify-center mb-0.5"
-            >
-              <ShieldCheck
-                size={24}
-                style={{ color: ringColor }}
-                className={`transition-colors ${isComplete ? 'drop-shadow-md' : ''}`}
-              />
-            </motion.div>
-            <span className="font-serif text-2xl font-black leading-none text-app-ink">
-              {percent}%
-            </span>
-            <span className="text-[9.5px] font-extrabold uppercase tracking-wider text-garnet mt-1">
-              {count}/{total} Shielded
-            </span>
-          </div>
-        </div>
       </div>
 
-      {/* Subtext status */}
-      <div className="mt-2 flex items-center gap-1.5 text-[12px] font-medium text-app-soft">
+      {/* Clean numeric readout BELOW the shield — no box, no duplicate icon */}
+      <div className="relative z-10 -mt-2 flex flex-col items-center">
+        <span className="font-serif text-4xl font-black leading-none" style={{ color: ringColor }}>
+          {percent}%
+        </span>
+        <span className="text-[10px] font-extrabold uppercase tracking-wider text-garnet mt-1">
+          {count}/{total} shielded
+        </span>
+      </div>
+
+      {/* Status subtext */}
+      <div className="relative z-10 mt-2 flex items-center gap-1.5 text-[12px] font-medium text-app-soft">
         {isComplete ? (
           <span className="flex items-center gap-1 text-gold font-bold">
             <Sparkles size={14} /> Full daily protection active!
@@ -142,3 +127,5 @@ export const ProtectionRing = () => {
     </div>
   );
 };
+
+export default ProtectionRing;
