@@ -244,6 +244,12 @@ export const useSpeech = () => {
         const chunks = [];
         recorder.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
         recorder.onstop = async () => {
+          const mm = mediaRef.current;
+          if (mm) {
+            try { if (mm.vadRaf) cancelAnimationFrame(mm.vadRaf); } catch { /* no-op */ }
+            try { if (mm.audioCtx) mm.audioCtx.close(); } catch { /* no-op */ }
+            try { if (mm.timer) clearTimeout(mm.timer); } catch { /* no-op */ }
+          }
           try { stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
           listeningRef.current = false;
           setListening(false);
@@ -270,7 +276,45 @@ export const useSpeech = () => {
         setListening(true);
         setPermissionDenied(false);
         haptics.tap();
-        // Safety auto-stop after 12s.
+
+        // Voice-activity detection: once the user has spoken, auto-stop ~1.2s
+        // after they go quiet — no need to tap stop. Falls back to the 12s timer.
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          const audioCtx = new AC();
+          const source = audioCtx.createMediaStreamSource(stream);
+          const analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 512;
+          source.connect(analyser);
+          const buf = new Uint8Array(analyser.fftSize);
+          const SILENCE_MS = 1200;
+          const THRESHOLD = 0.02;
+          let spoke = false;
+          let lastVoice = performance.now();
+          const tick = () => {
+            if (!mediaRef.current || mediaRef.current.recorder !== recorder) return;
+            analyser.getByteTimeDomainData(buf);
+            let sum = 0;
+            for (let i = 0; i < buf.length; i += 1) {
+              const v = (buf[i] - 128) / 128;
+              sum += v * v;
+            }
+            const rms = Math.sqrt(sum / buf.length);
+            const now = performance.now();
+            if (rms > THRESHOLD) { spoke = true; lastVoice = now; }
+            if (spoke && now - lastVoice > SILENCE_MS) {
+              try { if (recorder.state === 'recording') recorder.stop(); } catch { /* no-op */ }
+              return;
+            }
+            mediaRef.current.vadRaf = requestAnimationFrame(tick);
+          };
+          mediaRef.current.audioCtx = audioCtx;
+          mediaRef.current.vadRaf = requestAnimationFrame(tick);
+        } catch {
+          /* no Web Audio -> manual tap or the 12s safety timer stops it */
+        }
+
+        // Safety auto-stop after 12s of total recording.
         mediaRef.current.timer = setTimeout(() => {
           try { if (recorder.state === 'recording') recorder.stop(); } catch { /* no-op */ }
         }, 12000);
@@ -309,6 +353,8 @@ export const useSpeech = () => {
     const m = mediaRef.current;
     if (m) {
       try { if (m.timer) clearTimeout(m.timer); } catch { /* no-op */ }
+      try { if (m.vadRaf) cancelAnimationFrame(m.vadRaf); } catch { /* no-op */ }
+      try { if (m.audioCtx) m.audioCtx.close(); } catch { /* no-op */ }
       try { if (m.recorder && m.recorder.state === 'recording') m.recorder.stop(); } catch { /* no-op */ }
       try { if (m.stream) m.stream.getTracks().forEach((t) => t.stop()); } catch { /* no-op */ }
     }
